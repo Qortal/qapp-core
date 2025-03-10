@@ -1,0 +1,44 @@
+{
+  "name": "qapp-core",
+  "version": "1.0.0",
+  "description": "Qortal's core React library with global state, UI components, and utilities",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "prepare": "npm run build",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "zustand": "^4.3.2"
+  },
+  "devDependencies": {
+    "tsup": "^7.0.0",
+    "typescript": "^5.2.0",
+    "@types/react": "^18.0.27"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Qortal/qapp-core.git"
+  },
+  "keywords": [
+    "qortal",
+    "react",
+    "zustand",
+    "global state",
+    "qapp"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
