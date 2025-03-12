@@ -17,41 +17,38 @@ import { ResourceLoader } from "./ResourceLoader";
 import { ItemCardWrapper } from "./ItemCardWrapper";
 import { Spacer } from "../../common/Spacer";
 
-
-
 interface ResourceListStyles {
-  gap?: number
-  listLoadingHeight?: CSSProperties
+  gap?: number;
+  listLoadingHeight?: CSSProperties;
 }
 
 interface DefaultLoaderParams {
- listLoadingText?: string
- listNoResultsText?: string
- listItemLoadingText?: string
- listItemErrorText?: string
+  listLoadingText?: string;
+  listNoResultsText?: string;
+  listItemLoadingText?: string;
+  listItemErrorText?: string;
 }
 
 interface PropsResourceListDisplay {
   params: QortalSearchParams;
   listItem: (item: ListItem, index: number) => React.ReactNode; // Function type
-  styles?: ResourceListStyles
+  styles?: ResourceListStyles;
   loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode; // Function type
-  defaultLoaderParams?: DefaultLoaderParams
+  defaultLoaderParams?: DefaultLoaderParams;
   loaderList?: (status: "LOADING" | "NO_RESULTS") => React.ReactNode; // Function type
+  disableVirtualization?: boolean;
 }
-
-
-
 
 export const ResourceListDisplay = ({
   params,
   listItem,
   styles = {
-    gap: 1
+    gap: 1,
   },
   defaultLoaderParams,
   loaderItem,
-  loaderList
+  loaderList,
+  disableVirtualization,
 }: PropsResourceListDisplay) => {
   const [list, setList] = useState<QortalMetadata[]>([]);
   const { fetchResources } = useResources();
@@ -77,10 +74,14 @@ export const ResourceListDisplay = ({
 
   return (
     <ListLoader
-      noResultsMessage={defaultLoaderParams?.listNoResultsText || "No results available"}
+      noResultsMessage={
+        defaultLoaderParams?.listNoResultsText || "No results available"
+      }
       resultsLength={list?.length}
       isLoading={isLoading}
-      loadingMessage={defaultLoaderParams?.listLoadingText || "Retrieving list. Please wait."}
+      loadingMessage={
+        defaultLoaderParams?.listLoadingText || "Retrieving list. Please wait."
+      }
       loaderList={loaderList}
       loaderHeight={styles?.listLoadingHeight}
     >
@@ -92,16 +93,53 @@ export const ResourceListDisplay = ({
         }}
       >
         <div style={{ display: "flex", flexGrow: 1 }}>
-          <VirtualizedList list={list}>
-            {(item: QortalMetadata, index: number) => (
-              <>
-              {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} /> }
-              <Spacer/>
-              <ListItemWrapper defaultLoaderParams={defaultLoaderParams} item={item} index={index} render={listItem} renderListItemLoader={loaderItem} />
-              {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} /> }
-              </>
-            )}
-          </VirtualizedList>
+          {!disableVirtualization && (
+            <VirtualizedList list={list}>
+              {(item: QortalMetadata, index: number) => (
+                <>
+                  {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} />}
+                  <Spacer />
+                  <ListItemWrapper
+                    defaultLoaderParams={defaultLoaderParams}
+                    item={item}
+                    index={index}
+                    render={listItem}
+                    renderListItemLoader={loaderItem}
+                  />
+                  {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} />}
+                </>
+              )}
+            </VirtualizedList>
+          )}
+          {disableVirtualization && (
+            <div
+              style={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                width: "100%",
+              }}
+            >
+              {list?.map((item, index) => {
+                return (
+                  <React.Fragment
+                    key={`${item?.name}-${item?.service}-${item?.identifier}`}
+                  >
+                    {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} />}
+                    <Spacer />
+                    <ListItemWrapper
+                      defaultLoaderParams={defaultLoaderParams}
+                      item={item}
+                      index={index}
+                      render={listItem}
+                      renderListItemLoader={loaderItem}
+                    />
+                    {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} />}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </ListLoader>
@@ -113,7 +151,7 @@ interface ListItemWrapperProps {
   index: number;
   render: (item: ListItem, index: number) => React.ReactNode;
   defaultLoaderParams?: DefaultLoaderParams;
-  renderListItemLoader?:(status: "LOADING" | "ERROR")=> React.ReactNode;
+  renderListItemLoader?: (status: "LOADING" | "ERROR") => React.ReactNode;
 }
 
 const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
@@ -121,7 +159,7 @@ const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
   index,
   render,
   defaultLoaderParams,
-  renderListItemLoader
+  renderListItemLoader,
 }) => {
   const getResourceCache = useCacheStore().getResourceCache;
 
@@ -129,27 +167,37 @@ const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
     `${item.service}-${item.name}-${item.identifier}`,
     true
   );
-    if (findCachedResource === null && !renderListItemLoader)
-      return (
-        <ItemCardWrapper height={60} isInCart={false}>
-          <ResourceLoader
-            message={defaultLoaderParams?.listItemLoadingText || "Fetching Data..."}
-            status="loading"
-          />
-        </ItemCardWrapper>
-      );
-    if (findCachedResource === false && !renderListItemLoader)
-      return (
-        <ItemCardWrapper height={60} isInCart={false}>
-          <ResourceLoader
-            message={defaultLoaderParams?.listItemErrorText ||"Resource is unavailble at this moment... Try again later."}
-            status="error"
-          />
-        </ItemCardWrapper>
-      );
-      if(renderListItemLoader && (findCachedResource === false || findCachedResource === null)){
-        return renderListItemLoader(findCachedResource === null ? "LOADING" : "ERROR")
-      }
+  if (findCachedResource === null && !renderListItemLoader)
+    return (
+      <ItemCardWrapper height={60} isInCart={false}>
+        <ResourceLoader
+          message={
+            defaultLoaderParams?.listItemLoadingText || "Fetching Data..."
+          }
+          status="loading"
+        />
+      </ItemCardWrapper>
+    );
+  if (findCachedResource === false && !renderListItemLoader)
+    return (
+      <ItemCardWrapper height={60} isInCart={false}>
+        <ResourceLoader
+          message={
+            defaultLoaderParams?.listItemErrorText ||
+            "Resource is unavailble at this moment... Try again later."
+          }
+          status="error"
+        />
+      </ItemCardWrapper>
+    );
+  if (
+    renderListItemLoader &&
+    (findCachedResource === false || findCachedResource === null)
+  ) {
+    return renderListItemLoader(
+      findCachedResource === null ? "LOADING" : "ERROR"
+    );
+  }
 
   // Example transformation (Modify item if needed)
   const transformedItem = findCachedResource
