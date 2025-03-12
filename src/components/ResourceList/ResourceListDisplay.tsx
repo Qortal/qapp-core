@@ -37,6 +37,7 @@ interface PropsResourceListDisplay {
   defaultLoaderParams?: DefaultLoaderParams;
   loaderList?: (status: "LOADING" | "NO_RESULTS") => React.ReactNode; // Function type
   disableVirtualization?: boolean;
+  onSeenLastItem?: (listItem: QortalMetadata)=> void;
 }
 
 export const ResourceListDisplay = ({
@@ -49,6 +50,7 @@ export const ResourceListDisplay = ({
   loaderItem,
   loaderList,
   disableVirtualization,
+  onSeenLastItem
 }: PropsResourceListDisplay) => {
   const [list, setList] = useState<QortalMetadata[]>([]);
   const { fetchResources } = useResources();
@@ -94,7 +96,7 @@ export const ResourceListDisplay = ({
       >
         <div style={{ display: "flex", flexGrow: 1 }}>
           {!disableVirtualization && (
-            <VirtualizedList list={list}>
+            <VirtualizedList list={list} onSeenLastItem={onSeenLastItem}>
               {(item: QortalMetadata, index: number) => (
                 <>
                   {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} />}
