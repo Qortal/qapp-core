@@ -15,16 +15,43 @@ import { ListLoader } from "../../common/ListLoader";
 import { ListItem, useCacheStore } from "../../state/cache";
 import { ResourceLoader } from "./ResourceLoader";
 import { ItemCardWrapper } from "./ItemCardWrapper";
+import { Spacer } from "../../common/Spacer";
 
+
+
+interface ResourceListStyles {
+  gap?: number
+  listLoadingHeight?: CSSProperties
+}
+
+interface DefaultLoaderParams {
+ listLoadingText?: string
+ listNoResultsText?: string
+ listItemLoadingText?: string
+ listItemErrorText?: string
+}
 
 interface PropsResourceListDisplay {
   params: QortalSearchParams;
   listItem: (item: ListItem, index: number) => React.ReactNode; // Function type
+  styles?: ResourceListStyles
+  loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode; // Function type
+  defaultLoaderParams?: DefaultLoaderParams
+  loaderList?: (status: "LOADING" | "NO_RESULTS") => React.ReactNode; // Function type
 }
+
+
+
 
 export const ResourceListDisplay = ({
   params,
   listItem,
+  styles = {
+    gap: 1
+  },
+  defaultLoaderParams,
+  loaderItem,
+  loaderList
 }: PropsResourceListDisplay) => {
   const [list, setList] = useState<QortalMetadata[]>([]);
   const { fetchResources } = useResources();
@@ -50,10 +77,12 @@ export const ResourceListDisplay = ({
 
   return (
     <ListLoader
-      noResultsMessage="No results available"
+      noResultsMessage={defaultLoaderParams?.listNoResultsText || "No results available"}
       resultsLength={list?.length}
       isLoading={isLoading}
-      loadingMessage="Retrieving list. Please wait."
+      loadingMessage={defaultLoaderParams?.listLoadingText || "Retrieving list. Please wait."}
+      loaderList={loaderList}
+      loaderHeight={styles?.listLoadingHeight}
     >
       <div
         style={{
@@ -62,10 +91,15 @@ export const ResourceListDisplay = ({
           width: "100%",
         }}
       >
-        <div style={{ display: "flex", flexGrow: isLoading ? 0 : 1 }}>
+        <div style={{ display: "flex", flexGrow: 1 }}>
           <VirtualizedList list={list}>
             {(item: QortalMetadata, index: number) => (
-              <ListItemWrapper item={item} index={index} render={listItem} />
+              <>
+              {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} /> }
+              <Spacer/>
+              <ListItemWrapper defaultLoaderParams={defaultLoaderParams} item={item} index={index} render={listItem} renderListItemLoader={loaderItem} />
+              {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} /> }
+              </>
             )}
           </VirtualizedList>
         </div>
@@ -78,38 +112,44 @@ interface ListItemWrapperProps {
   item: QortalMetadata;
   index: number;
   render: (item: ListItem, index: number) => React.ReactNode;
+  defaultLoaderParams?: DefaultLoaderParams;
+  renderListItemLoader?:(status: "LOADING" | "ERROR")=> React.ReactNode;
 }
 
 const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
   item,
   index,
   render,
+  defaultLoaderParams,
+  renderListItemLoader
 }) => {
-  console.log("Rendering wrapped item:", item, index);
   const getResourceCache = useCacheStore().getResourceCache;
 
   const findCachedResource = getResourceCache(
     `${item.service}-${item.name}-${item.identifier}`,
     true
   );
-    if (findCachedResource === null)
+    if (findCachedResource === null && !renderListItemLoader)
       return (
         <ItemCardWrapper height={60} isInCart={false}>
           <ResourceLoader
-            message="Fetching Data..."
+            message={defaultLoaderParams?.listItemLoadingText || "Fetching Data..."}
             status="loading"
           />
         </ItemCardWrapper>
       );
-    if (findCachedResource === false)
+    if (findCachedResource === false && !renderListItemLoader)
       return (
         <ItemCardWrapper height={60} isInCart={false}>
           <ResourceLoader
-            message="Product is unavailble at this moment... Try again later."
+            message={defaultLoaderParams?.listItemErrorText ||"Resource is unavailble at this moment... Try again later."}
             status="error"
           />
         </ItemCardWrapper>
       );
+      if(renderListItemLoader && (findCachedResource === false || findCachedResource === null)){
+        return renderListItemLoader(findCachedResource === null ? "LOADING" : "ERROR")
+      }
 
   // Example transformation (Modify item if needed)
   const transformedItem = findCachedResource
