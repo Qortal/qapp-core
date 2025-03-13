@@ -9,10 +9,45 @@ export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(5)
 
 export const useResources = () => {
     const { setSearchCache, getSearchCache, getResourceCache, setResourceCache } = useCacheStore();
+    const requestControllers = new Map<string, AbortController>();
+
+    const getArbitraryResource = async (url: string, key: string): Promise<string> => {
+      // ✅ Create or reuse an existing controller
+      let controller = requestControllers.get(key);
+      if (!controller) {
+        controller = new AbortController();
+        requestControllers.set(key, controller);
+      }
+    
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        return await res.text();
+      } catch (error: any) {
+        if (error?.name === "AbortError") {
+          console.warn(`Request cancelled: ${key}`);
+          return "canceled"; // Return empty response on cancel
+        } else {
+          console.error(`Fetch error: ${key}`, error);
+        }
+        throw error;
+      } finally {
+        requestControllers.delete(key); // ✅ Cleanup controller after request
+      }
+    };
+
+    const cancelAllRequests = () => {
+      requestControllers.forEach((controller, key) => {
+        controller.abort();
+      });
+      requestControllers.clear();
+    };
+    
 
     const fetchIndividualPublish = useCallback(
         async (item: QortalMetadata) => {
           try {
+            const key = `${item?.service}-${item?.name}-${item?.identifier}`;
+
             const cachedProduct = getResourceCache(`${item?.service}-${item?.name}-${item?.identifier}`);
             if (cachedProduct) return;
             setResourceCache(`${item?.service}-${item?.name}-${item?.identifier}`, null);
@@ -20,17 +55,12 @@ export const useResources = () => {
             let res: string | undefined = undefined
             try {
               res = await requestQueueProductPublishes.enqueue((): Promise<string> => {
-                return qortalRequest({
-                  action: "FETCH_QDN_RESOURCE",
-                  identifier: item?.identifier,
-                  encoding: "base64",
-                  name: item?.name,
-                  service: item?.service,
-                });
+                return getArbitraryResource(`/arbitrary/${item?.service}/${item?.name}/${item?.identifier}?encoding=base64`, key)
               });
             } catch (error) {
               hasFailedToDownload = true
             }
+            if(res === 'canceled') return false
     
             if (hasFailedToDownload) {
               await new Promise((res) => {
@@ -41,13 +71,7 @@ export const useResources = () => {
     
               try {
                 res = await requestQueueProductPublishesBackup.enqueue((): Promise<string> => {
-                  return qortalRequest({
-                    action: "FETCH_QDN_RESOURCE",
-                    identifier: item?.identifier,
-                    encoding: "base64",
-                    name: item?.name,
-                    service: item?.service,
-                  });
+                  return getArbitraryResource(`/arbitrary/${item?.service}/${item?.name}/${item?.identifier}?encoding=base64`, key)
                 });
               } catch (error) {
                 setResourceCache(`${item?.service}-${item?.name}-${item?.identifier}`, false);
@@ -79,9 +103,17 @@ export const useResources = () => {
       );
 
     const fetchResources = useCallback(
-        async (params: QortalSearchParams): Promise<QortalMetadata[]> => {
+        async (params: QortalSearchParams, listName: string, cancelRequests?: boolean): Promise<QortalMetadata[]> => {
+          if(cancelRequests){
+            cancelAllRequests()
+            await new Promise((res)=> {
+              setTimeout(() => {
+                  res(null)
+              }, 250);
+            })
+          }
           const cacheKey = generateCacheKey(params);
-          const searchCache = getSearchCache(cacheKey);
+          const searchCache = getSearchCache(listName, cacheKey);
           let responseData = [];
       
           if (searchCache) {
@@ -96,7 +128,7 @@ export const useResources = () => {
             if (!response) throw new Error("Unable to fetch resources");
             responseData = response
           }      
-            setSearchCache(cacheKey, responseData);
+            setSearchCache(listName, cacheKey, responseData);
             fetchDataFromResults(responseData);
       
           return responseData;

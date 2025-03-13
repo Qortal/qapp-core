@@ -3,11 +3,14 @@ import { QortalMetadata } from "../types/interfaces/resources";
 
 
 interface SearchCache {
-  [searchTerm: string]: {
-    data: QortalMetadata[]; // List of products for the search term
-    expiry: number; // Expiry timestamp in milliseconds
+  [listName: string]: {
+    searches: {
+      [searchTerm: string]: QortalMetadata[]; // List of products for each search term
+    };
+    expiry: number; // Expiry timestamp for the whole list
   };
 }
+
 
 
 export const mergeUniqueItems = (array1: QortalMetadata[], array2: QortalMetadata[]) => {
@@ -46,8 +49,8 @@ interface CacheState {
   // Search cache actions
   setResourceCache: (id: string, data: ListItem | false | null, customExpiry?: number) => void;
 
-  setSearchCache: (searchTerm: string, data: QortalMetadata[], customExpiry?: number) => void;
-  getSearchCache: (searchTerm: string) => QortalMetadata[] | null;
+  setSearchCache: (listName: string, searchTerm: string, data: QortalMetadata[], customExpiry?: number) => void;
+  getSearchCache: (listName: string, searchTerm: string) => QortalMetadata[] | null;
   clearExpiredCache: () => void;
   getResourceCache: (id: string, ignoreExpire?: boolean) => ListItem | false | null;
 }
@@ -76,22 +79,30 @@ export const useCacheStore = create<CacheState>((set, get) => ({
       };
     }),
   // Add search results to cache
-  setSearchCache: (searchTerm, data, customExpiry) =>
+  setSearchCache: (listName, searchTerm, data, customExpiry) =>
     set((state) => {
-      const expiry = Date.now() + (customExpiry || (5 * 60 * 1000)); // 5mins from now
+      const expiry = Date.now() + (customExpiry || 5 * 60 * 1000); // 5mins from now
+  
       return {
         searchCache: {
           ...state.searchCache,
-          [searchTerm]: { data, expiry },
+          [listName]: {
+            searches: {
+              ...(state.searchCache[listName]?.searches || {}), // Preserve existing searches
+              [searchTerm]: data, // Store new search term results
+            },
+            expiry, // Expiry for the entire list
+          },
         },
       };
     }),
+  
 
   // Retrieve cached search results
-  getSearchCache: (searchTerm) => {
-    const cache = get().searchCache[searchTerm];
+  getSearchCache: (listName, searchTerm) => {
+    const cache = get().searchCache[listName];
     if (cache && cache.expiry > Date.now()) {
-      return cache.data; // Return cached search results if not expired
+      return cache.searches[searchTerm] || null; // Return specific search term results
     }
     return null; // Cache expired or doesn't exist
   },
@@ -100,10 +111,9 @@ export const useCacheStore = create<CacheState>((set, get) => ({
   clearExpiredCache: () =>
     set((state) => {
       const now = Date.now();
-      // Filter expired searches
       const validSearchCache = Object.fromEntries(
         Object.entries(state.searchCache).filter(
-          ([, value]) => value.expiry > now
+          ([, value]) => value.expiry > now // Only keep unexpired lists
         )
       );
       return {

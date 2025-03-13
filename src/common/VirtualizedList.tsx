@@ -31,12 +31,12 @@ export const VirtualizedList = ({ list, children, onSeenLastItem }: PropsVirtual
     overscan: 10, // Number of items to render outside the visible area to improve smoothness
   });
 
-  const onSeenLastItemFunc = useCallback((lastItem: QortalMetadata) => {
+  const onSeenLastItemFunc = (lastItem: QortalMetadata) => {
     if(onSeenLastItem){
       onSeenLastItem(lastItem)
     }
     
-  }, []);
+  };
 
   return (
     <div

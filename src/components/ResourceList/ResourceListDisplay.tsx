@@ -10,16 +10,23 @@ import {
   QortalSearchParams,
 } from "../../types/interfaces/resources";
 import { useResources } from "../../hooks/useResources";
-import { VirtualizedList } from "../../common/VirtualizedList";
+import { MessageWrapper, VirtualizedList } from "../../common/VirtualizedList";
 import { ListLoader } from "../../common/ListLoader";
 import { ListItem, useCacheStore } from "../../state/cache";
 import { ResourceLoader } from "./ResourceLoader";
 import { ItemCardWrapper } from "./ItemCardWrapper";
 import { Spacer } from "../../common/Spacer";
+import DynamicGrid from "./DynamicGrid";
+import LazyLoad from "../../common/LazyLoad";
+import { useListStore } from "../../state/lists";
+type Direction = "VERTICAL" | "HORIZONTAL";
 
 interface ResourceListStyles {
   gap?: number;
   listLoadingHeight?: CSSProperties;
+  disabledVirutalizationStyles?: {
+    parentContainer?: CSSProperties;
+  };
 }
 
 interface DefaultLoaderParams {
@@ -29,16 +36,30 @@ interface DefaultLoaderParams {
   listItemErrorText?: string;
 }
 
-interface PropsResourceListDisplay {
+interface BaseProps {
   params: QortalSearchParams;
-  listItem: (item: ListItem, index: number) => React.ReactNode; // Function type
+  listItem: (item: ListItem, index: number) => React.ReactNode;
   styles?: ResourceListStyles;
-  loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode; // Function type
+  loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode;
   defaultLoaderParams?: DefaultLoaderParams;
-  loaderList?: (status: "LOADING" | "NO_RESULTS") => React.ReactNode; // Function type
+  loaderList?: (status: "LOADING" | "NO_RESULTS") => React.ReactNode;
   disableVirtualization?: boolean;
-  onSeenLastItem?: (listItem: QortalMetadata)=> void;
+  onSeenLastItem?: (listItem: QortalMetadata) => void;
+  listName: string
 }
+
+// ✅ Restrict `direction` only when `disableVirtualization = false`
+interface VirtualizedProps extends BaseProps {
+  disableVirtualization?: false;
+  direction?: "VERTICAL"; // Only allow "VERTICAL" when virtualization is enabled
+}
+
+interface NonVirtualizedProps extends BaseProps {
+  disableVirtualization: true;
+  direction?: Direction; // Allow both "VERTICAL" & "HORIZONTAL" when virtualization is disabled
+}
+
+type PropsResourceListDisplay = VirtualizedProps | NonVirtualizedProps;
 
 export const ResourceListDisplay = ({
   params,
@@ -50,19 +71,23 @@ export const ResourceListDisplay = ({
   loaderItem,
   loaderList,
   disableVirtualization,
-  onSeenLastItem
+  direction = "VERTICAL",
+  onSeenLastItem,
+  listName
 }: PropsResourceListDisplay) => {
-  const [list, setList] = useState<QortalMetadata[]>([]);
   const { fetchResources } = useResources();
   const [isLoading, setIsLoading] = useState(false);
   const memoizedParams = useMemo(() => JSON.stringify(params), [params]);
+  const addList = useListStore().addList
+  const addItems = useListStore().addItems
+  const list = useListStore().getListByName(listName)
 
   const getResourceList = useCallback(async () => {
     try {
       setIsLoading(true);
       const parsedParams = JSON.parse(memoizedParams);
-      const res = await fetchResources(parsedParams); // Awaiting the async function
-      setList(res || []); // Ensure it's an array, avoid setting `undefined`
+      const res = await fetchResources(parsedParams, listName, true); // Awaiting the async function
+      addList(listName, res || [])
     } catch (error) {
       console.error("Failed to fetch resources:", error);
     } finally {
@@ -70,9 +95,35 @@ export const ResourceListDisplay = ({
     }
   }, [memoizedParams, fetchResources]); // Added dependencies for re-fetching
 
+  const getResourceMoreList = useCallback(async () => {
+    try {
+      // setIsLoading(true);
+      const parsedParams = {...(JSON.parse(memoizedParams))};
+      parsedParams.offset = (parsedParams?.offset || 0) + list.length
+      const res = await fetchResources(parsedParams, listName); // Awaiting the async function
+      addItems(listName, res || [])
+    } catch (error) {
+      console.error("Failed to fetch resources:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [memoizedParams, listName, list?.length]); 
+
   useEffect(() => {
     getResourceList();
   }, [getResourceList]); // Runs when dependencies change
+
+  const disabledVirutalizationStyles: CSSProperties = useMemo(() => {
+    if (styles?.disabledVirutalizationStyles?.parentContainer)
+      return styles?.disabledVirutalizationStyles.parentContainer;
+    return {
+      position: "relative",
+      display: "flex",
+      flexDirection: "column",
+      gap: `${styles.gap}px` || 0,
+      width: "100%",
+    };
+  }, [styles?.disabledVirutalizationStyles, styles?.gap, direction]);
 
   return (
     <ListLoader
@@ -96,10 +147,15 @@ export const ResourceListDisplay = ({
       >
         <div style={{ display: "flex", flexGrow: 1 }}>
           {!disableVirtualization && (
-            <VirtualizedList list={list} onSeenLastItem={onSeenLastItem}>
+            <VirtualizedList list={list} onSeenLastItem={(item)=> {
+              getResourceMoreList()
+              if(onSeenLastItem){
+                onSeenLastItem(item)
+              }
+            }}>
               {(item: QortalMetadata, index: number) => (
                 <>
-                  {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} />}
+                  {styles?.gap && <Spacer height={`${styles.gap / 2}px`} />}
                   <Spacer />
                   <ListItemWrapper
                     defaultLoaderParams={defaultLoaderParams}
@@ -108,27 +164,20 @@ export const ResourceListDisplay = ({
                     render={listItem}
                     renderListItemLoader={loaderItem}
                   />
-                  {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} />}
+                  {styles?.gap && <Spacer height={`${styles.gap / 2}px`} />}
                 </>
               )}
             </VirtualizedList>
           )}
-          {disableVirtualization && (
-            <div
-              style={{
-                position: "relative",
-                display: "flex",
-                flexDirection: "column",
-                width: "100%",
-              }}
-            >
-              {list?.map((item, index) => {
+          {disableVirtualization && direction === "HORIZONTAL" && (
+            <>
+            <DynamicGrid
+              gap={styles?.gap}
+              items={list?.map((item, index) => {
                 return (
                   <React.Fragment
                     key={`${item?.name}-${item?.service}-${item?.identifier}`}
                   >
-                    {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} />}
-                    <Spacer />
                     <ListItemWrapper
                       defaultLoaderParams={defaultLoaderParams}
                       item={item}
@@ -136,10 +185,52 @@ export const ResourceListDisplay = ({
                       render={listItem}
                       renderListItemLoader={loaderItem}
                     />
-                    {styles?.gap && <Spacer height={`${styles.gap / 2}rem`} />}
                   </React.Fragment>
                 );
               })}
+            >
+
+            {!isLoading && list?.length > 0 && (
+                <LazyLoad onLoadMore={()=> {
+                  getResourceMoreList()
+                  if(onSeenLastItem){
+                
+                    onSeenLastItem(list[list?.length - 1])
+                  }
+                }} />
+              )}
+              </DynamicGrid>
+            </>
+            
+          )}
+          {disableVirtualization && direction === "VERTICAL" && (
+            <div style={disabledVirutalizationStyles}>
+              {list?.map((item, index) => {
+                return (
+                  <React.Fragment
+                    key={`${item?.name}-${item?.service}-${item?.identifier}`}
+                  >
+                   
+                      <ListItemWrapper
+                        defaultLoaderParams={defaultLoaderParams}
+                        item={item}
+                        index={index}
+                        render={listItem}
+                        renderListItemLoader={loaderItem}
+                      />
+            
+                  </React.Fragment>
+                );
+              })}
+              {!isLoading && list?.length > 0 && (
+                <LazyLoad onLoadMore={()=> {
+                  getResourceMoreList()
+                  if(onSeenLastItem){                    
+                    onSeenLastItem(list[list?.length - 1])
+                  }
+                }} />
+              )}
+              
             </div>
           )}
         </div>
