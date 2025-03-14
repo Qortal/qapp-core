@@ -64,23 +64,35 @@ export class RequestQueueWithPromise<T = any> {
 }
 
 
-export async function retryTransaction(fn, args, throwError, retries) {
+export async function retryTransaction<T>(
+  fn: (...args: any[]) => Promise<T>, 
+  args: any[], 
+  throwError: boolean, 
+  retries: number
+): Promise<T | null> {
   let attempt = 0;
   while (attempt < retries) {
     try {
-      return await fn(...args); 
-    } catch (error) {
-      console.error(`Attempt ${attempt + 1} failed: ${error.message}`);
+      return await fn(...args);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(`Attempt ${attempt + 1} failed: ${error.message}`);
+      } else {
+        console.error(`Attempt ${attempt + 1} failed: Unknown error`);
+      }
+
       attempt++;
       if (attempt === retries) {
         console.error("Max retries reached. Skipping transaction.");
-        if(throwError){
-          throw new Error(error?.message || "Unable to process transaction")
+        if (throwError) {
+          throw new Error(error instanceof Error ? error.message : "Unable to process transaction");
         } else {
-          return null
+          return null;
         }
       }
-      await new Promise(res => setTimeout(res, 10000)); 
+      await new Promise((res) => setTimeout(res, 10000));
     }
   }
+  return null;
 }
+
