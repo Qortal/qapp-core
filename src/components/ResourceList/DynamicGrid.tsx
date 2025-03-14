@@ -5,54 +5,33 @@ interface DynamicGridProps {
   itemWidth?: number; // Minimum width per item
   gap?: number; // Spacing between grid items
   children: ReactNode
+  minItemWidth?: number
 }
 
 const DynamicGrid: React.FC<DynamicGridProps> = ({
   items,
-  itemWidth = 300, // Default min item width
-  gap = 10, // Default gap between items
-  children
+  minItemWidth = 200, // Minimum width per item
+  gap = 10, // Space between items
+  children,
 }) => {
-  const gridRef = useRef<HTMLDivElement>(null);
-  const [columns, setColumns] = useState(1);
-
-  useEffect(() => {
-    const updateColumns = () => {
-      if (gridRef.current) {
-        const containerWidth = gridRef.current.offsetWidth;
-        const newColumns = Math.floor(containerWidth / (itemWidth + gap));
-        setColumns(newColumns > 0 ? newColumns : 1); // Ensure at least 1 column
-      }
-    };
-
-    updateColumns(); // Initial column calculation
-
-    const resizeObserver = new ResizeObserver(updateColumns);
-    if (gridRef.current) {
-      resizeObserver.observe(gridRef.current);
-    }
-
-    return () => resizeObserver.disconnect(); // Cleanup observer
-  }, [itemWidth, gap]);
 
   return (
-    <div style={{ display: "flex", flexDirection: 'column', alignItems: "center", width: "100%" }}>
-      {/* ✅ Centers the grid inside the parent */}
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
       <div
-        ref={gridRef}
         style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${columns}, minmax(${itemWidth}px, 1fr))`, // ✅ Dynamically calculated columns
+          gridTemplateColumns: `repeat(auto-fill, minmax(${minItemWidth}px, 1fr))`, // ✅ Expands to fit width
           gap: `${gap}px`,
-          width: "100%", // ✅ Ensures grid fills available space
-          maxWidth: "1200px", // ✅ Optional max width to prevent excessive stretching
-          margin: "auto", // ✅ Centers the grid horizontally
-          gridAutoFlow: "row", // ✅ Ensures rows behave correctly
+          width: "100%",
+          maxWidth: "100%", // ✅ Prevents overflow
+          margin: "auto",
+          overflow: "hidden", // ✅ Prevents horizontal scrollbars
+          gridAutoFlow: "row dense", // ✅ Fills space efficiently
         }}
       >
         {items.map((component, index) => (
-          <div key={index} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-            {component} {/* ✅ Render user-provided component */}
+          <div key={index} style={{ width: "100%", display: "flex", justifyContent: "center", maxWidth: '400px' }}>
+            {component} {/* ✅ Renders user-provided component */}
           </div>
         ))}
       </div>
@@ -60,5 +39,8 @@ const DynamicGrid: React.FC<DynamicGridProps> = ({
     </div>
   );
 };
+
+
+
 
 export default DynamicGrid;

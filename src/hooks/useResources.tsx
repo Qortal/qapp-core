@@ -7,8 +7,12 @@ import { base64ToUint8Array, uint8ArrayToObject } from '../utils/base64';
 export const requestQueueProductPublishes = new RequestQueueWithPromise(20);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(5);
 
+interface TemporaryResource {
+  qortalMetadata: QortalMetadata
+  data: any
+}
 export const useResources = () => {
-    const { setSearchCache, getSearchCache, getResourceCache, setResourceCache } = useCacheStore();
+    const { setSearchCache, getSearchCache, getResourceCache, setResourceCache, addTemporaryResource, getTemporaryResources } = useCacheStore();
     const requestControllers = new Map<string, AbortController>();
 
     const getArbitraryResource = async (url: string, key: string): Promise<string> => {
@@ -135,9 +139,16 @@ export const useResources = () => {
         },
         [getSearchCache, setSearchCache, fetchDataFromResults]
       );
+
+   
+
+     const addNewResources = useCallback((listName:string, temporaryResources: TemporaryResource[])=> {
+      addTemporaryResource(listName, temporaryResources.map((item)=> item.qortalMetadata))
+     }, [])
   return {
     fetchResources,
-    fetchIndividualPublish
+    fetchIndividualPublish,
+    addNewResources
   }
 }
 

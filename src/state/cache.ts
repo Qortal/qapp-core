@@ -7,6 +7,7 @@ interface SearchCache {
     searches: {
       [searchTerm: string]: QortalMetadata[]; // List of products for each search term
     };
+    temporaryNewResources: QortalMetadata[],
     expiry: number; // Expiry timestamp for the whole list
   };
 }
@@ -53,6 +54,8 @@ interface CacheState {
   getSearchCache: (listName: string, searchTerm: string) => QortalMetadata[] | null;
   clearExpiredCache: () => void;
   getResourceCache: (id: string, ignoreExpire?: boolean) => ListItem | false | null;
+  addTemporaryResource: (listName: string, newResources: QortalMetadata[], customExpiry?: number)=> void;
+  getTemporaryResources:(listName: string)=> QortalMetadata[]
 }
 
 export const useCacheStore = create<CacheState>((set, get) => ({
@@ -91,6 +94,7 @@ export const useCacheStore = create<CacheState>((set, get) => ({
               ...(state.searchCache[listName]?.searches || {}), // Preserve existing searches
               [searchTerm]: data, // Store new search term results
             },
+            temporaryNewResources: state.searchCache[listName]?.temporaryNewResources || [], // Preserve existing temp resources
             expiry, // Expiry for the entire list
           },
         },
@@ -106,7 +110,42 @@ export const useCacheStore = create<CacheState>((set, get) => ({
     }
     return null; // Cache expired or doesn't exist
   },
-
+  addTemporaryResource: (listName, newResources, customExpiry) =>
+    set((state) => {
+      const expiry = Date.now() + (customExpiry || 5 * 60 * 1000); // Reset expiry
+  
+      const existingResources = state.searchCache[listName]?.temporaryNewResources || [];
+  
+      // Merge and remove duplicates, keeping the latest by `created` timestamp
+      const uniqueResourcesMap = new Map<string, QortalMetadata>();
+  
+      [...existingResources, ...newResources].forEach((item) => {
+        const key = `${item.service}-${item.name}-${item.identifier}`;
+        const existingItem = uniqueResourcesMap.get(key);
+  
+        if (!existingItem || item.created > existingItem.created) {
+          uniqueResourcesMap.set(key, item);
+        }
+      });
+  
+      return {
+        searchCache: {
+          ...state.searchCache,
+          [listName]: {
+            ...state.searchCache[listName],
+            temporaryNewResources: Array.from(uniqueResourcesMap.values()), // Store unique items
+            expiry, // Reset expiry
+          },
+        },
+      };
+    }),
+    getTemporaryResources: (listName: string) => {
+      const cache = get().searchCache[listName];
+      if (cache && cache.expiry > Date.now()) {
+        return cache.temporaryNewResources || [];
+      }
+      return []; // Return empty array if expired or doesn't exist
+    },
   // Clear expired caches 
   clearExpiredCache: () =>
     set((state) => {

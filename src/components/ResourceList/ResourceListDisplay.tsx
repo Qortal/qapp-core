@@ -27,6 +27,9 @@ interface ResourceListStyles {
   disabledVirutalizationStyles?: {
     parentContainer?: CSSProperties;
   };
+  horizontalStyles?: {
+    minItemWidth?: number
+  }
 }
 
 interface DefaultLoaderParams {
@@ -76,11 +79,15 @@ export const ResourceListDisplay = ({
   listName
 }: PropsResourceListDisplay) => {
   const { fetchResources } = useResources();
+  const {  getTemporaryResources } = useCacheStore();
   const [isLoading, setIsLoading] = useState(false);
   const memoizedParams = useMemo(() => JSON.stringify(params), [params]);
   const addList = useListStore().addList
   const addItems = useListStore().addItems
   const list = useListStore().getListByName(listName)
+  const listToDisplay = useMemo(()=> {
+    return [...getTemporaryResources(listName), ...list]
+  }, [list, listName])
 
   const getResourceList = useCallback(async () => {
     try {
@@ -99,7 +106,8 @@ export const ResourceListDisplay = ({
     try {
       // setIsLoading(true);
       const parsedParams = {...(JSON.parse(memoizedParams))};
-      parsedParams.offset = (parsedParams?.offset || 0) + list.length
+      parsedParams.before = list.length === 0 ? null : list[list.length - 1]?.created
+      parsedParams.offset = null
       const res = await fetchResources(parsedParams, listName); // Awaiting the async function
       addItems(listName, res || [])
     } catch (error) {
@@ -107,7 +115,7 @@ export const ResourceListDisplay = ({
     } finally {
       setIsLoading(false);
     }
-  }, [memoizedParams, listName, list?.length]); 
+  }, [memoizedParams, listName, list]); 
 
   useEffect(() => {
     getResourceList();
@@ -130,7 +138,7 @@ export const ResourceListDisplay = ({
       noResultsMessage={
         defaultLoaderParams?.listNoResultsText || "No results available"
       }
-      resultsLength={list?.length}
+      resultsLength={listToDisplay?.length}
       isLoading={isLoading}
       loadingMessage={
         defaultLoaderParams?.listLoadingText || "Retrieving list. Please wait."
@@ -147,7 +155,7 @@ export const ResourceListDisplay = ({
       >
         <div style={{ display: "flex", flexGrow: 1 }}>
           {!disableVirtualization && (
-            <VirtualizedList list={list} onSeenLastItem={(item)=> {
+            <VirtualizedList list={listToDisplay} onSeenLastItem={(item)=> {
               getResourceMoreList()
               if(onSeenLastItem){
                 onSeenLastItem(item)
@@ -172,8 +180,9 @@ export const ResourceListDisplay = ({
           {disableVirtualization && direction === "HORIZONTAL" && (
             <>
             <DynamicGrid
+              minItemWidth={styles?.horizontalStyles?.minItemWidth}
               gap={styles?.gap}
-              items={list?.map((item, index) => {
+              items={listToDisplay?.map((item, index) => {
                 return (
                   <React.Fragment
                     key={`${item?.name}-${item?.service}-${item?.identifier}`}
@@ -190,12 +199,12 @@ export const ResourceListDisplay = ({
               })}
             >
 
-            {!isLoading && list?.length > 0 && (
+            {!isLoading && listToDisplay?.length > 0 && (
                 <LazyLoad onLoadMore={()=> {
                   getResourceMoreList()
                   if(onSeenLastItem){
                 
-                    onSeenLastItem(list[list?.length - 1])
+                    onSeenLastItem(listToDisplay[listToDisplay?.length - 1])
                   }
                 }} />
               )}
@@ -205,7 +214,7 @@ export const ResourceListDisplay = ({
           )}
           {disableVirtualization && direction === "VERTICAL" && (
             <div style={disabledVirutalizationStyles}>
-              {list?.map((item, index) => {
+              {listToDisplay?.map((item, index) => {
                 return (
                   <React.Fragment
                     key={`${item?.name}-${item?.service}-${item?.identifier}`}
@@ -222,11 +231,11 @@ export const ResourceListDisplay = ({
                   </React.Fragment>
                 );
               })}
-              {!isLoading && list?.length > 0 && (
+              {!isLoading && listToDisplay?.length > 0 && (
                 <LazyLoad onLoadMore={()=> {
                   getResourceMoreList()
                   if(onSeenLastItem){                    
-                    onSeenLastItem(list[list?.length - 1])
+                    onSeenLastItem(listToDisplay[listToDisplay?.length - 1])
                   }
                 }} />
               )}
