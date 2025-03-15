@@ -45,7 +45,7 @@ interface DefaultLoaderParams {
 }
 
 interface BaseProps  {
-  params: QortalSearchParams;
+  search: QortalSearchParams;
   listItem: (item: ListItem, index: number) => React.ReactNode;
   styles?: ResourceListStyles;
   loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode;
@@ -73,7 +73,7 @@ interface NonVirtualizedProps extends BaseProps {
 type PropsResourceListDisplay = VirtualizedProps | NonVirtualizedProps;
 
 export const MemorizedComponent = ({
-  params,
+  search,
   listItem,
   styles = {
     gap: 1,
@@ -91,7 +91,7 @@ export const MemorizedComponent = ({
   const { fetchResources } = useResources();
   const {  getTemporaryResources, filterOutDeletedResources } = useCacheStore();
   const [isLoading, setIsLoading] = useState(false);
-  const memoizedParams = useMemo(() => JSON.stringify(params), [params]);
+  const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
   const addList = useListStore().addList
   const addItems = useListStore().addItems
   const getListByName = useListStore().getListByName
@@ -315,7 +315,7 @@ function arePropsEqual(
     prevProps.disableVirtualization === nextProps.disableVirtualization &&
     prevProps.direction === nextProps.direction &&
     prevProps.onSeenLastItem === nextProps.onSeenLastItem &&
-    JSON.stringify(prevProps.params) === JSON.stringify(nextProps.params) &&
+    JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&
     JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles)
   );
 }
