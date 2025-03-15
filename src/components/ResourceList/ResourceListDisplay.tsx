@@ -2,8 +2,11 @@ import React, {
   CSSProperties,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
+  useTransition,
 } from "react";
 import {
   QortalMetadata,
@@ -19,6 +22,7 @@ import { Spacer } from "../../common/Spacer";
 import DynamicGrid from "./DynamicGrid";
 import LazyLoad from "../../common/LazyLoad";
 import { useListStore } from "../../state/lists";
+import { useScrollTracker } from "../../common/useScrollTracker";
 type Direction = "VERTICAL" | "HORIZONTAL";
 
 interface ResourceListStyles {
@@ -39,7 +43,7 @@ interface DefaultLoaderParams {
   listItemErrorText?: string;
 }
 
-interface BaseProps {
+interface BaseProps  {
   params: QortalSearchParams;
   listItem: (item: ListItem, index: number) => React.ReactNode;
   styles?: ResourceListStyles;
@@ -48,7 +52,8 @@ interface BaseProps {
   loaderList?: (status: "LOADING" | "NO_RESULTS") => React.ReactNode;
   disableVirtualization?: boolean;
   onSeenLastItem?: (listItem: QortalMetadata) => void;
-  listName: string
+  listName: string,
+  children?: React.ReactNode;
 }
 
 // ✅ Restrict `direction` only when `disableVirtualization = false`
@@ -64,7 +69,7 @@ interface NonVirtualizedProps extends BaseProps {
 
 type PropsResourceListDisplay = VirtualizedProps | NonVirtualizedProps;
 
-export const ResourceListDisplay = ({
+export const MemorizedComponent = ({
   params,
   listItem,
   styles = {
@@ -76,25 +81,40 @@ export const ResourceListDisplay = ({
   disableVirtualization,
   direction = "VERTICAL",
   onSeenLastItem,
-  listName
-}: PropsResourceListDisplay) => {
+  listName,
+}: PropsResourceListDisplay)  => {
   const { fetchResources } = useResources();
-  const {  getTemporaryResources } = useCacheStore();
+  const {  getTemporaryResources, filterOutDeletedResources } = useCacheStore();
   const [isLoading, setIsLoading] = useState(false);
   const memoizedParams = useMemo(() => JSON.stringify(params), [params]);
   const addList = useListStore().addList
   const addItems = useListStore().addItems
+  const getListByName = useListStore().getListByName
   const list = useListStore().getListByName(listName)
+  const isListExpired = useCacheStore().isListExpired(listName)
+  const initialized = useRef(false)
+  useScrollTracker(listName);
+
   const listToDisplay = useMemo(()=> {
-    return [...getTemporaryResources(listName), ...list]
-  }, [list, listName])
+    return filterOutDeletedResources([...getTemporaryResources(listName), ...list])
+  }, [list, listName, filterOutDeletedResources, getTemporaryResources])
+
 
   const getResourceList = useCallback(async () => {
     try {
+      await new Promise((res)=> {
+        setTimeout(() => {
+          res(null)
+        }, 500);
+      })
       setIsLoading(true);
       const parsedParams = JSON.parse(memoizedParams);
-      const res = await fetchResources(parsedParams, listName, true); // Awaiting the async function
-      addList(listName, res || [])
+      const responseData = await fetchResources(parsedParams, listName, true); // Awaiting the async function
+
+
+     
+        addList(listName,  responseData || []);
+    
     } catch (error) {
       console.error("Failed to fetch resources:", error);
     } finally {
@@ -108,8 +128,8 @@ export const ResourceListDisplay = ({
       const parsedParams = {...(JSON.parse(memoizedParams))};
       parsedParams.before = list.length === 0 ? null : list[list.length - 1]?.created
       parsedParams.offset = null
-      const res = await fetchResources(parsedParams, listName); // Awaiting the async function
-      addItems(listName, res || [])
+      const responseData = await fetchResources(parsedParams, listName); // Awaiting the async function
+      addItems(listName, responseData || [])
     } catch (error) {
       console.error("Failed to fetch resources:", error);
     } finally {
@@ -118,8 +138,12 @@ export const ResourceListDisplay = ({
   }, [memoizedParams, listName, list]); 
 
   useEffect(() => {
+    if(initialized.current) return
+    initialized.current = true
+    if(!isListExpired) return
+    sessionStorage.removeItem(`scroll-position-${listName}`);
     getResourceList();
-  }, [getResourceList]); // Runs when dependencies change
+  }, [getResourceList, isListExpired]); // Runs when dependencies change
 
   const disabledVirutalizationStyles: CSSProperties = useMemo(() => {
     if (styles?.disabledVirutalizationStyles?.parentContainer)
@@ -132,6 +156,15 @@ export const ResourceListDisplay = ({
       width: "100%",
     };
   }, [styles?.disabledVirutalizationStyles, styles?.gap, direction]);
+
+  useEffect(() => {
+    const clearOnReload = () => {
+      sessionStorage.removeItem(`scroll-position-${listName}`);
+    };
+
+    window.addEventListener("beforeunload", clearOnReload);
+    return () => window.removeEventListener("beforeunload", clearOnReload);
+  }, [listName]);
 
   return (
     <ListLoader
@@ -155,7 +188,7 @@ export const ResourceListDisplay = ({
       >
         <div style={{ display: "flex", flexGrow: 1 }}>
           {!disableVirtualization && (
-            <VirtualizedList list={listToDisplay} onSeenLastItem={(item)=> {
+            <VirtualizedList listName={listName} list={listToDisplay} onSeenLastItem={(item)=> {
               getResourceMoreList()
               if(onSeenLastItem){
                 onSeenLastItem(item)
@@ -179,6 +212,7 @@ export const ResourceListDisplay = ({
           )}
           {disableVirtualization && direction === "HORIZONTAL" && (
             <>
+           
             <DynamicGrid
               minItemWidth={styles?.horizontalStyles?.minItemWidth}
               gap={styles?.gap}
@@ -246,7 +280,25 @@ export const ResourceListDisplay = ({
       </div>
     </ListLoader>
   );
-};
+}
+
+
+function arePropsEqual(
+  prevProps: PropsResourceListDisplay,
+  nextProps: PropsResourceListDisplay
+): boolean {
+  return (
+    prevProps.listName === nextProps.listName &&
+    prevProps.disableVirtualization === nextProps.disableVirtualization &&
+    prevProps.direction === nextProps.direction &&
+    prevProps.onSeenLastItem === nextProps.onSeenLastItem &&
+    JSON.stringify(prevProps.params) === JSON.stringify(nextProps.params) &&
+    JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles)
+  );
+}
+
+export const ResourceListDisplay = React.memo(MemorizedComponent, arePropsEqual);
+
 
 interface ListItemWrapperProps {
   item: QortalMetadata;
@@ -256,7 +308,7 @@ interface ListItemWrapperProps {
   renderListItemLoader?: (status: "LOADING" | "ERROR") => React.ReactNode;
 }
 
-const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
+export const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
   item,
   index,
   render,

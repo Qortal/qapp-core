@@ -8,14 +8,18 @@ import React, {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useInView } from "react-intersection-observer";
 import { QortalMetadata } from "../types/interfaces/resources";
+import { useScrollTrackerRef } from "./useScrollTrackerRef";
+import { useMergeRefs } from "../hooks/useMergeRefs";
 
 interface PropsVirtualizedList {
   list: any[];
   children: (item: any, index: number) => React.ReactNode;
   onSeenLastItem?: (item: QortalMetadata)=> void;
+  listName: string
 }
-export const VirtualizedList = ({ list, children, onSeenLastItem }: PropsVirtualizedList) => {
+export const VirtualizedList = ({ list, children, onSeenLastItem, listName }: PropsVirtualizedList) => {
   const parentRef = useRef(null);
+useScrollTrackerRef(listName, parentRef)
 
   const rowVirtualizer = useVirtualizer({
     count: list.length,

@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import {
+
   QortalMetadata,
   QortalSearchParams,
 } from "../types/interfaces/resources";
@@ -23,7 +24,8 @@ export const useResources = () => {
     getSearchCache,
     getResourceCache,
     setResourceCache,
-    addTemporaryResource
+    addTemporaryResource,
+    markResourceAsDeleted
   } = useCacheStore();
   const requestControllers = new Map<string, AbortController>();
 
@@ -151,35 +153,54 @@ export const useResources = () => {
     ): Promise<QortalMetadata[]> => {
       if (cancelRequests) {
         cancelAllRequests();
-        await new Promise((res) => {
-          setTimeout(() => {
-            res(null);
-          }, 250);
-        });
       }
+  
       const cacheKey = generateCacheKey(params);
       const searchCache = getSearchCache(listName, cacheKey);
-      let responseData = [];
-
       if (searchCache) {
-        responseData = searchCache;
-      } else {
+        return searchCache;
+      }
+  
+      let responseData: QortalMetadata[] = [];
+      let filteredResults: QortalMetadata[] = [];
+      let lastCreated = params.before || null;
+      const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
+  
+      while (filteredResults.length < targetLimit) {
         const response = await qortalRequest({
           action: "SEARCH_QDN_RESOURCES",
           mode: "ALL",
-          limit: 20,
           ...params,
+          limit: targetLimit - filteredResults.length, // Adjust limit dynamically
+          before: lastCreated,
         });
-        if (!response) throw new Error("Unable to fetch resources");
+  
+        if (!response || response.length === 0) {
+          break; // No more data available
+        }
+  
         responseData = response;
+        const validResults = responseData.filter(item => item.size !== 32);
+        filteredResults = [...filteredResults, ...validResults];
+  
+        if (filteredResults.length >= targetLimit) {
+          filteredResults = filteredResults.slice(0, targetLimit);
+          break;
+        }
+  
+        lastCreated = responseData[responseData.length - 1]?.created;
+        if (!lastCreated) break;
       }
-      setSearchCache(listName, cacheKey, responseData);
-      fetchDataFromResults(responseData);
-
-      return responseData;
+  
+      setSearchCache(listName, cacheKey, filteredResults);
+      fetchDataFromResults(filteredResults);
+  
+      return filteredResults;
     },
     [getSearchCache, setSearchCache, fetchDataFromResults]
   );
+  
+  
 
   const addNewResources = useCallback(
     (listName: string, resources: TemporaryResource[]) => {
@@ -209,11 +230,26 @@ export const useResources = () => {
     },
     []
   );
+
+  const deleteProduct = useCallback(async (qortalMetadata: QortalMetadata)=> {
+    if(!qortalMetadata?.service || !qortalMetadata?.identifier) throw new Error('Missing fields')
+       await qortalRequest({
+                action: "PUBLISH_QDN_RESOURCE",
+                service: qortalMetadata.service,
+                identifier: qortalMetadata.identifier,
+                base64: 'RA==',
+              });
+              markResourceAsDeleted(qortalMetadata)
+       return true
+  }, [])
+
+
   return {
     fetchResources,
     fetchIndividualPublish,
     addNewResources,
-    updateNewResources
+    updateNewResources,
+    deleteProduct
   };
 };
 

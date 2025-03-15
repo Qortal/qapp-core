@@ -41,7 +41,8 @@ interface QortalRequestOptions {
   payments?: any[]
   assetId?: number,
   publicKeys?: string[],
-  recipient?: string
+  recipient?: string,
+  before?: number | null
 }
 
 declare function qortalRequest(options: QortalRequestOptions): Promise<any>

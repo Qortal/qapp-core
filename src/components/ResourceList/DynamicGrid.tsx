@@ -13,10 +13,11 @@ const DynamicGrid: React.FC<DynamicGridProps> = ({
   minItemWidth = 200, // Minimum width per item
   gap = 10, // Space between items
   children,
-}) => {
 
+
+}) => {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+    <div  style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
       <div
         style={{
           display: "grid",

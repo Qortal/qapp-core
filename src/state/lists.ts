@@ -1,5 +1,6 @@
 import {create} from "zustand";
 import { QortalMetadata } from "../types/interfaces/resources";
+import { persist } from "zustand/middleware";
 
 
 interface ListsState {
