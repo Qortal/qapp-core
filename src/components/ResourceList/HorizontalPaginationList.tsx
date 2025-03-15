@@ -1,7 +1,7 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import DynamicGrid from "./DynamicGrid";
 import LazyLoad from "../../common/LazyLoad";
-import { ListItem } from "../../state/cache";
+import { ListItem, useCacheStore } from "../../state/cache";
 import { QortalMetadata } from "../../types/interfaces/resources";
 import { ListItemWrapper } from "./ResourceListDisplay";
 
@@ -15,6 +15,7 @@ interface HorizontalPaginatedListProps {
   gap?: number;
   isLoading?: boolean;
   onSeenLastItem?: (listItem: ListItem) => void;
+
 }
 
 export const HorizontalPaginatedList = ({
@@ -27,26 +28,25 @@ export const HorizontalPaginatedList = ({
   gap,
   isLoading,
   onSeenLastItem,
+
 }: HorizontalPaginatedListProps) => {
-  const listRef = useRef<HTMLDivElement | null>(null);
   const [displayedItems, setDisplayedItems] = useState(items);
+ 
 
   useEffect(() => {
     setDisplayedItems(items);
   }, [items]);
 
   const preserveScroll = useCallback((updateFunction: () => void) => {
-    const container = listRef.current;
-    if (!container) return;
-
-    const previousScrollLeft = container.scrollLeft;
-    const previousScrollWidth = container.scrollWidth;
+    const previousScrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+    const previousScrollWidth = document.documentElement.scrollWidth || document.body.scrollWidth;
 
     updateFunction(); // Perform the update (fetch new data, remove old)
 
     requestAnimationFrame(() => {
-      const newScrollWidth = container.scrollWidth;
-      container.scrollLeft = previousScrollLeft - (previousScrollWidth - newScrollWidth);
+      const newScrollWidth = document.documentElement.scrollWidth || document.body.scrollWidth;
+      document.documentElement.scrollLeft = document.body.scrollLeft =
+        previousScrollLeft - (previousScrollWidth - newScrollWidth);
     });
   }, []);
 
@@ -60,28 +60,23 @@ export const HorizontalPaginatedList = ({
   }, [displayedItems, maxItems, preserveScroll]);
 
   useEffect(() => {
-    const container = listRef.current;
-    if (!container) return;
-
     const handleScroll = () => {
-      if (
-        container.scrollLeft + container.clientWidth >= container.scrollWidth - 10 &&
-        !isLoading
-      ) {
+      const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+      const clientWidth = document.documentElement.clientWidth || document.body.clientWidth;
+      const scrollWidth = document.documentElement.scrollWidth || document.body.scrollWidth;
+
+      if (scrollLeft + clientWidth >= scrollWidth - 10 && !isLoading) {
         onLoadMore();
       }
     };
 
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [onLoadMore, isLoading]);
 
   return (
-    <div ref={listRef} style={{
-         overflow: 'auto',  width: '100%', display: 'flex', flexGrow: 1
-    }}>
+    <div style={{ overflow: "auto", width: "100%", display: "flex", flexGrow: 1 }}>
       <DynamicGrid
-   
         minItemWidth={minItemWidth}
         gap={gap}
         items={displayedItems.map((item, index) => (
@@ -95,19 +90,17 @@ export const HorizontalPaginatedList = ({
           </React.Fragment>
         ))}
       >
- {!isLoading && displayedItems.length > 0 && (
-        <LazyLoad
-          onLoadMore={() => {
-            onLoadMore();
-            if (onSeenLastItem) {
-            //   onSeenLastItem(displayedItems[displayedItems.length - 1]);
-            }
-          }}
-        />
-      )}
-        </DynamicGrid>
-
-     
+        {!isLoading && displayedItems.length > 0 && (
+          <LazyLoad
+            onLoadMore={() => {
+              onLoadMore();
+              if (onSeenLastItem) {
+                // onSeenLastItem(displayedItems[displayedItems.length - 1]);
+              }
+            }}
+          />
+        )}
+      </DynamicGrid>
     </div>
   );
 };

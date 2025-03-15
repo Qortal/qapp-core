@@ -65,14 +65,21 @@ interface CacheState {
   markResourceAsDeleted: (item: QortalMetadata) => void;
   filterOutDeletedResources: (items: QortalMetadata[]) => QortalMetadata[];
   isListExpired: (listName: string)=> boolean
+  searchCacheExpiryDuration: number;
+  resourceCacheExpiryDuration: number;
+  setSearchCacheExpiryDuration: (duration: number) => void;
+  setResourceCacheExpiryDuration: (duration: number)=> void;
 }
 
 export const useCacheStore = create<CacheState>
     ((set, get) => ({
+      searchCacheExpiryDuration: 5 * 60 * 1000,
+      resourceCacheExpiryDuration: 30 * 60 * 1000,
       resourceCache: {},
       searchCache: {},
       deletedResources: {},
-
+      setSearchCacheExpiryDuration: (duration) => set({ searchCacheExpiryDuration: duration }),
+      setResourceCacheExpiryDuration: (duration) => set({ resourceCacheExpiryDuration: duration }),
       getResourceCache: (id, ignoreExpire) => {
         const cache = get().resourceCache[id];
         if (cache) {
@@ -91,7 +98,7 @@ export const useCacheStore = create<CacheState>
 
       setResourceCache: (id, data, customExpiry) =>
         set((state) => {
-          const expiry = Date.now() + (customExpiry || 30 * 60 * 1000); // 30 mins
+          const expiry = Date.now() + (customExpiry || get().resourceCacheExpiryDuration);
           return {
             resourceCache: {
               ...state.resourceCache,
@@ -100,24 +107,25 @@ export const useCacheStore = create<CacheState>
           };
         }),
 
-      setSearchCache: (listName, searchTerm, data, customExpiry) =>
-        set((state) => {
-          const expiry = Date.now() + (customExpiry || 5 * 60 * 1000); // 5 mins
-
-          return {
-            searchCache: {
-              ...state.searchCache,
-              [listName]: {
-                searches: {
-                  ...(state.searchCache[listName]?.searches || {}),
-                  [searchTerm]: data,
+        setSearchCache: (listName, searchTerm, data, customExpiry) =>
+          set((state) => {
+            const expiry = Date.now() + (customExpiry || get().searchCacheExpiryDuration);
+      
+            return {
+              searchCache: {
+                ...state.searchCache,
+                [listName]: {
+                  searches: {
+                    ...(state.searchCache[listName]?.searches || {}),
+                    [searchTerm]: data,
+                  },
+                  temporaryNewResources: state.searchCache[listName]?.temporaryNewResources || [],
+                  expiry,
                 },
-                temporaryNewResources: state.searchCache[listName]?.temporaryNewResources || [],
-                expiry,
               },
-            },
-          };
-        }),
+            };
+          }),
+      
 
         getSearchCache: (listName, searchTerm) => {
           const cache = get().searchCache[listName];

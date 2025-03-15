@@ -249,7 +249,7 @@ export const useResources = () => {
     fetchIndividualPublish,
     addNewResources,
     updateNewResources,
-    deleteProduct
+    deleteProduct,
   };
 };
 

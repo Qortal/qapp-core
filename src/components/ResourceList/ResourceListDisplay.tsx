@@ -23,6 +23,7 @@ import DynamicGrid from "./DynamicGrid";
 import LazyLoad from "../../common/LazyLoad";
 import { useListStore } from "../../state/lists";
 import { useScrollTracker } from "../../common/useScrollTracker";
+import { HorizontalPaginatedList } from "./HorizontalPaginationList";
 type Direction = "VERTICAL" | "HORIZONTAL";
 
 interface ResourceListStyles {
@@ -54,6 +55,8 @@ interface BaseProps  {
   onSeenLastItem?: (listItem: QortalMetadata) => void;
   listName: string,
   children?: React.ReactNode;
+  searchCacheDuration?: number
+  resourceCacheDuration?: number
 }
 
 // ✅ Restrict `direction` only when `disableVirtualization = false`
@@ -82,6 +85,8 @@ export const MemorizedComponent = ({
   direction = "VERTICAL",
   onSeenLastItem,
   listName,
+  searchCacheDuration,
+  resourceCacheDuration
 }: PropsResourceListDisplay)  => {
   const { fetchResources } = useResources();
   const {  getTemporaryResources, filterOutDeletedResources } = useCacheStore();
@@ -93,12 +98,6 @@ export const MemorizedComponent = ({
   const list = useListStore().getListByName(listName)
   const isListExpired = useCacheStore().isListExpired(listName)
   const initialized = useRef(false)
-  useScrollTracker(listName);
-
-  const listToDisplay = useMemo(()=> {
-    return filterOutDeletedResources([...getTemporaryResources(listName), ...list])
-  }, [list, listName, filterOutDeletedResources, getTemporaryResources])
-
 
   const getResourceList = useCallback(async () => {
     try {
@@ -122,6 +121,37 @@ export const MemorizedComponent = ({
     }
   }, [memoizedParams, fetchResources]); // Added dependencies for re-fetching
 
+  useEffect(() => {
+    if(initialized.current) return
+    initialized.current = true
+    if(!isListExpired) return
+    
+    sessionStorage.removeItem(`scroll-position-${listName}`);
+    getResourceList();
+  }, [getResourceList, isListExpired]); // Runs when dependencies change
+
+  useScrollTracker(listName);
+
+   const setSearchCacheExpiryDuration = useCacheStore().setSearchCacheExpiryDuration
+  const setResourceCacheExpiryDuration = useCacheStore().setResourceCacheExpiryDuration
+    useEffect(()=> {
+      if(searchCacheDuration){
+          setSearchCacheExpiryDuration(searchCacheDuration)
+      }
+    }, [])
+    useEffect(()=> {
+      if(resourceCacheDuration){
+          setResourceCacheExpiryDuration(resourceCacheDuration)
+      }
+    }, [])
+
+  const listToDisplay = useMemo(()=> {
+    return filterOutDeletedResources([...getTemporaryResources(listName), ...list])
+  }, [list, listName, filterOutDeletedResources, getTemporaryResources])
+
+
+
+
   const getResourceMoreList = useCallback(async () => {
     try {
       // setIsLoading(true);
@@ -137,13 +167,7 @@ export const MemorizedComponent = ({
     }
   }, [memoizedParams, listName, list]); 
 
-  useEffect(() => {
-    if(initialized.current) return
-    initialized.current = true
-    if(!isListExpired) return
-    sessionStorage.removeItem(`scroll-position-${listName}`);
-    getResourceList();
-  }, [getResourceList, isListExpired]); // Runs when dependencies change
+
 
   const disabledVirutalizationStyles: CSSProperties = useMemo(() => {
     if (styles?.disabledVirutalizationStyles?.parentContainer)
@@ -212,7 +236,6 @@ export const MemorizedComponent = ({
           )}
           {disableVirtualization && direction === "HORIZONTAL" && (
             <>
-           
             <DynamicGrid
               minItemWidth={styles?.horizontalStyles?.minItemWidth}
               gap={styles?.gap}
