@@ -6,6 +6,7 @@ interface DynamicGridProps {
   gap?: number; // Spacing between grid items
   children: ReactNode
   minItemWidth?: number
+  setColumnsPerRow: (columns: number)=> void;
 }
 
 const DynamicGrid: React.FC<DynamicGridProps> = ({
@@ -13,12 +14,32 @@ const DynamicGrid: React.FC<DynamicGridProps> = ({
   minItemWidth = 200, // Minimum width per item
   gap = 10, // Space between items
   children,
-
+  setColumnsPerRow
 
 }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const itemContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const updateColumns = () => {
+    if (containerRef.current && itemContainerRef.current) {
+      const containerWidth = containerRef.current.clientWidth;
+      const itemWidth = itemContainerRef.current.clientWidth
+      const calculatedColumns = Math.floor(containerWidth / itemWidth);
+      setColumnsPerRow(calculatedColumns);
+    }
+  };
+
+  useEffect(() => {
+    updateColumns(); // Run on mount
+    window.addEventListener("resize", updateColumns);
+    return () => window.removeEventListener("resize", updateColumns);
+  }, []);
+
   return (
     <div  style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
       <div
+              ref={containerRef}
+
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(auto-fill, minmax(${minItemWidth}px, 1fr))`, // ✅ Expands to fit width
@@ -31,7 +52,7 @@ const DynamicGrid: React.FC<DynamicGridProps> = ({
         }}
       >
         {items.map((component, index) => (
-          <div key={index} style={{ width: "100%", display: "flex", justifyContent: "center", maxWidth: '400px' }}>
+          <div ref={index === 0 ? itemContainerRef : null} key={index} style={{ width: "100%", display: "flex", justifyContent: "center", maxWidth: '400px' }}>
             {component} {/* ✅ Renders user-provided component */}
           </div>
         ))}

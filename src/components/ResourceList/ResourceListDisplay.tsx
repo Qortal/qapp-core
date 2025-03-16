@@ -2,28 +2,25 @@ import React, {
   CSSProperties,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  useTransition,
 } from "react";
 import {
   QortalMetadata,
   QortalSearchParams,
 } from "../../types/interfaces/resources";
 import { useResources } from "../../hooks/useResources";
-import { MessageWrapper, VirtualizedList } from "../../common/VirtualizedList";
+import { VirtualizedList } from "../../common/VirtualizedList";
 import { ListLoader } from "../../common/ListLoader";
 import { ListItem, useCacheStore } from "../../state/cache";
 import { ResourceLoader } from "./ResourceLoader";
 import { ItemCardWrapper } from "./ItemCardWrapper";
 import { Spacer } from "../../common/Spacer";
-import DynamicGrid from "./DynamicGrid";
-import LazyLoad from "../../common/LazyLoad";
 import { useListStore } from "../../state/lists";
 import { useScrollTracker } from "../../common/useScrollTracker";
 import { HorizontalPaginatedList } from "./HorizontalPaginationList";
+import { VerticalPaginatedList } from "./VerticalPaginationList";
 type Direction = "VERTICAL" | "HORIZONTAL";
 
 interface ResourceListStyles {
@@ -37,7 +34,7 @@ interface ResourceListStyles {
   }
 }
 
-interface DefaultLoaderParams {
+export interface DefaultLoaderParams {
   listLoadingText?: string;
   listNoResultsText?: string;
   listItemLoadingText?: string;
@@ -57,6 +54,8 @@ interface BaseProps  {
   children?: React.ReactNode;
   searchCacheDuration?: number
   resourceCacheDuration?: number
+  disablePagination?: boolean
+  disableScrollTracker?: boolean
 }
 
 // ✅ Restrict `direction` only when `disableVirtualization = false`
@@ -86,17 +85,22 @@ export const MemorizedComponent = ({
   onSeenLastItem,
   listName,
   searchCacheDuration,
-  resourceCacheDuration
+  resourceCacheDuration,
+  disablePagination,
+  disableScrollTracker
 }: PropsResourceListDisplay)  => {
   const { fetchResources } = useResources();
   const {  getTemporaryResources, filterOutDeletedResources } = useCacheStore();
-  const [isLoading, setIsLoading] = useState(false);
   const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
   const addList = useListStore().addList
+  const removeFromList =  useListStore().removeFromList
+
   const addItems = useListStore().addItems
-  const getListByName = useListStore().getListByName
   const list = useListStore().getListByName(listName)
+  const [isLoading, setIsLoading] = useState(list?.length > 0 ? false : true);
+
   const isListExpired = useCacheStore().isListExpired(listName)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const initialized = useRef(false)
 
   const getResourceList = useCallback(async () => {
@@ -124,13 +128,16 @@ export const MemorizedComponent = ({
   useEffect(() => {
     if(initialized.current) return
     initialized.current = true
-    if(!isListExpired) return
+    if(!isListExpired) {
+      setIsLoading(false)
+      return
+    }
     
     sessionStorage.removeItem(`scroll-position-${listName}`);
     getResourceList();
   }, [getResourceList, isListExpired]); // Runs when dependencies change
 
-  useScrollTracker(listName);
+  const {elementRef} = useScrollTracker(listName, list?.length > 0, disableScrollTracker);
 
    const setSearchCacheExpiryDuration = useCacheStore().setSearchCacheExpiryDuration
   const setResourceCacheExpiryDuration = useCacheStore().setResourceCacheExpiryDuration
@@ -152,18 +159,24 @@ export const MemorizedComponent = ({
 
 
 
-  const getResourceMoreList = useCallback(async () => {
+  const getResourceMoreList = useCallback(async (displayLimit?: number) => {
     try {
-      // setIsLoading(true);
+      setIsLoadingMore(true)
       const parsedParams = {...(JSON.parse(memoizedParams))};
       parsedParams.before = list.length === 0 ? null : list[list.length - 1]?.created
       parsedParams.offset = null
+      if(displayLimit){
+        parsedParams.limit = displayLimit
+      }
       const responseData = await fetchResources(parsedParams, listName); // Awaiting the async function
       addItems(listName, responseData || [])
     } catch (error) {
       console.error("Failed to fetch resources:", error);
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoadingMore(false);
+
+      }, 1000);
     }
   }, [memoizedParams, listName, list]); 
 
@@ -191,6 +204,10 @@ export const MemorizedComponent = ({
   }, [listName]);
 
   return (
+    <div ref={elementRef} style={{
+      width: '100%',
+      height: '100%'
+    }}>
     <ListLoader
       noResultsMessage={
         defaultLoaderParams?.listNoResultsText || "No results available"
@@ -204,6 +221,7 @@ export const MemorizedComponent = ({
       loaderHeight={styles?.listLoadingHeight}
     >
       <div
+      
         style={{
           height: "100%",
           display: "flex",
@@ -236,72 +254,24 @@ export const MemorizedComponent = ({
           )}
           {disableVirtualization && direction === "HORIZONTAL" && (
             <>
-            <DynamicGrid
-              minItemWidth={styles?.horizontalStyles?.minItemWidth}
-              gap={styles?.gap}
-              items={listToDisplay?.map((item, index) => {
-                return (
-                  <React.Fragment
-                    key={`${item?.name}-${item?.service}-${item?.identifier}`}
-                  >
-                    <ListItemWrapper
-                      defaultLoaderParams={defaultLoaderParams}
-                      item={item}
-                      index={index}
-                      render={listItem}
-                      renderListItemLoader={loaderItem}
-                    />
-                  </React.Fragment>
-                );
-              })}
-            >
-
-            {!isLoading && listToDisplay?.length > 0 && (
-                <LazyLoad onLoadMore={()=> {
-                  getResourceMoreList()
-                  if(onSeenLastItem){
-                
-                    onSeenLastItem(listToDisplay[listToDisplay?.length - 1])
-                  }
-                }} />
-              )}
-              </DynamicGrid>
+             <HorizontalPaginatedList defaultLoaderParams={defaultLoaderParams} disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={(displayLimit)=> {
+              removeFromList(listName, displayLimit)
+             }} isLoadingMore={isLoadingMore} items={listToDisplay} listItem={listItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} gap={styles?.gap} isLoading={isLoading} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
             </>
             
           )}
           {disableVirtualization && direction === "VERTICAL" && (
             <div style={disabledVirutalizationStyles}>
-              {listToDisplay?.map((item, index) => {
-                return (
-                  <React.Fragment
-                    key={`${item?.name}-${item?.service}-${item?.identifier}`}
-                  >
-                   
-                      <ListItemWrapper
-                        defaultLoaderParams={defaultLoaderParams}
-                        item={item}
-                        index={index}
-                        render={listItem}
-                        renderListItemLoader={loaderItem}
-                      />
-            
-                  </React.Fragment>
-                );
-              })}
-              {!isLoading && listToDisplay?.length > 0 && (
-                <LazyLoad onLoadMore={()=> {
-                  getResourceMoreList()
-                  if(onSeenLastItem){                    
-                    onSeenLastItem(listToDisplay[listToDisplay?.length - 1])
-                  }
-                }} />
-              )}
-              
+              <VerticalPaginatedList disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={(displayLimit)=> {
+
+              removeFromList(listName, displayLimit)
+             }} defaultLoaderParams={defaultLoaderParams} isLoadingMore={isLoadingMore} items={listToDisplay} listItem={listItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} gap={styles?.gap} isLoading={isLoading} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
             </div>
           )}
         </div>
       </div>
     </ListLoader>
+    </div>
   );
 }
 

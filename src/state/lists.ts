@@ -15,6 +15,7 @@ interface ListStore {
 
   // CRUD Operations
   addList: (name: string, items: QortalMetadata[]) => void;
+  removeFromList: (name: string, length: number)=> void;
   addItem: (listName: string, item: QortalMetadata) => void;
   addItems: (listName: string, items: QortalMetadata[]) => void; 
   updateItem: (listName: string, item: QortalMetadata) => void;
@@ -33,6 +34,13 @@ export const useListStore = create<ListStore>((set, get) => ({
       lists: {
         ...state.lists,
         [name]: { name, items }, // ✅ Store items as an array
+      },
+    })),
+  removeFromList: (name, length) =>
+    set((state) => ({
+      lists: {
+        ...state.lists,
+        [name]: { name, items: state.lists[name].items.slice(0, state.lists[name].items.length - length) }, // ✅ Store items as an array
       },
     })),
 

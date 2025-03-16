@@ -29,6 +29,7 @@ export const useResources = () => {
   } = useCacheStore();
   const requestControllers = new Map<string, AbortController>();
 
+
   const getArbitraryResource = async (
     url: string,
     key: string
@@ -42,6 +43,7 @@ export const useResources = () => {
 
     try {
       const res = await fetch(url, { signal: controller.signal });
+      if(!res?.ok) throw new Error('Error in downloading')
       return await res.text();
     } catch (error: any) {
       if (error?.name === "AbortError") {
@@ -90,6 +92,8 @@ export const useResources = () => {
         } catch (error) {
           hasFailedToDownload = true;
         }
+
+
         if (res === "canceled") return false;
 
         if (hasFailedToDownload) {

@@ -1,22 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { CircularProgress } from '@mui/material';
+import React, { useEffect, useRef } from 'react'
 import { useInView } from 'react-intersection-observer'
-import CircularProgress from '@mui/material/CircularProgress'
 
 interface Props {
   onLoadMore: () => void
 }
 
 const LazyLoad: React.FC<Props> = ({ onLoadMore }) => {
+  const hasTriggeredRef = useRef(false); // Prevents multiple auto-triggers
 
   const [ref, inView] = useInView({
-    threshold: 0.7
-  })
+    threshold: 0.7,
+    triggerOnce: false, // Allows multiple triggers, but we control when
+  });
 
   useEffect(() => {
-    if (inView) {
-      onLoadMore()
+    if (inView && !hasTriggeredRef.current) {
+      hasTriggeredRef.current = true; // Set flag so it doesn’t trigger again immediately
+      onLoadMore();
+      setTimeout(() => {
+        hasTriggeredRef.current = false; // Reset trigger after a short delay
+      }, 1000);
     }
-  }, [inView])
+  }, [inView]);
 
   return (
     <div
@@ -24,11 +30,11 @@ const LazyLoad: React.FC<Props> = ({ onLoadMore }) => {
       style={{
         display: 'flex',
         justifyContent: 'center',
-        minHeight: '25px'
+        height: '50px',
+        overflow: 'hidden'
       }}
-    >
-    </div>
+    ><CircularProgress /></div>
   )
 }
 
-export default LazyLoad
+export default LazyLoad;
