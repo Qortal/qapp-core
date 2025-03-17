@@ -255,7 +255,7 @@ export const MemorizedComponent = ({
             <>
              <HorizontalPaginatedList defaultLoaderParams={defaultLoaderParams} disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={(displayLimit)=> {
               removeFromList(listName, displayLimit)
-             }} isLoadingMore={isLoadingMore} items={listToDisplay} listItem={listItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} gap={styles?.gap} isLoading={isLoading} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
+             }}  items={listToDisplay} listItem={listItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} gap={styles?.gap} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
             </>
             
           )}
@@ -264,7 +264,7 @@ export const MemorizedComponent = ({
               <VerticalPaginatedList disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={(displayLimit)=> {
 
               removeFromList(listName, displayLimit)
-             }} defaultLoaderParams={defaultLoaderParams} isLoadingMore={isLoadingMore} items={listToDisplay} listItem={listItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} gap={styles?.gap} isLoading={isLoading} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
+             }} defaultLoaderParams={defaultLoaderParams} items={listToDisplay} listItem={listItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} loaderItem={loaderItem} />
             </div>
           )}
         </div>

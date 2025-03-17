@@ -13,9 +13,6 @@ interface HorizontalPaginatedListProps {
   onLoadLess: (limit: number)=> void;
   minItemWidth?: number;
   gap?: number;
-  isLoading?: boolean;
-  onSeenLastItem?: (listItem: ListItem) => void;
-  isLoadingMore: boolean;
   limit: number,
   disablePagination?: boolean
   defaultLoaderParams?: DefaultLoaderParams;
@@ -29,9 +26,6 @@ export const HorizontalPaginatedList = ({
   onLoadLess,
   minItemWidth,
   gap,
-  isLoading,
-  onSeenLastItem,
-  isLoadingMore,
   limit,
   disablePagination,
   defaultLoaderParams

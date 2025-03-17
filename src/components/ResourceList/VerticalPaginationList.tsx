@@ -12,11 +12,6 @@ interface VerticalPaginatedListProps {
   loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode;
   onLoadMore: (limit: number) => void;
   onLoadLess: (limit: number)=> void;
-  minItemWidth?: number;
-  gap?: number;
-  isLoading?: boolean;
-  onSeenLastItem?: (listItem: ListItem) => void;
-  isLoadingMore: boolean;
   limit: number,
   disablePagination?: boolean
   defaultLoaderParams?: DefaultLoaderParams;
@@ -28,11 +23,6 @@ export const VerticalPaginatedList = ({
   loaderItem,
   onLoadMore,
   onLoadLess,
-  minItemWidth,
-  gap,
-  isLoading,
-  onSeenLastItem,
-  isLoadingMore,
   limit,
   disablePagination,
   defaultLoaderParams
