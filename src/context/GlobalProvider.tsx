@@ -13,7 +13,7 @@ resources: ReturnType<typeof useResources>;
 // ✅ Define Config Type for Hook Options
 interface GlobalProviderProps {
   children: React.ReactNode;
-  config?: {
+  config: {
     /** Authentication settings. */
     auth?: UseAuthProps;
     appName: string;
