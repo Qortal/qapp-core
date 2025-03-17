@@ -91,6 +91,7 @@ export const MemorizedComponent = ({
 }: PropsResourceListDisplay)  => {
   const { fetchResources } = useResources();
   const {  filterOutDeletedResources } = useCacheStore();
+  const deletedResources = useCacheStore().deletedResources
   const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
   const addList = useListStore().addList
   const removeFromList =  useListStore().removeFromList
@@ -153,7 +154,7 @@ export const MemorizedComponent = ({
     }, [])
   const listToDisplay = useMemo(()=> {
     return filterOutDeletedResources([...temporaryResources, ...list])
-  }, [list, listName, filterOutDeletedResources, temporaryResources])
+  }, [list, listName, deletedResources, temporaryResources])
 
 
 

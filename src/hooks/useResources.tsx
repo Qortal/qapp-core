@@ -250,18 +250,32 @@ export const useResources = () => {
     });
   }, []);
 
-  const deleteProduct = useCallback(async (qortalMetadata: QortalMetadata) => {
-    if (!qortalMetadata?.service || !qortalMetadata?.identifier)
-      throw new Error("Missing fields");
-    await qortalRequest({
-      action: "PUBLISH_QDN_RESOURCE",
-      service: qortalMetadata.service,
-      identifier: qortalMetadata.identifier,
-      base64: "RA==",
-    });
-    markResourceAsDeleted(qortalMetadata);
+  const deleteProduct = useCallback(async (resourcesToDelete: QortalMetadata[]) => {
+
+    
+   
+    
+    const deletes = []
+    for (const resource of resourcesToDelete) {
+      if (!resource?.service || !resource?.identifier)
+        throw new Error("Missing fields");
+      deletes.push({
+        service: resource.service,
+        identifier: resource.identifier,
+        base64: "RA==",
+   });
+ }
+ await qortalRequestWithTimeout({
+   action: "PUBLISH_MULTIPLE_QDN_RESOURCES",
+   resources: deletes,
+ }, 600000);
+ resourcesToDelete.forEach((item)=> {
+  markResourceAsDeleted(item);
+ })
     return true;
   }, []);
+
+  
 
   return {
     fetchResources,
