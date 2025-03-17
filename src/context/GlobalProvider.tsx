@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { useAuth, UseAuthProps } from "../hooks/useAuth";
 import { useResources } from "../hooks/useResources";
+import { useAppInfo } from "../hooks/useAppInfo";
 
 
 // ✅ Define Global Context Type
@@ -15,6 +16,8 @@ interface GlobalProviderProps {
   config?: {
     /** Authentication settings. */
     auth?: UseAuthProps;
+    appName: string;
+    publicSalt: string
   };
 }
 
@@ -25,10 +28,11 @@ const GlobalContext = createContext<GlobalContextType | null>(null);
 export const GlobalProvider = ({ children, config }: GlobalProviderProps) => {
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
+  const appInfo = useAppInfo(config?.appName, config?.publicSalt)
   const resources = useResources()
 
   // ✅ Merge all hooks into a single `contextValue`
-  const contextValue = useMemo(() => ({ auth, resources }), [auth, resources]);
+  const contextValue = useMemo(() => ({ auth, resources, appInfo }), [auth, resources, appInfo]);
 
   return (
     <GlobalContext.Provider value={contextValue}>
