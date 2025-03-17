@@ -60,6 +60,14 @@ export interface QortalMetadata {
     name: string
     identifier: string
     service: Service
+    metadata?: {
+      title?: string
+      category?: number
+      categoryName?: string
+      tags?: string[]
+      description?: string
+    }
+    updated?: number
   }
 
  export interface QortalSearchParams {
@@ -72,6 +80,7 @@ export interface QortalMetadata {
     title?: string;
     description?: string;
     prefix?: boolean;
+    includemetadata?: boolean;
     exactMatchNames?: boolean;
     minLevel?: number;
     nameListFilter?: string;

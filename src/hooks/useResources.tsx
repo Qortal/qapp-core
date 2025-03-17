@@ -1,10 +1,9 @@
 import React, { useCallback } from "react";
 import {
-
   QortalMetadata,
   QortalSearchParams,
 } from "../types/interfaces/resources";
-import { useCacheStore } from "../state/cache";
+import { ListItem, useCacheStore } from "../state/cache";
 import { RequestQueueWithPromise } from "../utils/queue";
 import { base64ToUint8Array, uint8ArrayToObject } from "../utils/base64";
 
@@ -12,7 +11,6 @@ export const requestQueueProductPublishes = new RequestQueueWithPromise(20);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
   5
 );
-
 
 interface TemporaryResource {
   qortalMetadata: QortalMetadata;
@@ -25,10 +23,9 @@ export const useResources = () => {
     getResourceCache,
     setResourceCache,
     addTemporaryResource,
-    markResourceAsDeleted
+    markResourceAsDeleted,
   } = useCacheStore();
   const requestControllers = new Map<string, AbortController>();
-
 
   const getArbitraryResource = async (
     url: string,
@@ -43,7 +40,7 @@ export const useResources = () => {
 
     try {
       const res = await fetch(url, { signal: controller.signal });
-      if(!res?.ok) throw new Error('Error in downloading')
+      if (!res?.ok) throw new Error("Error in downloading");
       return await res.text();
     } catch (error: any) {
       if (error?.name === "AbortError") {
@@ -65,22 +62,46 @@ export const useResources = () => {
     requestControllers.clear();
   };
 
-  const fetchIndividualPublish = useCallback(
-    async (item: QortalMetadata) => {
+  const fetchIndividualPublishJson = useCallback(
+    async (
+      item: QortalMetadata,
+      includeMetadata?: boolean
+    ): Promise<false | ListItem | null | undefined> => {
       try {
         const key = `${item?.service}-${item?.name}-${item?.identifier}`;
 
         const cachedProduct = getResourceCache(
           `${item?.service}-${item?.name}-${item?.identifier}`
         );
-        if (cachedProduct) return;
+
+        if (cachedProduct) return cachedProduct;
         setResourceCache(
           `${item?.service}-${item?.name}-${item?.identifier}`,
           null
         );
         let hasFailedToDownload = false;
         let res: string | undefined = undefined;
+        let metadata 
         try {
+          if (includeMetadata) {
+            const url = `/arbitrary/resources/search?mode=ALL&service=${item?.service}&limit=1&includemetadata=true&reverse=true&excludeblocked=true&name=${item?.name}&exactmatchnames=true&offset=0&identifier=${item?.identifier}`;
+            const response = await fetch(url, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+            if (!response?.ok) return false;
+            const resMetadata = await response.json();
+            if (resMetadata?.length === 0) {
+              setResourceCache(
+                `${item?.service}-${item?.name}-${item?.identifier}`,
+                false
+              );
+              return false;
+            }
+             metadata = resMetadata[0];
+          }
           res = await requestQueueProductPublishes.enqueue(
             (): Promise<string> => {
               return getArbitraryResource(
@@ -92,7 +113,6 @@ export const useResources = () => {
         } catch (error) {
           hasFailedToDownload = true;
         }
-
 
         if (res === "canceled") return false;
 
@@ -125,7 +145,7 @@ export const useResources = () => {
           const toObject = uint8ArrayToObject(toUint);
           const fullDataObject = {
             data: { ...toObject },
-            qortalMetadata: item,
+            qortalMetadata: includeMetadata ? metadata : item,
           };
           setResourceCache(
             `${item?.service}-${item?.name}-${item?.identifier}`,
@@ -143,10 +163,10 @@ export const useResources = () => {
   const fetchDataFromResults = useCallback(
     (responseData: QortalMetadata[]): void => {
       for (const item of responseData) {
-        fetchIndividualPublish(item);
+        fetchIndividualPublishJson(item, false);
       }
     },
-    [fetchIndividualPublish]
+    [fetchIndividualPublishJson]
   );
 
   const fetchResources = useCallback(
@@ -158,18 +178,18 @@ export const useResources = () => {
       if (cancelRequests) {
         cancelAllRequests();
       }
-  
+
       const cacheKey = generateCacheKey(params);
       const searchCache = getSearchCache(listName, cacheKey);
       if (searchCache) {
         return searchCache;
       }
-  
+
       let responseData: QortalMetadata[] = [];
       let filteredResults: QortalMetadata[] = [];
       let lastCreated = params.before || null;
       const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
-  
+
       while (filteredResults.length < targetLimit) {
         const response = await qortalRequest({
           action: "SEARCH_QDN_RESOURCES",
@@ -178,36 +198,35 @@ export const useResources = () => {
           limit: targetLimit - filteredResults.length, // Adjust limit dynamically
           before: lastCreated,
         });
-  
+
         if (!response || response.length === 0) {
           break; // No more data available
         }
-  
+
         responseData = response;
-        const validResults = responseData.filter(item => item.size !== 32);
+        const validResults = responseData.filter((item) => item.size !== 32);
         filteredResults = [...filteredResults, ...validResults];
-  
+
         if (filteredResults.length >= targetLimit) {
           filteredResults = filteredResults.slice(0, targetLimit);
           break;
         }
-  
+
         lastCreated = responseData[responseData.length - 1]?.created;
         if (!lastCreated) break;
       }
-  
+
       setSearchCache(listName, cacheKey, filteredResults);
       fetchDataFromResults(filteredResults);
-  
+
       return filteredResults;
     },
     [getSearchCache, setSearchCache, fetchDataFromResults]
   );
-  
-  
 
   const addNewResources = useCallback(
     (listName: string, resources: TemporaryResource[]) => {
+
       addTemporaryResource(
         listName,
         resources.map((item) => item.qortalMetadata)
@@ -215,42 +234,38 @@ export const useResources = () => {
       resources.forEach((temporaryResource) => {
         setResourceCache(
           `${temporaryResource?.qortalMetadata?.service}-${temporaryResource?.qortalMetadata?.name}-${temporaryResource?.qortalMetadata?.identifier}`,
-          temporaryResource.data
+          temporaryResource
         );
       });
     },
     []
   );
 
-  const updateNewResources = useCallback(
-    (resources: TemporaryResource[]) => {
+  const updateNewResources = useCallback((resources: TemporaryResource[]) => {
+    resources.forEach((temporaryResource) => {
+      setResourceCache(
+        `${temporaryResource?.qortalMetadata?.service}-${temporaryResource?.qortalMetadata?.name}-${temporaryResource?.qortalMetadata?.identifier}`,
+        temporaryResource
+      );
+    });
+  }, []);
 
-      resources.forEach((temporaryResource) => {
-        setResourceCache(
-          `${temporaryResource?.qortalMetadata?.service}-${temporaryResource?.qortalMetadata?.name}-${temporaryResource?.qortalMetadata?.identifier}`,
-          temporaryResource.data
-        );
-      });
-    },
-    []
-  );
-
-  const deleteProduct = useCallback(async (qortalMetadata: QortalMetadata)=> {
-    if(!qortalMetadata?.service || !qortalMetadata?.identifier) throw new Error('Missing fields')
-       await qortalRequest({
-                action: "PUBLISH_QDN_RESOURCE",
-                service: qortalMetadata.service,
-                identifier: qortalMetadata.identifier,
-                base64: 'RA==',
-              });
-              markResourceAsDeleted(qortalMetadata)
-       return true
-  }, [])
-
+  const deleteProduct = useCallback(async (qortalMetadata: QortalMetadata) => {
+    if (!qortalMetadata?.service || !qortalMetadata?.identifier)
+      throw new Error("Missing fields");
+    await qortalRequest({
+      action: "PUBLISH_QDN_RESOURCE",
+      service: qortalMetadata.service,
+      identifier: qortalMetadata.identifier,
+      base64: "RA==",
+    });
+    markResourceAsDeleted(qortalMetadata);
+    return true;
+  }, []);
 
   return {
     fetchResources,
-    fetchIndividualPublish,
+    fetchIndividualPublishJson,
     addNewResources,
     updateNewResources,
     deleteProduct,

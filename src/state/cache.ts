@@ -145,6 +145,7 @@ export const useCacheStore = create<CacheState>
 
       addTemporaryResource: (listName, newResources, customExpiry) =>
         set((state) => {
+
           const expiry = Date.now() + (customExpiry || 5 * 60 * 1000);
 
           const existingResources = state.searchCache[listName]?.temporaryNewResources || [];

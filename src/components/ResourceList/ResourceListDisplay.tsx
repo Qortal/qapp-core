@@ -90,11 +90,11 @@ export const MemorizedComponent = ({
   disableScrollTracker
 }: PropsResourceListDisplay)  => {
   const { fetchResources } = useResources();
-  const {  getTemporaryResources, filterOutDeletedResources } = useCacheStore();
+  const {  filterOutDeletedResources } = useCacheStore();
   const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
   const addList = useListStore().addList
   const removeFromList =  useListStore().removeFromList
-
+  const temporaryResources = useCacheStore().getTemporaryResources(listName)
   const addItems = useListStore().addItems
   const list = useListStore().getListByName(listName)
   const [isLoading, setIsLoading] = useState(list?.length > 0 ? false : true);
@@ -151,10 +151,9 @@ export const MemorizedComponent = ({
           setResourceCacheExpiryDuration(resourceCacheDuration)
       }
     }, [])
-
   const listToDisplay = useMemo(()=> {
-    return filterOutDeletedResources([...getTemporaryResources(listName), ...list])
-  }, [list, listName, filterOutDeletedResources, getTemporaryResources])
+    return filterOutDeletedResources([...temporaryResources, ...list])
+  }, [list, listName, filterOutDeletedResources, temporaryResources])
 
 
 
