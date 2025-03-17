@@ -87,7 +87,7 @@ export const MemorizedComponent = ({
   searchCacheDuration,
   resourceCacheDuration,
   disablePagination,
-  disableScrollTracker
+  disableScrollTracker,
 }: PropsResourceListDisplay)  => {
   const { fetchResources } = useResources();
   const {  filterOutDeletedResources } = useCacheStore();
@@ -202,6 +202,11 @@ export const MemorizedComponent = ({
     return () => window.removeEventListener("beforeunload", clearOnReload);
   }, [listName]);
 
+
+  const renderListItem = useCallback((item: ListItem, index: number) => {
+    return listItem(item, index);
+  }, [ listItem]);
+
   return (
     <div ref={elementRef} style={{
       width: '100%',
@@ -243,7 +248,7 @@ export const MemorizedComponent = ({
                     defaultLoaderParams={defaultLoaderParams}
                     item={item}
                     index={index}
-                    render={listItem}
+                    render={renderListItem}
                     renderListItemLoader={loaderItem}
                   />
                   {styles?.gap && <Spacer height={`${styles.gap / 2}px`} />}
@@ -255,7 +260,7 @@ export const MemorizedComponent = ({
             <>
              <HorizontalPaginatedList defaultLoaderParams={defaultLoaderParams} disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={(displayLimit)=> {
               removeFromList(listName, displayLimit)
-             }}  items={listToDisplay} listItem={listItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} gap={styles?.gap} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
+             }}  items={listToDisplay} listItem={renderListItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} gap={styles?.gap} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
             </>
             
           )}
@@ -264,7 +269,7 @@ export const MemorizedComponent = ({
               <VerticalPaginatedList disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={(displayLimit)=> {
 
               removeFromList(listName, displayLimit)
-             }} defaultLoaderParams={defaultLoaderParams} items={listToDisplay} listItem={listItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} loaderItem={loaderItem} />
+             }} defaultLoaderParams={defaultLoaderParams} items={listToDisplay} listItem={renderListItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} loaderItem={loaderItem} />
             </div>
           )}
         </div>
@@ -285,7 +290,8 @@ function arePropsEqual(
     prevProps.direction === nextProps.direction &&
     prevProps.onSeenLastItem === nextProps.onSeenLastItem &&
     JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&
-    JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles)
+    JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles) &&
+    prevProps.listItem === nextProps.listItem
   );
 }
 
