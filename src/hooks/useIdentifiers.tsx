@@ -5,11 +5,6 @@ import { buildIdentifier, buildSearchPrefix,  IdentifierBuilder } from "../utils
 
 
 export const useIdentifiers = (builder?: IdentifierBuilder, publicSalt?: string) => {
-  const [publicSaltVal, setPublicSaltVal] = useState(publicSalt)
-  
-  useEffect(()=> {
-    setPublicSaltVal(publicSalt)
-  }, [publicSalt])
   const setIdentifierBuilder = useAppStore().setIdentifierBuilder
   const identifierBuilder = useAppStore().identifierBuilder
   const appName = useAppStore().appName
@@ -39,7 +34,6 @@ export const useIdentifiers = (builder?: IdentifierBuilder, publicSalt?: string)
     }
   }, [stringifiedBuilder])
   return {
-    identifierBuilder,
     buildIdentifier: buildIdentifierFunc,
     buildSearchPrefix: buildSearchPrefixFunc
   };

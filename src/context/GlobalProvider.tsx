@@ -4,6 +4,12 @@ import { useResources } from "../hooks/useResources";
 import { useAppInfo } from "../hooks/useAppInfo";
 import { IdentifierBuilder } from "../utils/encryption";
 import { useIdentifiers } from "../hooks/useIdentifiers";
+import { objectToBase64 } from "../utils/base64";
+
+
+const utils = {
+  objectToBase64
+}
 
 
 // ✅ Define Global Context Type
@@ -12,7 +18,9 @@ interface GlobalContextType {
 resources: ReturnType<typeof useResources>;
 appInfo: ReturnType<typeof useAppInfo>;
 identifierOperations: ReturnType<typeof useIdentifiers>
+utils: typeof utils
 }
+
 
 // ✅ Define Config Type for Hook Options
 interface GlobalProviderProps {
@@ -29,6 +37,8 @@ interface GlobalProviderProps {
 // ✅ Create Context with Proper Type
 const GlobalContext = createContext<GlobalContextType | null>(null);
 
+
+
 // 🔹 Global Provider (Handles Multiple Hooks)
 export const GlobalProvider = ({ children, config, identifierBuilder }: GlobalProviderProps) => {
   // ✅ Call hooks and pass in options dynamically
@@ -38,7 +48,7 @@ export const GlobalProvider = ({ children, config, identifierBuilder }: GlobalPr
   const identifierOperations = useIdentifiers(identifierBuilder, config?.publicSalt)
 
   // ✅ Merge all hooks into a single `contextValue`
-  const contextValue = useMemo(() => ({ auth, resources, appInfo, identifierOperations }), [auth, resources, appInfo, identifierOperations]);
+  const contextValue = useMemo(() => ({ auth, resources, appInfo, identifierOperations, utils }), [auth, resources, appInfo, identifierOperations]);
   return (
     <GlobalContext.Provider value={contextValue}>
       {children}
