@@ -21,6 +21,8 @@ import { useListStore } from "../../state/lists";
 import { useScrollTracker } from "../../common/useScrollTracker";
 import { HorizontalPaginatedList } from "./HorizontalPaginationList";
 import { VerticalPaginatedList } from "./VerticalPaginationList";
+import { useIdentifiers } from "../../hooks/useIdentifiers";
+import { useGlobal } from "../../context/GlobalProvider";
 type Direction = "VERTICAL" | "HORIZONTAL";
 
 interface ResourceListStyles {
@@ -34,6 +36,13 @@ interface ResourceListStyles {
   }
 }
 
+interface EntityParams {
+  entityType: string;
+  parentId?: string | null;
+}
+
+
+
 export interface DefaultLoaderParams {
   listLoadingText?: string;
   listNoResultsText?: string;
@@ -43,6 +52,7 @@ export interface DefaultLoaderParams {
 
 interface BaseProps  {
   search: QortalSearchParams;
+  entityParams?: EntityParams;
   listItem: (item: ListItem, index: number) => React.ReactNode;
   styles?: ResourceListStyles;
   loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode;
@@ -71,6 +81,7 @@ interface NonVirtualizedProps extends BaseProps {
 
 type PropsResourceListDisplay = VirtualizedProps | NonVirtualizedProps;
 
+
 export const MemorizedComponent = ({
   search,
   listItem,
@@ -88,9 +99,11 @@ export const MemorizedComponent = ({
   resourceCacheDuration,
   disablePagination,
   disableScrollTracker,
+  entityParams
 }: PropsResourceListDisplay)  => {
   const { fetchResources } = useResources();
   const {  filterOutDeletedResources } = useCacheStore();
+  const {identifierOperations} = useGlobal()
   const deletedResources = useCacheStore().deletedResources
   const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
   const addList = useListStore().addList
@@ -103,16 +116,53 @@ export const MemorizedComponent = ({
   const isListExpired = useCacheStore().isListExpired(listName)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const initialized = useRef(false)
+  const [generatedIdentifier, setGeneratedIdentifier] = useState("")
+
+  
+
+
+
+  const stringifiedEntityParams = useMemo(()=> {
+    return JSON .stringify(entityParams)
+  }, [entityParams])
+
+
+  useEffect(()=> {
+    try {
+      if (!search.identifier && stringifiedEntityParams) {
+        const parsedEntityParams = JSON.parse(stringifiedEntityParams)
+        const buildSearch = async ()=> {
+         const res = await  identifierOperations.buildSearchPrefix(
+            parsedEntityParams.entityType,
+            parsedEntityParams.parentId || null,
+          )
+          if(res){
+            setGeneratedIdentifier(res)
+          }
+        }
+    
+
+        buildSearch()
+        return
+      }
+      setGeneratedIdentifier(search?.identifier)
+    } catch (error) {
+      console.error(error)
+    }
+  }, [stringifiedEntityParams, search.identifier, identifierOperations.buildSearchPrefix])
 
   const getResourceList = useCallback(async () => {
     try {
+
+      if(!generatedIdentifier) return
       await new Promise((res)=> {
         setTimeout(() => {
           res(null)
         }, 500);
       })
       setIsLoading(true);
-      const parsedParams = JSON.parse(memoizedParams);
+      const parsedParams = {...(JSON.parse(memoizedParams))};
+      parsedParams.identifier = generatedIdentifier
       const responseData = await fetchResources(parsedParams, listName, true); // Awaiting the async function
 
 
@@ -124,10 +174,9 @@ export const MemorizedComponent = ({
     } finally {
       setIsLoading(false);
     }
-  }, [memoizedParams, fetchResources]); // Added dependencies for re-fetching
-
+  }, [memoizedParams, fetchResources, generatedIdentifier]); // Added dependencies for re-fetching
   useEffect(() => {
-    if(initialized.current) return
+    if(initialized.current || !generatedIdentifier) return
     initialized.current = true
     if(!isListExpired) {
       setIsLoading(false)
@@ -136,7 +185,7 @@ export const MemorizedComponent = ({
     
     sessionStorage.removeItem(`scroll-position-${listName}`);
     getResourceList();
-  }, [getResourceList, isListExpired]); // Runs when dependencies change
+  }, [getResourceList, isListExpired, generatedIdentifier]); // Runs when dependencies change
 
   const {elementRef} = useScrollTracker(listName, list?.length > 0, disableScrollTracker);
 
@@ -161,10 +210,12 @@ export const MemorizedComponent = ({
 
   const getResourceMoreList = useCallback(async (displayLimit?: number) => {
     try {
+      if(!generatedIdentifier) return
       setIsLoadingMore(true)
       const parsedParams = {...(JSON.parse(memoizedParams))};
       parsedParams.before = list.length === 0 ? null : list[list.length - 1]?.created
       parsedParams.offset = null
+      parsedParams.identifier = generatedIdentifier
       if(displayLimit){
         parsedParams.limit = displayLimit
       }
@@ -178,7 +229,7 @@ export const MemorizedComponent = ({
 
       }, 1000);
     }
-  }, [memoizedParams, listName, list]); 
+  }, [memoizedParams, listName, list, generatedIdentifier]); 
 
 
 
@@ -292,7 +343,8 @@ function arePropsEqual(
     prevProps.onSeenLastItem === nextProps.onSeenLastItem &&
     JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&
     JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles) &&
-    prevProps.listItem === nextProps.listItem
+    prevProps.listItem === nextProps.listItem &&
+    JSON.stringify(prevProps.entityParams) === JSON.stringify(nextProps.entityParams)
   );
 }
 

@@ -1,10 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthStore } from "../state/auth";
 import { useAppStore } from "../state/app";
 import { buildIdentifier, buildSearchPrefix,  IdentifierBuilder } from "../utils/encryption";
 
 
 export const useIdentifiers = (builder?: IdentifierBuilder, publicSalt?: string) => {
+  const [publicSaltVal, setPublicSaltVal] = useState(publicSalt)
+  
+  useEffect(()=> {
+    setPublicSaltVal(publicSalt)
+  }, [publicSalt])
   const setIdentifierBuilder = useAppStore().setIdentifierBuilder
   const identifierBuilder = useAppStore().identifierBuilder
   const appName = useAppStore().appName

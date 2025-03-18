@@ -95,8 +95,7 @@ export async function buildIdentifier(
   parentId: string | null,
   identifierBuilder: IdentifierBuilder
 ): Promise<string> {
-  console.log("Entity Type:", entityType); // Debugging
-  console.log("Parent ID:", parentId); // Debugging
+
 
   // Hash app name (11 chars)
   const appHash: string = await hashWord(appName, EnumCollisionStrength.HIGH, publicSalt);
