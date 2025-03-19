@@ -66,6 +66,7 @@ interface BaseProps  {
   resourceCacheDuration?: number
   disablePagination?: boolean
   disableScrollTracker?: boolean
+  retryAttempts: number
 }
 
 // ✅ Restrict `direction` only when `disableVirtualization = false`
@@ -99,9 +100,10 @@ export const MemorizedComponent = ({
   resourceCacheDuration,
   disablePagination,
   disableScrollTracker,
-  entityParams
+  entityParams,
+  retryAttempts = 2
 }: PropsResourceListDisplay)  => {
-  const { fetchResources } = useResources();
+  const { fetchResources } = useResources(retryAttempts);
   const {  filterOutDeletedResources } = useCacheStore();
   const {identifierOperations} = useGlobal()
   const deletedResources = useCacheStore().deletedResources

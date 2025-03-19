@@ -6,17 +6,18 @@ import {
 import { ListItem, useCacheStore } from "../state/cache";
 import { RequestQueueWithPromise } from "../utils/queue";
 import { base64ToUint8Array, uint8ArrayToObject } from "../utils/base64";
+import { retryTransaction } from "../utils/publish";
 
 export const requestQueueProductPublishes = new RequestQueueWithPromise(20);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
-  5
+  10
 );
 
-interface TemporaryResource {
+export interface TemporaryResource {
   qortalMetadata: QortalMetadata;
   data: any;
 }
-export const useResources = () => {
+export const useResources = (retryAttempts: number = 2) => {
   const {
     setSearchCache,
     getSearchCache,
@@ -120,18 +121,26 @@ export const useResources = () => {
           await new Promise((res) => {
             setTimeout(() => {
               res(null);
-            }, 15000);
+            }, 10000);
           });
 
           try {
-            res = await requestQueueProductPublishesBackup.enqueue(
-              (): Promise<string> => {
-                return getArbitraryResource(
-                  `/arbitrary/${item?.service}/${item?.name}/${item?.identifier}?encoding=base64`,
-                  key
-                );
-              }
-            );
+            const fetchRetries = async ()=> {
+             return await requestQueueProductPublishesBackup.enqueue(
+                (): Promise<string> => {
+                  return getArbitraryResource(
+                    `/arbitrary/${item?.service}/${item?.name}/${item?.identifier}?encoding=base64`,
+                    key
+                  );
+                }
+              );
+            }
+           res = await retryTransaction(
+              fetchRetries,
+                        [],
+                        true,
+                        retryAttempts
+                      );
           } catch (error) {
             setResourceCache(
               `${item?.service}-${item?.name}-${item?.identifier}`,

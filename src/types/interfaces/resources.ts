@@ -70,6 +70,12 @@ export interface QortalMetadata {
     updated?: number
   }
 
+  export interface QortalGetMetadata {
+    name: string
+    identifier: string
+    service: Service
+  }
+
  export interface QortalSearchParams {
     identifier: string;
     service: Service;
