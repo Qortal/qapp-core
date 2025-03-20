@@ -5,17 +5,19 @@ import { useAppInfo } from "../hooks/useAppInfo";
 import { IdentifierBuilder } from "../utils/encryption";
 import { useIdentifiers } from "../hooks/useIdentifiers";
 import { objectToBase64 } from "../utils/base64";
+import { base64ToObject } from "../utils/publish";
 
 
 const utils = {
-  objectToBase64
+  objectToBase64,
+  base64ToObject
 }
 
 
 // ✅ Define Global Context Type
 interface GlobalContextType {
   auth: ReturnType<typeof useAuth>;
-resources: ReturnType<typeof useResources>;
+lists: ReturnType<typeof useResources>;
 appInfo: ReturnType<typeof useAppInfo>;
 identifierOperations: ReturnType<typeof useIdentifiers>
 utils: typeof utils
@@ -44,11 +46,11 @@ export const GlobalProvider = ({ children, config, identifierBuilder }: GlobalPr
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
   const appInfo = useAppInfo(config?.appName, config?.publicSalt)
-  const resources = useResources()
+  const lists = useResources()
   const identifierOperations = useIdentifiers(identifierBuilder, config?.publicSalt)
 
   // ✅ Merge all hooks into a single `contextValue`
-  const contextValue = useMemo(() => ({ auth, resources, appInfo, identifierOperations, utils }), [auth, resources, appInfo, identifierOperations]);
+  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, utils }), [auth, lists, appInfo, identifierOperations]);
   return (
     <GlobalContext.Provider value={contextValue}>
       {children}

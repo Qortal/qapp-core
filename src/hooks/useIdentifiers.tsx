@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthStore } from "../state/auth";
 import { useAppStore } from "../state/app";
-import { buildIdentifier, buildSearchPrefix,  IdentifierBuilder } from "../utils/encryption";
+import { buildIdentifier, buildSearchPrefix,  EnumCollisionStrength,  hashWord,  IdentifierBuilder } from "../utils/encryption";
 
 
 export const useIdentifiers = (builder?: IdentifierBuilder, publicSalt?: string) => {
@@ -25,7 +25,11 @@ export const useIdentifiers = (builder?: IdentifierBuilder, publicSalt?: string)
     return buildSearchPrefix(appName, publicSalt, entityType, parentId, identifierBuilder)
   }, [appName, publicSalt, identifierBuilder])
   
-
+  const createSingleIdentifier = useCallback(async ( partialIdentifier: string)=> {
+      if(!partialIdentifier || !appName || !publicSalt) return null
+      const appNameHashed = await hashWord(appName, EnumCollisionStrength.HIGH, publicSalt)
+    return appNameHashed + '_' + partialIdentifier
+  }, [appName, publicSalt])
  
 
   useEffect(()=> {
@@ -35,6 +39,7 @@ export const useIdentifiers = (builder?: IdentifierBuilder, publicSalt?: string)
   }, [stringifiedBuilder])
   return {
     buildIdentifier: buildIdentifierFunc,
-    buildSearchPrefix: buildSearchPrefixFunc
+    buildSearchPrefix: buildSearchPrefixFunc,
+    createSingleIdentifier
   };
 };

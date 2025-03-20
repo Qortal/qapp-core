@@ -10,7 +10,7 @@ export const useAppInfo = (appName?: string, publicSalt?: string) => {
  
 
   const handleAppInfoSetup = useCallback(async (name: string, salt: string)=> {
-    const appNameHashed = await hashWord(name, EnumCollisionStrength.LOW, salt)
+    const appNameHashed = await hashWord(name, EnumCollisionStrength.HIGH, salt)
     setAppState({
       appName: name,
       publicSalt: salt,

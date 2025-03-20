@@ -103,9 +103,8 @@ export const MemorizedComponent = ({
   entityParams,
   retryAttempts = 2
 }: PropsResourceListDisplay)  => {
-  const { fetchResources } = useResources(retryAttempts);
   const {  filterOutDeletedResources } = useCacheStore();
-  const {identifierOperations} = useGlobal()
+  const {identifierOperations, lists} = useGlobal()
   const deletedResources = useCacheStore().deletedResources
   const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
   const addList = useListStore().addList
@@ -119,9 +118,7 @@ export const MemorizedComponent = ({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const initialized = useRef(false)
   const [generatedIdentifier, setGeneratedIdentifier] = useState("")
-
-  
-
+  const prevGeneratedIdentifierRef = useRef('')
 
 
   const stringifiedEntityParams = useMemo(()=> {
@@ -157,6 +154,7 @@ export const MemorizedComponent = ({
     try {
 
       if(!generatedIdentifier) return
+     
       await new Promise((res)=> {
         setTimeout(() => {
           res(null)
@@ -165,27 +163,29 @@ export const MemorizedComponent = ({
       setIsLoading(true);
       const parsedParams = {...(JSON.parse(memoizedParams))};
       parsedParams.identifier = generatedIdentifier
-      const responseData = await fetchResources(parsedParams, listName, true); // Awaiting the async function
+      const responseData = await lists.fetchResources(parsedParams, listName, true); // Awaiting the async function
 
 
      
         addList(listName,  responseData || []);
-    
+       
     } catch (error) {
       console.error("Failed to fetch resources:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [memoizedParams, fetchResources, generatedIdentifier]); // Added dependencies for re-fetching
+  }, [memoizedParams, lists.fetchResources, generatedIdentifier]); // Added dependencies for re-fetching
   useEffect(() => {
-    if(initialized.current || !generatedIdentifier) return
-    initialized.current = true
-    if(!isListExpired) {
-      setIsLoading(false)
-      return
-    }
-    
+    if(!generatedIdentifier) return
+   
+      if(!isListExpired && !initialized.current) {
+        setIsLoading(false)
+        initialized.current = true
+        return
+      }
+       
     sessionStorage.removeItem(`scroll-position-${listName}`);
+    prevGeneratedIdentifierRef.current = generatedIdentifier
     getResourceList();
   }, [getResourceList, isListExpired, generatedIdentifier]); // Runs when dependencies change
 
@@ -221,7 +221,7 @@ export const MemorizedComponent = ({
       if(displayLimit){
         parsedParams.limit = displayLimit
       }
-      const responseData = await fetchResources(parsedParams, listName); // Awaiting the async function
+      const responseData = await lists.fetchResources(parsedParams, listName); // Awaiting the async function
       addItems(listName, responseData || [])
     } catch (error) {
       console.error("Failed to fetch resources:", error);

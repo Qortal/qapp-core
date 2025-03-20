@@ -259,7 +259,7 @@ export const useResources = (retryAttempts: number = 2) => {
     });
   }, []);
 
-  const deleteProduct = useCallback(async (resourcesToDelete: QortalMetadata[]) => {
+  const deleteResource = useCallback(async (resourcesToDelete: QortalMetadata[]) => {
 
     
    
@@ -288,10 +288,9 @@ export const useResources = (retryAttempts: number = 2) => {
 
   return {
     fetchResources,
-    fetchIndividualPublishJson,
     addNewResources,
     updateNewResources,
-    deleteProduct,
+    deleteResource,
   };
 };
 
