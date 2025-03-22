@@ -179,7 +179,7 @@ export const addAndEncryptSymmetricKeys = async ({
 }) => {
   try {
     let highestKey = 0;
-    if (previousData) {
+    if (previousData && Object.keys(previousData)?.length > 0) {
       highestKey = Math.max(
         ...Object.keys(previousData || {})
           .filter((item) => !isNaN(+item))
@@ -203,7 +203,7 @@ export const addAndEncryptSymmetricKeys = async ({
     });
 
     if (encryptedData) {
-      return encryptedData;
+      return {encryptedData, publicKeys: groupmemberPublicKeys, symmetricKeys: objectToSave};
     } else {
       throw new Error("Cannot encrypt content");
     }
@@ -213,7 +213,7 @@ export const addAndEncryptSymmetricKeys = async ({
 };
 
 export const encryptWithSymmetricKeys = async ({
-  data64,
+  base64,
   secretKeyObject,
   typeNumber = 2,
 }: any) => {
@@ -226,7 +226,7 @@ export const encryptWithSymmetricKeys = async ({
   const highestKeyObject = secretKeyObject[highestKey];
 
   // Convert data and keys from base64
-  const Uint8ArrayData = base64ToUint8Array(data64);
+  const Uint8ArrayData = base64ToUint8Array(base64);
   const messageKey = base64ToUint8Array(highestKeyObject.messageKey);
 
   if (!(Uint8ArrayData instanceof Uint8Array)) {
@@ -294,11 +294,11 @@ export const encryptWithSymmetricKeys = async ({
   return finalEncryptedData;
 };
 
-interface SecretKeyValue {
+export interface SecretKeyValue {
   messageKey: string;
 }
 
-export const decryptSingle = async ({
+export const decryptWithSymmetricKeys = async ({
   base64,
   secretKeyObject,
 }: {

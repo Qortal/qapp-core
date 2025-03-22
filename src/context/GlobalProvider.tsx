@@ -2,7 +2,7 @@ import React, { createContext, useContext, useMemo } from "react";
 import { useAuth, UseAuthProps } from "../hooks/useAuth";
 import { useResources } from "../hooks/useResources";
 import { useAppInfo } from "../hooks/useAppInfo";
-import { addAndEncryptSymmetricKeys, IdentifierBuilder } from "../utils/encryption";
+import { addAndEncryptSymmetricKeys, decryptWithSymmetricKeys, encryptWithSymmetricKeys, IdentifierBuilder } from "../utils/encryption";
 import { useIdentifiers } from "../hooks/useIdentifiers";
 import { objectToBase64 } from "../utils/base64";
 import { base64ToObject } from "../utils/publish";
@@ -11,7 +11,9 @@ import { base64ToObject } from "../utils/publish";
 const utils = {
   objectToBase64,
   base64ToObject,
-  addAndEncryptSymmetricKeys
+  addAndEncryptSymmetricKeys,
+  encryptWithSymmetricKeys,
+  decryptWithSymmetricKeys
 }
 
 
