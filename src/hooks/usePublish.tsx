@@ -21,7 +21,7 @@ export const usePublish = (
   const hasFetched = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<null | string>(null);
-  const publish = usePublishStore().getPublish(metadata || null);
+  const publish = usePublishStore().getPublish(metadata || null, true);
   const setPublish = usePublishStore().setPublish;
   const getPublish = usePublishStore().getPublish;
 
