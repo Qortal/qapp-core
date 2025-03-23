@@ -1,48 +1,54 @@
-import { BloomFilter } from 'bloom-filters';
 import { base64ToObject } from './base64';
+import { Buffer } from 'buffer'
 
+// Polyfill Buffer first
+if (!(globalThis as any).Buffer) {
+  ;(globalThis as any).Buffer = Buffer
+}
 
-export async function hashPublicKey(publicKeyString: string) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(publicKeyString);
-  
-    const digest = await crypto.subtle.digest("SHA-256", data);
-    const hashBytes = new Uint8Array(digest);
-    return Array.from(hashBytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-  }
-
-  
-
-export async function generateBloomFilterBase64(publicKeys: string[]) {
-  if (publicKeys.length > 100) throw new Error("Max 100 users allowed");
-
-  const bloom = BloomFilter.create(100, 0.0004); // ~0.04% FPR
-
-  for (const pk of publicKeys) {
-    const hash = await hashPublicKey(pk);
-    bloom.add(hash);
-  }
-
-  // Serialize to compact form
-  const byteArray = new Uint8Array(bloom.saveAsJSON()._data);
-  const base64 = btoa(String.fromCharCode(...byteArray));
-
-  if (byteArray.length > 230) {
-    throw new Error(`Bloom filter exceeds 230 bytes: ${byteArray.length}`);
-  }
-
-  return base64;
+async function getBloomFilter() {
+  const { BloomFilter } = await import('bloom-filters')
+  return BloomFilter
 }
 
 
-export async function userCanProbablyDecrypt(base64Bloom: string, userPublicKey: string) {
-    const base64ToJson = base64ToObject(base64Bloom)
   
+ 
+  
+  export async function generateBloomFilterBase64(values: string[]) {
+    const maxItems = 100
+    if (values.length > maxItems) {
+      throw new Error(`Max ${maxItems} items allowed`)
+    }
+  
+    // Create filter for the expected number of items and desired false positive rate
+    const BloomFilter = await getBloomFilter()
+    const bloom = BloomFilter.create(values.length, 0.025) // ~0.04% FPR
+  
+    for (const value of values) {
+      bloom.add(value)
+    }
+  
+    // Convert filter to JSON, then to base64
+    const json = bloom.saveAsJSON()
+    const jsonString = JSON.stringify(json)
+    const base64 = Buffer.from(jsonString).toString('base64')
+  
+    const size = Buffer.byteLength(jsonString)
+    if (size > 238) {
+      throw new Error(`Bloom filter exceeds 230 bytes: ${size}`)
+    }
+  
+    return base64
+  }
+
+
+export async function isInsideBloom(base64Bloom: string, userPublicKey: string) {
+    const base64ToJson = base64ToObject(base64Bloom)
+    const BloomFilter = await getBloomFilter()
    const bloom = BloomFilter.fromJSON(base64ToJson)
   
-    const hash = await hashPublicKey(userPublicKey);
-    return bloom.has(hash);
+    
+    return bloom.has(userPublicKey);
   }
   

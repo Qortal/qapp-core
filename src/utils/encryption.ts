@@ -157,7 +157,7 @@ const getPublicKeysByNames = async (names: string[]) => {
       try {
         const response = await fetch(`/names/${name}`);
         const nameInfo = await response.json();
-        const resAddress = await fetch(`/addresses/${nameInfo}`);
+        const resAddress = await fetch(`/addresses/${nameInfo.owner}`);
         const resData = await resAddress.json();
         return resData.publicKey;
       } catch (error) {
@@ -186,7 +186,6 @@ export const addAndEncryptSymmetricKeys = async ({
           .map(Number)
       );
     }
-
     const groupmemberPublicKeys = await getPublicKeysByNames(names);
     const symmetricKey = createSymmetricKeyAndNonce();
     const nextNumber = highestKey + 1;

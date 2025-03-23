@@ -3,6 +3,7 @@ import { usePublishStore } from "../state/publishes";
 import { QortalGetMetadata, QortalMetadata } from "../types/interfaces/resources";
 import { base64ToObject, retryTransaction } from "../utils/publish";
 import { useGlobal } from "../context/GlobalProvider";
+import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
 
 const STORAGE_EXPIRY_DURATION = 5 * 60 * 1000;
 interface StoredPublish {
@@ -12,7 +13,7 @@ interface StoredPublish {
   }
 export const usePublish = (
   maxFetchTries: number = 3,
-  returnType: "PUBLIC_JSON" = "PUBLIC_JSON",
+  returnType: ReturnType = "JSON",
   metadata?: QortalGetMetadata
 ) => {
   const {auth, appInfo} = useGlobal()
@@ -30,8 +31,11 @@ export const usePublish = (
     const url = `/arbitrary/${item?.service}/${item?.name}/${item?.identifier}?encoding=base64`;
     const res = await fetch(url);
     const data = await res.text();
+    if(returnType === 'BASE64'){
+      return data
+    }
     return base64ToObject(data);
-  }, []);
+  }, [returnType]);
 
   const getStorageKey = useCallback(() => {
     if (!username || !appNameHashed) return null;
@@ -66,7 +70,7 @@ export const usePublish = (
   const fetchPublish = useCallback(
     async (
       metadataProp: QortalGetMetadata,
-      returnTypeProp: "PUBLIC_JSON" = "PUBLIC_JSON"
+      returnTypeProp: ReturnType = "JSON"
     ) => {
       let resourceExists = null;
       let resource = null;

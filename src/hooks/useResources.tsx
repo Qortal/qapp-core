@@ -7,13 +7,14 @@ import { ListItem, useCacheStore } from "../state/cache";
 import { RequestQueueWithPromise } from "../utils/queue";
 import { base64ToUint8Array, uint8ArrayToObject } from "../utils/base64";
 import { retryTransaction } from "../utils/publish";
+import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
 
 export const requestQueueProductPublishes = new RequestQueueWithPromise(20);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
   10
 );
 
-export interface TemporaryResource {
+export interface Resource {
   qortalMetadata: QortalMetadata;
   data: any;
 }
@@ -66,6 +67,7 @@ export const useResources = (retryAttempts: number = 2) => {
   const fetchIndividualPublishJson = useCallback(
     async (
       item: QortalMetadata,
+      returnType: ReturnType,
       includeMetadata?: boolean
     ): Promise<false | ListItem | null | undefined> => {
       try {
@@ -150,6 +152,17 @@ export const useResources = (retryAttempts: number = 2) => {
           }
         }
         if (res) {
+          if(returnType === 'BASE64'){
+            const fullDataObject = {
+              data: res,
+              qortalMetadata: includeMetadata ? metadata : item,
+            };
+            setResourceCache(
+              `${item?.service}-${item?.name}-${item?.identifier}`,
+              fullDataObject
+            );
+            return fullDataObject;
+          }
           const toUint = base64ToUint8Array(res);
           const toObject = uint8ArrayToObject(toUint);
           const fullDataObject = {
@@ -170,9 +183,9 @@ export const useResources = (retryAttempts: number = 2) => {
   );
 
   const fetchDataFromResults = useCallback(
-    (responseData: QortalMetadata[]): void => {
+    (responseData: QortalMetadata[], returnType: ReturnType): void => {
       for (const item of responseData) {
-        fetchIndividualPublishJson(item, false);
+        fetchIndividualPublishJson(item, returnType, false);
       }
     },
     [fetchIndividualPublishJson]
@@ -182,7 +195,8 @@ export const useResources = (retryAttempts: number = 2) => {
     async (
       params: QortalSearchParams,
       listName: string,
-      cancelRequests?: boolean
+      returnType: ReturnType = 'JSON',
+      cancelRequests?: boolean,
     ): Promise<QortalMetadata[]> => {
       if (cancelRequests) {
         cancelAllRequests();
@@ -226,7 +240,7 @@ export const useResources = (retryAttempts: number = 2) => {
       }
 
       setSearchCache(listName, cacheKey, filteredResults);
-      fetchDataFromResults(filteredResults);
+      fetchDataFromResults(filteredResults, returnType);
 
       return filteredResults;
     },
@@ -234,7 +248,7 @@ export const useResources = (retryAttempts: number = 2) => {
   );
 
   const addNewResources = useCallback(
-    (listName: string, resources: TemporaryResource[]) => {
+    (listName: string, resources: Resource[]) => {
 
       addTemporaryResource(
         listName,
@@ -250,7 +264,7 @@ export const useResources = (retryAttempts: number = 2) => {
     []
   );
 
-  const updateNewResources = useCallback((resources: TemporaryResource[]) => {
+  const updateNewResources = useCallback((resources: Resource[]) => {
     resources.forEach((temporaryResource) => {
       setResourceCache(
         `${temporaryResource?.qortalMetadata?.service}-${temporaryResource?.qortalMetadata?.name}-${temporaryResource?.qortalMetadata?.identifier}`,

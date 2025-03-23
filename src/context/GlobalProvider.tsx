@@ -6,6 +6,7 @@ import { addAndEncryptSymmetricKeys, decryptWithSymmetricKeys, encryptWithSymmet
 import { useIdentifiers } from "../hooks/useIdentifiers";
 import { objectToBase64 } from "../utils/base64";
 import { base64ToObject } from "../utils/publish";
+import { generateBloomFilterBase64, isInsideBloom } from "../utils/bloomFilter";
 
 
 const utils = {
@@ -13,7 +14,9 @@ const utils = {
   base64ToObject,
   addAndEncryptSymmetricKeys,
   encryptWithSymmetricKeys,
-  decryptWithSymmetricKeys
+  decryptWithSymmetricKeys,
+  generateBloomFilterBase64,
+  isInsideBloom
 }
 
 

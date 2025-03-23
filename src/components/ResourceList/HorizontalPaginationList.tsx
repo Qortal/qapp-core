@@ -77,7 +77,7 @@ const displayedItems = disablePagination ? items : items?.length < (displayedLim
           </React.Fragment>
         ))}
       >
-          
+           {!disablePagination && displayedItems?.length <= (displayedLimit * 3) && (
           <LazyLoad
             onLoadMore={async () => {
               await onLoadMore(displayedLimit);
@@ -88,7 +88,7 @@ const displayedItems = disablePagination ? items : items?.length < (displayedLim
 
             }}
           />
-    
+          )}
       </DynamicGrid>
 
      

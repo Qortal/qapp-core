@@ -1,4 +1,10 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import DynamicGrid from "./DynamicGrid";
 import LazyLoad from "../../common/LazyLoad";
 import { ListItem } from "../../state/cache";
@@ -11,9 +17,9 @@ interface VerticalPaginatedListProps {
   listItem: (item: ListItem, index: number) => React.ReactNode;
   loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode;
   onLoadMore: (limit: number) => void;
-  onLoadLess: (limit: number)=> void;
-  limit: number,
-  disablePagination?: boolean
+  onLoadLess: (limit: number) => void;
+  limit: number;
+  disablePagination?: boolean;
   defaultLoaderParams?: DefaultLoaderParams;
 }
 
@@ -25,63 +31,78 @@ export const VerticalPaginatedList = ({
   onLoadLess,
   limit,
   disablePagination,
-  defaultLoaderParams
+  defaultLoaderParams,
 }: VerticalPaginatedListProps) => {
+  const lastItemRef = useRef<any>(null);
+  const lastItemRef2 = useRef<any>(null);
 
-const lastItemRef= useRef<any>(null)
-const lastItemRef2= useRef<any>(null)
+  const displayedLimit = limit || 20;
 
-const displayedLimit = limit || 20
-
-const displayedItems = disablePagination ? items :  items.slice(- (displayedLimit * 3)) 
+  const displayedItems = disablePagination
+    ? items
+    : items.slice(-(displayedLimit * 3));
 
   return (
     <>
-      {!disablePagination && items?.length > (displayedLimit * 3) &&  (
-          <LazyLoad
-            onLoadMore={async () => {
+      {!disablePagination && items?.length > displayedLimit * 3 && (
+        <LazyLoad
+          onLoadMore={async () => {
+            await onLoadLess(displayedLimit);
+            lastItemRef2.current.scrollIntoView({
+              behavior: "auto",
+              block: "start",
+            });
+            setTimeout(() => {
+              window.scrollBy({ top: -50, behavior: "instant" }); // 'smooth' if needed
+            }, 0);
+          }}
+        />
+      )}
 
-              await onLoadLess(displayedLimit);
-              lastItemRef2.current.scrollIntoView({ behavior: "auto", block: "start" });
-              setTimeout(() => {
-                window.scrollBy({ top: -50, behavior: "instant" }); // 'smooth' if needed
-              }, 0);
-            }}
-          />
-        )}
-
-        {displayedItems?.map((item, index, list) => {
-                        return (
-                          <React.Fragment
-                            key={`${item?.name}-${item?.service}-${item?.identifier}`}
-                          >
-                             <div style={{
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center'
-            }} ref={index === displayedLimit ? lastItemRef2 : index === list.length -displayedLimit - 1 ? lastItemRef : null}>
-                              <ListItemWrapper
-                                defaultLoaderParams={defaultLoaderParams}
-                                item={item}
-                                index={index}
-                                render={listItem}
-                                renderListItemLoader={loaderItem}
-                              />
-                    </div>
-                          </React.Fragment>
-                        );
-                      })}
-
-      <LazyLoad
-            onLoadMore={async () => {
-              await onLoadMore(displayedLimit);
-              lastItemRef.current.scrollIntoView({ behavior: "auto", block: "end" });
-              setTimeout(() => {
-                window.scrollBy({ top: 50, behavior: "instant" }); // 'smooth' if needed
-              }, 0);
-
-            }}
-          />
+      {displayedItems?.map((item, index, list) => {
+        return (
+          <React.Fragment
+            key={`${item?.name}-${item?.service}-${item?.identifier}`}
+          >
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+              }}
+              ref={
+                index === displayedLimit
+                  ? lastItemRef2
+                  : index === list.length - displayedLimit - 1
+                  ? lastItemRef
+                  : null
+              }
+            >
+              <ListItemWrapper
+                defaultLoaderParams={defaultLoaderParams}
+                item={item}
+                index={index}
+                render={listItem}
+                renderListItemLoader={loaderItem}
+              />
+            </div>
+          </React.Fragment>
+        );
+      })}
+      {!disablePagination && displayedItems?.length <= (displayedLimit * 3) && (
+        <LazyLoad
+          onLoadMore={async () => {
+            await onLoadMore(displayedLimit);
+            lastItemRef.current.scrollIntoView({
+              behavior: "auto",
+              block: "end",
+            });
+            setTimeout(() => {
+              window.scrollBy({ top: 50, behavior: "instant" }); // 'smooth' if needed
+            }, 0);
+          }}
+        />
+      )}
     </>
   );
 };

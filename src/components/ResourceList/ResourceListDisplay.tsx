@@ -50,6 +50,8 @@ export interface DefaultLoaderParams {
   listItemErrorText?: string;
 }
 
+export type ReturnType = 'JSON' | 'BASE64'
+
 interface BaseProps  {
   search: QortalSearchParams;
   entityParams?: EntityParams;
@@ -66,7 +68,8 @@ interface BaseProps  {
   resourceCacheDuration?: number
   disablePagination?: boolean
   disableScrollTracker?: boolean
-  retryAttempts: number
+  retryAttempts: number,
+  returnType: 'JSON' | 'BASE64'
 }
 
 // ✅ Restrict `direction` only when `disableVirtualization = false`
@@ -101,6 +104,7 @@ export const MemorizedComponent = ({
   disablePagination,
   disableScrollTracker,
   entityParams,
+  returnType = 'JSON',
   retryAttempts = 2
 }: PropsResourceListDisplay)  => {
   const {  filterOutDeletedResources } = useCacheStore();
@@ -152,7 +156,6 @@ export const MemorizedComponent = ({
 
   const getResourceList = useCallback(async () => {
     try {
-
       if(!generatedIdentifier) return
      
       await new Promise((res)=> {
@@ -163,7 +166,7 @@ export const MemorizedComponent = ({
       setIsLoading(true);
       const parsedParams = {...(JSON.parse(memoizedParams))};
       parsedParams.identifier = generatedIdentifier
-      const responseData = await lists.fetchResources(parsedParams, listName, true); // Awaiting the async function
+      const responseData = await lists.fetchResources(parsedParams, listName, returnType, true); // Awaiting the async function
 
 
      
@@ -221,7 +224,7 @@ export const MemorizedComponent = ({
       if(displayLimit){
         parsedParams.limit = displayLimit
       }
-      const responseData = await lists.fetchResources(parsedParams, listName); // Awaiting the async function
+      const responseData = await lists.fetchResources(parsedParams, listName, returnType); // Awaiting the async function
       addItems(listName, responseData || [])
     } catch (error) {
       console.error("Failed to fetch resources:", error);

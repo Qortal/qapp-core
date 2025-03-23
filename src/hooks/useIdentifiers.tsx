@@ -30,6 +30,12 @@ export const useIdentifiers = (builder?: IdentifierBuilder, publicSalt?: string)
       const appNameHashed = await hashWord(appName, EnumCollisionStrength.HIGH, publicSalt)
     return appNameHashed + '_' + partialIdentifier
   }, [appName, publicSalt])
+
+  const hashQortalName = useCallback(async ( qortalName: string)=> {
+    if(!qortalName || !publicSalt) return null
+    const hashedQortalName = await hashWord(qortalName, EnumCollisionStrength.HIGH, publicSalt)
+  return hashedQortalName
+}, [publicSalt])
  
 
   useEffect(()=> {
@@ -40,6 +46,7 @@ export const useIdentifiers = (builder?: IdentifierBuilder, publicSalt?: string)
   return {
     buildIdentifier: buildIdentifierFunc,
     buildSearchPrefix: buildSearchPrefixFunc,
-    createSingleIdentifier
+    createSingleIdentifier,
+    hashQortalName
   };
 };

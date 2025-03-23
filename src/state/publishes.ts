@@ -1,17 +1,17 @@
 import { create } from "zustand";
 import { QortalGetMetadata } from "../types/interfaces/resources";
-import { TemporaryResource } from "../hooks/useResources";
+import { Resource } from "../hooks/useResources";
 
 interface PublishCache {
-  data: TemporaryResource | null;
+  data: Resource | null;
   expiry: number;
 }
 
 interface PublishState {
   publishes: Record<string, PublishCache>;
 
-  getPublish: (qortalGetMetadata: QortalGetMetadata | null, ignoreExpire?: boolean) => TemporaryResource | null;
-  setPublish: (qortalGetMetadata: QortalGetMetadata, data: TemporaryResource | null, customExpiry?: number) => void;
+  getPublish: (qortalGetMetadata: QortalGetMetadata | null, ignoreExpire?: boolean) => Resource | null;
+  setPublish: (qortalGetMetadata: QortalGetMetadata, data: Resource | null, customExpiry?: number) => void;
   clearExpiredPublishes: () => void;
   publishExpiryDuration: number; // Default expiry duration
 }
