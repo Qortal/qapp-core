@@ -89,7 +89,7 @@ export const VerticalPaginatedList = ({
           </React.Fragment>
         );
       })}
-      {!disablePagination && displayedItems?.length <= (displayedLimit * 3) && (
+      {!disablePagination && displayedItems?.length >= (displayedLimit * 3) && (
         <LazyLoad
           onLoadMore={async () => {
             await onLoadMore(displayedLimit);

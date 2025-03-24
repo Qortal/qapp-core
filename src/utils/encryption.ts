@@ -39,36 +39,15 @@ interface EntityConfig {
   children?: Record<string, EntityConfig>;
 }
 
-export type IdentifierBuilder = {
-  [key: string]: {
-    children?: IdentifierBuilder;
-  };
-};
 
-// Recursive function to traverse identifierBuilder
-function findEntityConfig(
-  identifierBuilder: IdentifierBuilder,
-  path: string[]
-): EntityConfig {
-  let current: EntityConfig | undefined = { children: identifierBuilder }; // ✅ Wrap it inside `{ children }` so it behaves like other levels
 
-  for (const key of path) {
-    if (!current.children || !current.children[key]) {
-      throw new Error(`Entity '${key}' is not defined in identifierBuilder`);
-    }
-    current = current.children[key];
-  }
-
-  return current;
-}
 
 // Function to generate a prefix for searching
 export async function buildSearchPrefix(
   appName: string,
   publicSalt: string,
   entityType: string,
-  parentId: string | null,
-  identifierBuilder: IdentifierBuilder
+  parentId: string | null
 ): Promise<string> {
   // Hash app name (11 chars)
   const appHash: string = await hashWord(
@@ -84,12 +63,11 @@ export async function buildSearchPrefix(
     publicSalt
   );
 
-  // ✅ Detect if this entity is actually a root entity
-  const isRootEntity = !!identifierBuilder[entityType];
+
 
   // Determine parent reference
   let parentRef = "";
-  if (isRootEntity && parentId === null) {
+  if (parentId === null) {
     parentRef = "00000000000000"; // ✅ Only for true root entities
   } else if (parentId) {
     parentRef = await hashWord(
@@ -110,8 +88,7 @@ export async function buildIdentifier(
   appName: string,
   publicSalt: string,
   entityType: string, // ✅ Now takes only the entity type
-  parentId: string | null,
-  identifierBuilder: IdentifierBuilder
+  parentId: string | null
 ): Promise<string> {
   // Hash app name (11 chars)
   const appHash: string = await hashWord(
@@ -297,12 +274,14 @@ export interface SecretKeyValue {
   messageKey: string;
 }
 
+export type SymmetricKeys = Record<number, SecretKeyValue>
+
 export const decryptWithSymmetricKeys = async ({
   base64,
   secretKeyObject,
 }: {
   base64: string;
-  secretKeyObject: Record<number, SecretKeyValue>;
+  secretKeyObject: SymmetricKeys;
 }) => {
   // First, decode the base64-encoded input (if skipDecodeBase64 is not set)
   const decodedData = base64;
