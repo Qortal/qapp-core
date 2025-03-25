@@ -20,14 +20,13 @@ export interface Resource {
   data: any;
 }
 export const useResources = (retryAttempts: number = 2) => {
-  const {
-    setSearchCache,
-    getSearchCache,
-    getResourceCache,
-    setResourceCache,
-    addTemporaryResource,
-    markResourceAsDeleted
-  } = useCacheStore();
+  const setSearchCache = useCacheStore((s) => s.setSearchCache);
+  const getSearchCache = useCacheStore((s) => s.getSearchCache);
+  const getResourceCache = useCacheStore((s) => s.getResourceCache);
+  const setResourceCache = useCacheStore((s) => s.setResourceCache);
+  const addTemporaryResource = useCacheStore((s) => s.addTemporaryResource);
+  const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
+  
   const deleteList = useListStore(state => state.deleteList)
   const requestControllers = new Map<string, AbortController>();
 

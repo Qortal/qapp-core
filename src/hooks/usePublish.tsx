@@ -23,8 +23,8 @@ export const usePublish = (
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<null | string>(null);
   const publish = usePublishStore().getPublish(metadata || null, true);
-  const setPublish = usePublishStore().setPublish;
-  const getPublish = usePublishStore().getPublish;
+  const setPublish = usePublishStore((state)=> state.setPublish)
+  const getPublish = usePublishStore(state=> state.getPublish)
 
   const [hasResource, setHasResource] = useState<boolean | null>(null);
   const fetchRawData = useCallback(async (item: QortalGetMetadata) => {

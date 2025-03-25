@@ -5,8 +5,8 @@ import { EnumCollisionStrength, hashWord } from "../utils/encryption";
 
 
 export const useAppInfo = (appName?: string, publicSalt?: string) => {
-  const setAppState = useAppStore().setAppState
-  const appNameHashed = useAppStore().appNameHashed
+  const setAppState = useAppStore((state)=> state.setAppState)
+  const appNameHashed = useAppStore((state)=> state.appNameHashed)
  
 
   const handleAppInfoSetup = useCallback(async (name: string, salt: string)=> {

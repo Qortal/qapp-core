@@ -27,20 +27,21 @@ export interface UseAuthProps {
 }
 
 export const useAuth = ({ balanceSetting, authenticateOnMount }: UseAuthProps) => {
-  const {
-    address,
-    publicKey,
-    name,
-    avatarUrl,
-    balance,
-    isLoadingUser,
-    isLoadingInitialBalance,
-    errorLoadingUser,
-    setErrorLoadingUser,
-    setIsLoadingUser,
-    setUser,
-    setBalance
-  } = useAuthStore();
+  const address = useAuthStore((s) => s.address);
+const publicKey = useAuthStore((s) => s.publicKey);
+const name = useAuthStore((s) => s.name);
+const avatarUrl = useAuthStore((s) => s.avatarUrl);
+const balance = useAuthStore((s) => s.balance);
+
+const isLoadingUser = useAuthStore((s) => s.isLoadingUser);
+const isLoadingInitialBalance = useAuthStore((s) => s.isLoadingInitialBalance);
+const errorLoadingUser = useAuthStore((s) => s.errorLoadingUser);
+
+const setErrorLoadingUser = useAuthStore((s) => s.setErrorLoadingUser);
+const setIsLoadingUser = useAuthStore((s) => s.setIsLoadingUser);
+const setUser = useAuthStore((s) => s.setUser);
+const setBalance = useAuthStore((s) => s.setBalance);
+
 
   const balanceSetIntervalRef = useRef<null | ReturnType<typeof setInterval>>(null);
 

@@ -113,18 +113,23 @@ export const MemorizedComponent = ({
   retryAttempts = 2,
   onResults
 }: PropsResourceListDisplay)  => {
-  const {  filterOutDeletedResources } = useCacheStore();
   const {identifierOperations, lists} = useGlobal()
-  const deletedResources = useCacheStore().deletedResources
   const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
-  const addList = useListStore().addList
-  const removeFromList =  useListStore().removeFromList
   const temporaryResources = useCacheStore().getTemporaryResources(listName)
-  const addItems = useListStore().addItems
-  const list = useListStore().getListByName(listName)
+  const list = useListStore((state) => state.lists[listName]?.items) || [];
+
   const [isLoading, setIsLoading] = useState(list?.length > 0 ? false : true);
 
   const isListExpired = useCacheStore().isListExpired(listName)
+
+  const filterOutDeletedResources = useCacheStore((s) => s.filterOutDeletedResources);
+const deletedResources = useCacheStore((s) => s.deletedResources);
+
+const addList = useListStore((s) => s.addList);
+const removeFromList = useListStore((s) => s.removeFromList);
+const addItems = useListStore((s) => s.addItems);
+
+
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const initialized = useRef(false)
   const [generatedIdentifier, setGeneratedIdentifier] = useState("")
@@ -174,8 +179,6 @@ export const MemorizedComponent = ({
       parsedParams.identifier = generatedIdentifier
       const responseData = await lists.fetchResources(parsedParams, listName, returnType, true); // Awaiting the async function
 
-
-     
         addList(listName,  responseData || []);
        
     } catch (error) {
@@ -200,8 +203,9 @@ export const MemorizedComponent = ({
 
   const {elementRef} = useScrollTracker(listName, list?.length > 0, disableScrollTracker);
 
-   const setSearchCacheExpiryDuration = useCacheStore().setSearchCacheExpiryDuration
-  const setResourceCacheExpiryDuration = useCacheStore().setResourceCacheExpiryDuration
+  const setSearchCacheExpiryDuration = useCacheStore((s) => s.setSearchCacheExpiryDuration);
+const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheExpiryDuration);
+
     useEffect(()=> {
       if(searchCacheDuration){
           setSearchCacheExpiryDuration(searchCacheDuration)
@@ -213,7 +217,7 @@ export const MemorizedComponent = ({
       }
     }, [])
   const listToDisplay = useMemo(()=> {
-    return filterOutDeletedResources([...temporaryResources, ...list])
+    return filterOutDeletedResources([...temporaryResources, ...(list || [])])
   }, [list, listName, deletedResources, temporaryResources])
 
   useEffect(()=> {
@@ -384,7 +388,7 @@ export const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
   defaultLoaderParams,
   renderListItemLoader,
 }) => {
-  const getResourceCache = useCacheStore().getResourceCache;
+  const getResourceCache = useCacheStore((s)=> s.getResourceCache)
 
   const findCachedResource = getResourceCache(
     `${item.service}-${item.name}-${item.identifier}`,
