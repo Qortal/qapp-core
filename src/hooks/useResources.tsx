@@ -8,6 +8,7 @@ import { RequestQueueWithPromise } from "../utils/queue";
 import { base64ToUint8Array, uint8ArrayToObject } from "../utils/base64";
 import { retryTransaction } from "../utils/publish";
 import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
+import { useListStore } from "../state/lists";
 
 export const requestQueueProductPublishes = new RequestQueueWithPromise(20);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
@@ -25,8 +26,9 @@ export const useResources = (retryAttempts: number = 2) => {
     getResourceCache,
     setResourceCache,
     addTemporaryResource,
-    markResourceAsDeleted,
+    markResourceAsDeleted
   } = useCacheStore();
+  const deleteList = useListStore(state => state.deleteList)
   const requestControllers = new Map<string, AbortController>();
 
   const getArbitraryResource = async (
@@ -305,6 +307,7 @@ export const useResources = (retryAttempts: number = 2) => {
     addNewResources,
     updateNewResources,
     deleteResource,
+    deleteList
   };
 };
 

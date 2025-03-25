@@ -36,13 +36,14 @@ interface QortalRequestOptions {
   prefix?: boolean
   exactMatchNames?: boolean
   base64?: string
-  groupId?: number
+  groupId?: number | string
   isAdmins?: boolean
   payments?: any[]
   assetId?: number,
-  publicKeys?: string[],
+  publicKeys?: string[]
   recipient?: string,
   before?: number | null
+  qortalLink?: string
 }
 
 declare function qortalRequest(options: QortalRequestOptions): Promise<any>

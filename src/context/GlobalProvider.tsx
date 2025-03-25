@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from "react";
+import React, { createContext, CSSProperties, useContext, useMemo } from "react";
 import { useAuth, UseAuthProps } from "../hooks/useAuth";
 import { useResources } from "../hooks/useResources";
 import { useAppInfo } from "../hooks/useAppInfo";
@@ -8,6 +8,7 @@ import { objectToBase64 } from "../utils/base64";
 import { base64ToObject } from "../utils/publish";
 import { generateBloomFilterBase64, isInsideBloom } from "../utils/bloomFilter";
 import { formatTimestamp } from "../utils/time";
+import { Toaster } from "react-hot-toast";
 
 
 const utils = {
@@ -41,6 +42,7 @@ interface GlobalProviderProps {
     appName: string;
     publicSalt: string
   };
+  toastStyle: CSSProperties
 }
 
 // ✅ Create Context with Proper Type
@@ -49,7 +51,7 @@ const GlobalContext = createContext<GlobalContextType | null>(null);
 
 
 // 🔹 Global Provider (Handles Multiple Hooks)
-export const GlobalProvider = ({ children, config }: GlobalProviderProps) => {
+export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProviderProps) => {
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
   const appInfo = useAppInfo(config.appName, config?.publicSalt)
@@ -60,6 +62,14 @@ export const GlobalProvider = ({ children, config }: GlobalProviderProps) => {
   const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, utils }), [auth, lists, appInfo, identifierOperations]);
   return (
     <GlobalContext.Provider value={contextValue}>
+       <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: toastStyle
+        }}
+        containerStyle={{zIndex: 999999}}
+      />
       {children}
     </GlobalContext.Provider>
   );

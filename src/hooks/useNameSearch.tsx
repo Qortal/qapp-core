@@ -15,7 +15,7 @@ export const useNameSearch = (value: string, limit = 20) => {
           setNameList([])
           return
         }
-        setIsLoading(true);
+      
         const res = await fetch(
           `/names/search?query=${name}&prefix=true&limit=${listLimit}`
         );
@@ -36,6 +36,7 @@ export const useNameSearch = (value: string, limit = 20) => {
   );
   // Debounce logic
   useEffect(() => {
+    setIsLoading(true);
     const handler = setTimeout(() => {
       checkIfNameExisits(value, limit);
     }, 500);

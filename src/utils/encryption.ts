@@ -150,11 +150,29 @@ const getPublicKeysByNames = async (names: string[]) => {
 export const addAndEncryptSymmetricKeys = async ({
   previousData,
   names,
+  disableAddNewKey
 }: {
   previousData: Object;
   names: string[];
+  disableAddNewKey?: boolean
 }) => {
   try {
+    if(disableAddNewKey){
+
+      const groupmemberPublicKeys = await getPublicKeysByNames(names);
+      const symmetricKeyAndNonceBase64 = await objectToBase64(previousData);
+      const encryptedData = await qortalRequest({
+        action: "ENCRYPT_DATA",
+        base64: symmetricKeyAndNonceBase64,
+        publicKeys: groupmemberPublicKeys,
+      });
+  
+      if (encryptedData) {
+        return {encryptedData, publicKeys: groupmemberPublicKeys, symmetricKeys: previousData};
+      } else {
+        throw new Error("Cannot encrypt content");
+      }
+    }
     let highestKey = 0;
     if (previousData && Object.keys(previousData)?.length > 0) {
       highestKey = Math.max(

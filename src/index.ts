@@ -1,4 +1,6 @@
 import './index.css'
+export { showLoading, dismissToast, showError, showSuccess } from './utils/toast';
+export { processText, sanitizedContent, extractComponents,  handleClickText} from './utils/text';
 export { RequestQueueWithPromise } from './utils/queue';
 export { GlobalProvider, useGlobal } from "./context/GlobalProvider";
 export {usePublish} from "./hooks/usePublish"

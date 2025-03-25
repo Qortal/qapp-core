@@ -52,6 +52,10 @@ export interface DefaultLoaderParams {
 
 export type ReturnType = 'JSON' | 'BASE64'
 
+export interface Results {
+  resourceItems: QortalMetadata[]
+  isLoadingList: boolean
+}
 interface BaseProps  {
   search: QortalSearchParams;
   entityParams?: EntityParams;
@@ -68,8 +72,9 @@ interface BaseProps  {
   resourceCacheDuration?: number
   disablePagination?: boolean
   disableScrollTracker?: boolean
-  retryAttempts: number,
+  retryAttempts: number
   returnType: 'JSON' | 'BASE64'
+  onResults?: (results: Results)=> void
 }
 
 // ✅ Restrict `direction` only when `disableVirtualization = false`
@@ -105,7 +110,8 @@ export const MemorizedComponent = ({
   disableScrollTracker,
   entityParams,
   returnType = 'JSON',
-  retryAttempts = 2
+  retryAttempts = 2,
+  onResults
 }: PropsResourceListDisplay)  => {
   const {  filterOutDeletedResources } = useCacheStore();
   const {identifierOperations, lists} = useGlobal()
@@ -210,7 +216,14 @@ export const MemorizedComponent = ({
     return filterOutDeletedResources([...temporaryResources, ...list])
   }, [list, listName, deletedResources, temporaryResources])
 
-
+  useEffect(()=> {
+    if(onResults){
+      onResults({
+        resourceItems: listToDisplay,
+        isLoadingList: isLoading
+      })
+    }
+  }, [listToDisplay, onResults, isLoading])
 
 
   const getResourceMoreList = useCallback(async (displayLimit?: number) => {
@@ -267,7 +280,7 @@ export const MemorizedComponent = ({
   return (
     <div ref={elementRef} style={{
       width: '100%',
-      height: '100%'
+      height: disableVirtualization ? 'auto' : '100%'
     }}>
     <ListLoader
       noResultsMessage={
@@ -284,7 +297,7 @@ export const MemorizedComponent = ({
       <div
       
         style={{
-          height: "100%",
+          height: disableVirtualization ? 'auto' : "100%",
           display: "flex",
           width: "100%",
         }}

@@ -30,8 +30,10 @@
     "buffer": "^6.0.3",
     "compressorjs": "^1.2.1",
     "dayjs": "^1.11.13",
+    "dompurify": "^3.2.4",
     "react": "^19.0.0",
     "react-dropzone": "^14.3.8",
+    "react-hot-toast": "^2.5.2",
     "react-intersection-observer": "^9.16.0",
     "short-unique-id": "^5.2.0",
     "zustand": "^4.3.2"
