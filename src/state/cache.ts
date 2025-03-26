@@ -73,7 +73,7 @@ interface CacheState {
 
 export const useCacheStore = create<CacheState>
     ((set, get) => ({
-      searchCacheExpiryDuration: 5 * 60 * 1000,
+      searchCacheExpiryDuration: 0.1 * 60 * 1000,
       resourceCacheExpiryDuration: 30 * 60 * 1000,
       resourceCache: {},
       searchCache: {},

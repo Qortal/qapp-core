@@ -25,6 +25,11 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
     const hashedQortalName = await hashWord(qortalName, EnumCollisionStrength.HIGH, publicSalt)
   return hashedQortalName
 }, [publicSalt])
+
+const hashString = useCallback(async ( string: string, strength: EnumCollisionStrength)=> {
+  const hashedQortalName = await hashWord(string, strength, publicSalt)
+return hashedQortalName
+}, [publicSalt])
  
 
 
@@ -32,6 +37,7 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
     buildIdentifier: buildIdentifierFunc,
     buildSearchPrefix: buildSearchPrefixFunc,
     createSingleIdentifier,
-    hashQortalName
+    hashQortalName,
+    hashString
   };
 };

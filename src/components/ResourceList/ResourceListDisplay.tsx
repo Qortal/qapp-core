@@ -137,6 +137,10 @@ export const MemorizedComponent = ({
   const [isLoading, setIsLoading] = useState(list?.length > 0 ? false : true);
 
   const isListExpired = useCacheStore().isListExpired(listName)
+  const isListExpiredRef = useRef<boolean>(true)
+  useEffect(()=> {
+    isListExpiredRef.current = isListExpired
+  }, [isListExpired])
 
   const filterOutDeletedResources = useCacheStore((s) => s.filterOutDeletedResources);
 const deletedResources = useCacheStore((s) => s.deletedResources);
@@ -230,6 +234,7 @@ const addItems = useListStore((s) => s.addItems);
           res(null)
         }, 500);
       })
+    
       lastItemTimestampRef.current = null
       const parsedParams = {...(JSON.parse(memoizedParams))};
       parsedParams.identifier = generatedIdentifier
@@ -259,7 +264,7 @@ const addItems = useListStore((s) => s.addItems);
   useEffect(() => {
     if(!generatedIdentifier) return
    
-      if(!isListExpired && !initialized.current) {
+      if(!isListExpiredRef.current && !initialized.current) {
         setIsLoading(false)
         initialized.current = true
         return
@@ -268,7 +273,7 @@ const addItems = useListStore((s) => s.addItems);
     sessionStorage.removeItem(`scroll-position-${listName}`);
     prevGeneratedIdentifierRef.current = generatedIdentifier
     getResourceList();
-  }, [getResourceList, isListExpired, generatedIdentifier]); // Runs when dependencies change
+  }, [getResourceList, generatedIdentifier]); // Runs when dependencies change
 
   const {elementRef} = useScrollTracker(listName, list?.length > 0, disableScrollTracker);
 
