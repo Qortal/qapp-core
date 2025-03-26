@@ -88,7 +88,7 @@ export const useResources = (retryAttempts: number = 2) => {
         let metadata 
         try {
           if (includeMetadata) {
-            const url = `/arbitrary/resources/search?mode=ALL&service=${item?.service}&limit=1&includemetadata=true&reverse=true&excludeblocked=true&name=${item?.name}&exactmatchnames=true&offset=0&identifier=${item?.identifier}`;
+            const url = `/arbitrary/resources/search?mode=ALL&service=${item?.service}&limit=1&includemetadata=true&reverse=true&excludeblocked=true&name=${encodeURIComponent(item?.name)}&exactmatchnames=true&offset=0&identifier=${encodeURIComponent(item?.identifier)}`;
             const response = await fetch(url, {
               method: "GET",
               headers: {
@@ -109,7 +109,7 @@ export const useResources = (retryAttempts: number = 2) => {
           res = await requestQueueProductPublishes.enqueue(
             (): Promise<string> => {
               return getArbitraryResource(
-                `/arbitrary/${item?.service}/${item?.name}/${item?.identifier}?encoding=base64`,
+                `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`,
                 key
               );
             }
@@ -132,7 +132,7 @@ export const useResources = (retryAttempts: number = 2) => {
              return await requestQueueProductPublishesBackup.enqueue(
                 (): Promise<string> => {
                   return getArbitraryResource(
-                    `/arbitrary/${item?.service}/${item?.name}/${item?.identifier}?encoding=base64`,
+                    `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`,
                     key
                   );
                 }

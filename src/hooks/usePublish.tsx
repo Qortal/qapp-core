@@ -28,7 +28,7 @@ export const usePublish = (
 
   const [hasResource, setHasResource] = useState<boolean | null>(null);
   const fetchRawData = useCallback(async (item: QortalGetMetadata) => {
-    const url = `/arbitrary/${item?.service}/${item?.name}/${item?.identifier}?encoding=base64`;
+    const url = `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`;
     const res = await fetch(url);
     const data = await res.text();
     if(returnType === 'BASE64'){
@@ -104,7 +104,7 @@ export const usePublish = (
                 resourceExists: true
             }
         }
-        const url = `/arbitrary/resources/search?mode=ALL&service=${metadataProp?.service}&limit=1&includemetadata=true&reverse=true&excludeblocked=true&name=${metadataProp?.name}&exactmatchnames=true&offset=0&identifier=${metadataProp?.identifier}`;
+        const url = `/arbitrary/resources/search?mode=ALL&service=${metadataProp?.service}&limit=1&includemetadata=true&reverse=true&excludeblocked=true&name=${encodeURIComponent(metadataProp?.name)}&exactmatchnames=true&offset=0&identifier=${encodeURIComponent(metadataProp?.identifier)}`;
         const responseMetadata = await fetch(url, {
           method: "GET",
           headers: {

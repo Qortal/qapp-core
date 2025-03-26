@@ -38,7 +38,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   // Methods
   setUser: (user) =>
-    set({ address: user.address, publicKey: user.publicKey, name: user.name || null, avatarUrl: !user?.name ? null : `/arbitrary/THUMBNAIL/${user.name}/qortal_avatar?async=true` }),
+    set({ address: user.address, publicKey: user.publicKey, name: user.name || null, avatarUrl: !user?.name ? null : `/arbitrary/THUMBNAIL/${encodeURIComponent(user.name)}/qortal_avatar?async=true` }),
   setBalance: (balance) => set({ balance }),
   setIsLoadingUser: (loading) => set({ isLoadingUser: loading }),
   setIsLoadingBalance: (loading) => set({ isLoadingInitialBalance: loading }),
