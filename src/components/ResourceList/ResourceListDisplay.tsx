@@ -1,5 +1,6 @@
 import React, {
   CSSProperties,
+  Ref,
   useCallback,
   useEffect,
   useMemo,
@@ -75,6 +76,12 @@ interface BaseProps  {
   retryAttempts: number
   returnType: 'JSON' | 'BASE64'
   onResults?: (results: Results)=> void
+  searchNewData?: {
+    interval: number
+    intervalSearch: QortalSearchParams
+  }
+  onNewData?: (hasNewData: boolean) => void;
+  ref?: any
 }
 
 // ✅ Restrict `direction` only when `disableVirtualization = false`
@@ -111,10 +118,19 @@ export const MemorizedComponent = ({
   entityParams,
   returnType = 'JSON',
   retryAttempts = 2,
-  onResults
+  onResults,
+  searchNewData,
+  onNewData,
+  ref
 }: PropsResourceListDisplay)  => {
   const {identifierOperations, lists} = useGlobal()
   const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
+  const memoizedParamsSearchNewData = useMemo(() => {
+    if(searchNewData?.intervalSearch){
+      return JSON.stringify(searchNewData?.intervalSearch)
+    }
+    return undefined
+  }, [searchNewData?.intervalSearch]);
   const temporaryResources = useCacheStore().getTemporaryResources(listName)
   const list = useListStore((state) => state.lists[listName]?.items) || [];
 
@@ -134,11 +150,51 @@ const addItems = useListStore((s) => s.addItems);
   const initialized = useRef(false)
   const [generatedIdentifier, setGeneratedIdentifier] = useState("")
   const prevGeneratedIdentifierRef = useRef('')
-
-
+  const searchIntervalRef = useRef<null | number>(null)
+  const lastItemTimestampRef = useRef<null | number>(null)
   const stringifiedEntityParams = useMemo(()=> {
     return JSON .stringify(entityParams)
   }, [entityParams])
+
+  useEffect(()=> {
+    if(list?.length > 0){
+      lastItemTimestampRef.current = list[0]?.created || null
+    }
+  }, [list])
+
+ 
+
+
+  useEffect(()=> {
+    if(!searchNewData?.interval || !memoizedParamsSearchNewData  || !generatedIdentifier) return
+    let isCalling = false
+    searchIntervalRef.current = setInterval(async () => {
+      
+      try {
+        if(!lastItemTimestampRef.current) return
+        if(isCalling) return
+        isCalling = true
+        const parsedParams = {...(JSON.parse(memoizedParamsSearchNewData))};
+        parsedParams.identifier = generatedIdentifier
+        parsedParams.after = lastItemTimestampRef.current
+        const responseData = await lists.fetchResourcesResultsOnly(parsedParams, listName, returnType); // Awaiting the async function
+        if(onNewData && responseData?.length > 0){
+          onNewData(true)
+        }
+      } catch (error) {
+        console.error(error)
+      } finally {
+        isCalling = false
+      }
+    }, searchNewData?.interval);
+
+    return ()=> {
+      if(searchIntervalRef.current){
+        
+        clearInterval(searchIntervalRef.current)
+      }
+    }
+  }, [searchNewData?.interval, memoizedParamsSearchNewData, generatedIdentifier])
 
 
   useEffect(()=> {
@@ -168,25 +224,38 @@ const addItems = useListStore((s) => s.addItems);
   const getResourceList = useCallback(async () => {
     try {
       if(!generatedIdentifier) return
-     
+      setIsLoading(true);
       await new Promise((res)=> {
         setTimeout(() => {
           res(null)
         }, 500);
       })
-      setIsLoading(true);
+      lastItemTimestampRef.current = null
       const parsedParams = {...(JSON.parse(memoizedParams))};
       parsedParams.identifier = generatedIdentifier
       const responseData = await lists.fetchResources(parsedParams, listName, returnType, true); // Awaiting the async function
 
         addList(listName,  responseData || []);
-       
+        if(onNewData){
+          onNewData(false)
+        }
     } catch (error) {
       console.error("Failed to fetch resources:", error);
     } finally {
       setIsLoading(false);
     }
   }, [memoizedParams, lists.fetchResources, generatedIdentifier]); // Added dependencies for re-fetching
+
+  const resetSearch = useCallback(async ()=> {
+    lists.deleteList(listName);
+   getResourceList()
+ }, [listName, getResourceList])
+
+ useEffect(()=> {
+   if(ref){
+     ref.current = {resetSearch}
+   }
+ }, [resetSearch])
   useEffect(() => {
     if(!generatedIdentifier) return
    
@@ -366,7 +435,8 @@ function arePropsEqual(
     JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&
     JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles) &&
     prevProps.listItem === nextProps.listItem &&
-    JSON.stringify(prevProps.entityParams) === JSON.stringify(nextProps.entityParams)
+    JSON.stringify(prevProps.entityParams) === JSON.stringify(nextProps.entityParams) &&
+    JSON.stringify(prevProps.searchNewData) === JSON.stringify(nextProps.searchNewData)
   );
 }
 

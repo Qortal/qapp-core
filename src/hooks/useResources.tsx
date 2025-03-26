@@ -248,6 +248,48 @@ export const useResources = (retryAttempts: number = 2) => {
     [getSearchCache, setSearchCache, fetchDataFromResults]
   );
 
+  const fetchResourcesResultsOnly = useCallback(
+    async (
+      params: QortalSearchParams,
+      listName: string,
+      returnType: ReturnType = 'JSON'
+    ): Promise<QortalMetadata[]> => {
+
+      let responseData: QortalMetadata[] = [];
+      let filteredResults: QortalMetadata[] = [];
+      let lastCreated = params.before || null;
+      const targetLimit = params.limit ?? 20;
+  
+      while (filteredResults.length < targetLimit) {
+        const response = await qortalRequest({
+          action: "SEARCH_QDN_RESOURCES",
+          mode: "ALL",
+          ...params,
+          limit: targetLimit - filteredResults.length,
+          before: lastCreated,
+        });
+  
+        if (!response || response.length === 0) break;
+  
+        responseData = response;
+        const validResults = responseData.filter((item) => item.size !== 32);
+        filteredResults = [...filteredResults, ...validResults];
+  
+        if (filteredResults.length >= targetLimit) {
+          filteredResults = filteredResults.slice(0, targetLimit);
+          break;
+        }
+  
+        lastCreated = responseData[responseData.length - 1]?.created;
+        if (!lastCreated) break;
+      }
+  
+      return filteredResults;
+    },
+    [cancelAllRequests, fetchDataFromResults]
+  );
+  
+
   const addNewResources = useCallback(
     (listName: string, resources: Resource[]) => {
 
@@ -306,7 +348,8 @@ export const useResources = (retryAttempts: number = 2) => {
     addNewResources,
     updateNewResources,
     deleteResource,
-    deleteList
+    deleteList,
+    fetchResourcesResultsOnly
   };
 };
 
