@@ -4,6 +4,8 @@ import { objectToBase64, uint8ArrayToBase64 } from "./base64";
 import { RequestQueueWithPromise } from "./queue";
 import { base64ToUint8Array } from "./publish";
 import nacl from "../deps/nacl-fast";
+import SHA256 from 'crypto-js/sha256';
+import EncBase64 from 'crypto-js/enc-base64';
 
 export const requestQueueGetPublicKeys = new RequestQueueWithPromise(10);
 
@@ -19,18 +21,31 @@ export async function hashWord(
   word: string,
   collisionStrength: number,
   publicSalt: string
-) {
-  const saltedWord = publicSalt + word; // Use public salt directly
-  const encoded = new TextEncoder().encode(saltedWord);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
+): Promise<string> {
+  const saltedWord = publicSalt + word;
 
-  // Convert to base64 and make it URL-safe
-  return Buffer.from(hashBuffer)
-    .toString("base64")
-    .replace(/\+/g, "-") // Replace '+' with '-'
-    .replace(/\//g, "_") // Replace '/' with '_'
-    .replace(/=+$/, "") // Remove trailing '='
-    .slice(0, collisionStrength);
+  try {
+    if (!crypto?.subtle?.digest) throw new Error("Web Crypto not available");
+
+    const encoded = new TextEncoder().encode(saltedWord);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
+
+    return Buffer.from(hashBuffer)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "")
+      .slice(0, collisionStrength);
+  } catch (err) {
+    const hash = SHA256(saltedWord);
+    const base64 = EncBase64.stringify(hash);
+
+    return base64
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "")
+      .slice(0, collisionStrength);
+  }
 }
 
 const uid = new ShortUniqueId({ length: 10, dictionary: "alphanum" });
