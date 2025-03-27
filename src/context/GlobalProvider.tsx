@@ -9,6 +9,7 @@ import { base64ToObject } from "../utils/publish";
 import { generateBloomFilterBase64, isInsideBloom } from "../utils/bloomFilter";
 import { formatTimestamp } from "../utils/time";
 import { Toaster } from "react-hot-toast";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
 
 const utils = {
@@ -29,6 +30,7 @@ interface GlobalContextType {
 lists: ReturnType<typeof useResources>;
 appInfo: ReturnType<typeof useAppInfo>;
 identifierOperations: ReturnType<typeof useIdentifiers>
+localStorageOperations: ReturnType<typeof useLocalStorage>
 utils: typeof utils
 }
 
@@ -57,9 +59,9 @@ export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProv
   const appInfo = useAppInfo(config.appName, config?.publicSalt)
   const lists = useResources()
   const identifierOperations = useIdentifiers(config.publicSalt, config.appName)
-
+  const localStorageOperations = useLocalStorage(config.publicSalt, config.appName)
   // ✅ Merge all hooks into a single `contextValue`
-  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, utils }), [auth, lists, appInfo, identifierOperations]);
+  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, utils, localStorageOperations }), [auth, lists, appInfo, identifierOperations, localStorageOperations]);
   return (
     <GlobalContext.Provider value={contextValue}>
        <Toaster
