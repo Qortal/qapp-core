@@ -2,36 +2,21 @@ import React, { createContext, CSSProperties, useContext, useMemo } from "react"
 import { useAuth, UseAuthProps } from "../hooks/useAuth";
 import { useResources } from "../hooks/useResources";
 import { useAppInfo } from "../hooks/useAppInfo";
-import { addAndEncryptSymmetricKeys, decryptWithSymmetricKeys, encryptWithSymmetricKeys } from "../utils/encryption";
 import { useIdentifiers } from "../hooks/useIdentifiers";
-import { objectToBase64 } from "../utils/base64";
-import { base64ToObject } from "../utils/publish";
-import { generateBloomFilterBase64, isInsideBloom } from "../utils/bloomFilter";
-import { formatTimestamp } from "../utils/time";
 import { Toaster } from "react-hot-toast";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
 
-const utils = {
-  objectToBase64,
-  base64ToObject,
-  addAndEncryptSymmetricKeys,
-  encryptWithSymmetricKeys,
-  decryptWithSymmetricKeys,
-  generateBloomFilterBase64,
-  isInsideBloom,
-  formatTimestamp
-}
+
 
 
 // ✅ Define Global Context Type
 interface GlobalContextType {
-  auth: ReturnType<typeof useAuth>;
+auth: ReturnType<typeof useAuth>;
 lists: ReturnType<typeof useResources>;
 appInfo: ReturnType<typeof useAppInfo>;
 identifierOperations: ReturnType<typeof useIdentifiers>
 localStorageOperations: ReturnType<typeof useLocalStorage>
-utils: typeof utils
 }
 
 
@@ -61,7 +46,7 @@ export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProv
   const identifierOperations = useIdentifiers(config.publicSalt, config.appName)
   const localStorageOperations = useLocalStorage(config.publicSalt, config.appName)
   // ✅ Merge all hooks into a single `contextValue`
-  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, utils, localStorageOperations }), [auth, lists, appInfo, identifierOperations, localStorageOperations]);
+  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, localStorageOperations }), [auth, lists, appInfo, identifierOperations, localStorageOperations]);
   return (
     <GlobalContext.Provider value={contextValue}>
        <Toaster

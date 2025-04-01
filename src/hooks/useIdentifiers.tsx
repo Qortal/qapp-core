@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
-import { useAppStore } from "../state/app";
+import React, { useCallback } from "react";
 import { buildIdentifier, buildSearchPrefix,  EnumCollisionStrength,  hashWord } from "../utils/encryption";
 
 

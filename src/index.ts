@@ -1,5 +1,10 @@
 export { useResourceStatus } from './hooks/useResourceStatus';
 import './index.css'
+export { objectToBase64 } from './utils/base64';
+export { generateBloomFilterBase64, isInsideBloom } from './utils/bloomFilter';
+export { addAndEncryptSymmetricKeys, decryptWithSymmetricKeys, encryptWithSymmetricKeys } from './utils/encryption';
+export { base64ToObject } from './utils/publish';
+export { formatTimestamp } from './utils/time';
 export { EnumCollisionStrength } from './utils/encryption';
 export { showLoading, dismissToast, showError, showSuccess } from './utils/toast';
 export { processText, sanitizedContent, extractComponents,  handleClickText} from './utils/text';
@@ -14,3 +19,5 @@ export {Resource} from './hooks/useResources'
 export {Service} from './types/interfaces/resources'
 export {ListItem} from './state/cache'
 export {SymmetricKeys} from './utils/encryption'
+
+
