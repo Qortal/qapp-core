@@ -65,7 +65,13 @@ const displayedItems = disablePagination ? items : items?.length < (displayedLim
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'center'
-            }} ref={index === displayedLimit ? lastItemRef2 : index === list.length -displayedLimit - 1 ? lastItemRef : null}>
+            }} ref={
+              index === displayedLimit
+                ? lastItemRef2
+                : index === (list.length - displayedLimit - 1 < displayedLimit ? displayedLimit - 1 : list.length - displayedLimit - 1 )
+                ? lastItemRef
+                : null
+            }>
             <ListItemWrapper
             defaultLoaderParams={defaultLoaderParams}
               item={item}
@@ -81,11 +87,12 @@ const displayedItems = disablePagination ? items : items?.length < (displayedLim
           <LazyLoad
             onLoadMore={async () => {
               await onLoadMore(displayedLimit);
+              if(!disablePagination && (displayedItems?.length === displayedLimit * 3)){
               lastItemRef.current.scrollIntoView({ behavior: "auto", block: "end" });
               setTimeout(() => {
                 window.scrollBy({ top: 50, behavior: "instant" }); // 'smooth' if needed
               }, 0);
-
+            }
             }}
           />
           )}

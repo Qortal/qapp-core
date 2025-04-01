@@ -40,7 +40,8 @@ export const VerticalPaginatedList = ({
 
   const displayedItems = disablePagination
     ? items
-    : items.slice(-(displayedLimit * 3));
+    : items?.length < (displayedLimit * 3) ? items?.slice(0, displayedLimit * 3) : items.slice(- (displayedLimit * 3));
+
 
   return (
     <>
@@ -60,6 +61,7 @@ export const VerticalPaginatedList = ({
       )}
 
       {displayedItems?.map((item, index, list) => {
+   
         return (
           <React.Fragment
             key={`${item?.name}-${item?.service}-${item?.identifier}`}
@@ -73,7 +75,7 @@ export const VerticalPaginatedList = ({
               ref={
                 index === displayedLimit
                   ? lastItemRef2
-                  : index === list.length - displayedLimit - 1
+                  : index === (list.length - displayedLimit - 1 < displayedLimit ? displayedLimit - 1 : list.length - displayedLimit - 1 )
                   ? lastItemRef
                   : null
               }
@@ -93,13 +95,16 @@ export const VerticalPaginatedList = ({
         <LazyLoad
           onLoadMore={async () => {
             await onLoadMore(displayedLimit);
-            lastItemRef.current.scrollIntoView({
-              behavior: "auto",
-              block: "end",
-            });
-            setTimeout(() => {
-              window.scrollBy({ top: 50, behavior: "instant" }); // 'smooth' if needed
-            }, 0);
+            if(!disablePagination && (displayedItems?.length === displayedLimit * 3)){
+              lastItemRef.current.scrollIntoView({
+                behavior: "auto",
+                block: "end",
+              });
+              setTimeout(() => {
+                window.scrollBy({ top: 50, behavior: "instant" }); // 'smooth' if needed
+              }, 0);
+            }
+            
           }}
         />
       )}
