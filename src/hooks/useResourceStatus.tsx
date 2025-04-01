@@ -183,5 +183,15 @@ export const useResourceStatus = ({
     resource?.service,
     downloadResource,
   ]);
-  return !status ? null : {...(status || {}), isReady: status?.status === 'READY'};
+
+  const resourceUrl = resource ? `/arbitrary/${resource.service}/${resource.name}/${resource.identifier}` : null;
+
+  return {
+    status: status?.status || "SEARCHING",
+    localChunkCount: status?.localChunkCount || 0,
+    totalChunkCount: status?.totalChunkCount || 0,
+    percentLoaded: status?.percentLoaded || 0,
+    isReady: status?.status === 'READY',
+    resourceUrl,
+  };  
 };
