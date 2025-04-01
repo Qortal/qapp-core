@@ -26,7 +26,7 @@ export interface UseAuthProps {
   authenticateOnMount?: boolean;
 }
 
-export const useAuth = ({ balanceSetting, authenticateOnMount }: UseAuthProps) => {
+export const useAuth = ({ balanceSetting, authenticateOnMount = true }: UseAuthProps) => {
   const address = useAuthStore((s) => s.address);
 const publicKey = useAuthStore((s) => s.publicKey);
 const name = useAuthStore((s) => s.name);
