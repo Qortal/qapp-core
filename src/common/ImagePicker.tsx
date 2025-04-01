@@ -13,6 +13,8 @@ type Mode = "single" | "multi";
 interface CommonProps {
   children: React.ReactNode;
   mode?: Mode;
+  quality?: number;
+  maxWidth?: number;
 }
 
 interface SingleModeProps extends CommonProps {
@@ -30,6 +32,8 @@ type ImageUploaderProps = SingleModeProps | MultiModeProps;
 export const ImagePicker: React.FC<ImageUploaderProps> = ({
   children,
   onPick,
+  quality = 0.6,
+  maxWidth= 1200,
   mode = "single",
 }) => {
   const onDrop = useCallback(
@@ -52,8 +56,8 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
           } else {
             fileToConvert = await new Promise<File>((resolve, reject) => {
               new Compressor(image, {
-                quality: 0.6,
-                maxWidth: 1200,
+                quality,
+                maxWidth,
                 mimeType: "image/webp",
                 success(result) {
                   resolve(
