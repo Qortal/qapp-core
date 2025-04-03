@@ -5,6 +5,8 @@ import { useAppInfo } from "../hooks/useAppInfo";
 import { useIdentifiers } from "../hooks/useIdentifiers";
 import { Toaster } from "react-hot-toast";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { IndexManager } from "../components/IndexManager/IndexManager";
+import { useIndexes } from "../hooks/useIndexes";
 
 
 
@@ -17,6 +19,7 @@ lists: ReturnType<typeof useResources>;
 appInfo: ReturnType<typeof useAppInfo>;
 identifierOperations: ReturnType<typeof useIdentifiers>
 localStorageOperations: ReturnType<typeof useLocalStorage>
+indexOperations: ReturnType<typeof useIndexes>
 }
 
 
@@ -45,8 +48,9 @@ export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProv
   const lists = useResources()
   const identifierOperations = useIdentifiers(config.publicSalt, config.appName)
   const localStorageOperations = useLocalStorage(config.publicSalt, config.appName)
+  const indexOperations = useIndexes()
   // ✅ Merge all hooks into a single `contextValue`
-  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, localStorageOperations }), [auth, lists, appInfo, identifierOperations, localStorageOperations]);
+  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, localStorageOperations, indexOperations }), [auth, lists, appInfo, identifierOperations, localStorageOperations]);
   return (
     <GlobalContext.Provider value={contextValue}>
        <Toaster
@@ -57,6 +61,7 @@ export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProv
         }}
         containerStyle={{zIndex: 999999}}
       />
+      <IndexManager />
       {children}
     </GlobalContext.Provider>
   );

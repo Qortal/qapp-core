@@ -1,5 +1,8 @@
 export { useResourceStatus } from './hooks/useResourceStatus';
+export { Spacer } from './common/Spacer';
 import './index.css'
+export { hashWordWithoutPublicSalt } from './utils/encryption';
+export { createAvatarLink } from './utils/qortal';
 export { objectToBase64 } from './utils/base64';
 export { generateBloomFilterBase64, isInsideBloom } from './utils/bloomFilter';
 export { addAndEncryptSymmetricKeys, decryptWithSymmetricKeys, encryptWithSymmetricKeys } from './utils/encryption';
@@ -19,5 +22,4 @@ export {Resource} from './hooks/useResources'
 export {Service} from './types/interfaces/resources'
 export {ListItem} from './state/cache'
 export {SymmetricKeys} from './utils/encryption'
-
 

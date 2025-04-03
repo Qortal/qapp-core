@@ -48,6 +48,35 @@ export async function hashWord(
   }
 }
 
+export async function hashWordWithoutPublicSalt(
+  word: string,
+  collisionStrength: number
+): Promise<string> {
+  try {
+    if (!crypto?.subtle?.digest) throw new Error("Web Crypto not available");
+
+    const encoded = new TextEncoder().encode(word);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
+
+    return Buffer.from(hashBuffer)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "")
+      .slice(0, collisionStrength);
+  } catch (err) {
+    const hash = SHA256(word);
+    const base64 = EncBase64.stringify(hash);
+
+    return base64
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "")
+      .slice(0, collisionStrength);
+  }
+}
+
+
 const uid = new ShortUniqueId({ length: 10, dictionary: "alphanum" });
 
 interface EntityConfig {
