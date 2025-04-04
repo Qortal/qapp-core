@@ -32,7 +32,7 @@ interface GlobalProviderProps {
     appName: string;
     publicSalt: string
   };
-  toastStyle: CSSProperties
+  toastStyle?: CSSProperties
 }
 
 // ✅ Create Context with Proper Type
@@ -44,6 +44,7 @@ const GlobalContext = createContext<GlobalContextType | null>(null);
 export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProviderProps) => {
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
+  
   const appInfo = useAppInfo(config.appName, config?.publicSalt)
   const lists = useResources()
   const identifierOperations = useIdentifiers(config.publicSalt, config.appName)
@@ -51,6 +52,8 @@ export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProv
   const indexOperations = useIndexes()
   // ✅ Merge all hooks into a single `contextValue`
   const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, localStorageOperations, indexOperations }), [auth, lists, appInfo, identifierOperations, localStorageOperations]);
+
+
   return (
     <GlobalContext.Provider value={contextValue}>
        <Toaster
@@ -61,7 +64,8 @@ export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProv
         }}
         containerStyle={{zIndex: 999999}}
       />
-      <IndexManager />
+ <IndexManager username={auth?.name} />
+      
       {children}
     </GlobalContext.Provider>
   );

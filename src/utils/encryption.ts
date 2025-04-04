@@ -17,36 +17,39 @@ export enum EnumCollisionStrength {
   ENTITY_LABEL = 6,
 }
 
-export async function hashWord(
-  word: string,
-  collisionStrength: number,
-  publicSalt: string
-): Promise<string> {
-  const saltedWord = publicSalt + word;
 
-  try {
-    if (!crypto?.subtle?.digest) throw new Error("Web Crypto not available");
+// Custom URL-safe replacements (reserving '-' and '_')
+const safeBase64 = (base64: string): string =>
+  base64
+    .replace(/\+/g, ".")   // Replace '+' with '.' (URL-safe)
+    .replace(/\//g, "~")   // Replace '/' with '~' (URL-safe)
+    .replace(/_/g, "!")    // Replace '_' with '!' if needed (optional)
+    .replace(/=+$/, "");   // Remove padding
 
-    const encoded = new TextEncoder().encode(saltedWord);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
 
-    return Buffer.from(hashBuffer)
-      .toString("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "")
-      .slice(0, collisionStrength);
-  } catch (err) {
-    const hash = SHA256(saltedWord);
-    const base64 = EncBase64.stringify(hash);
+    export async function hashWord(
+      word: string,
+      collisionStrength: number,
+      publicSalt: string
+    ): Promise<string> {
+      const saltedWord = publicSalt + word;
+    
+      try {
+        if (!crypto?.subtle?.digest) throw new Error("Web Crypto not available");
+    
+        const encoded = new TextEncoder().encode(saltedWord);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
+        const base64 = Buffer.from(hashBuffer).toString("base64");
+    
+        return safeBase64(base64).slice(0, collisionStrength);
+      } catch (err) {
+        const hash = SHA256(saltedWord);
+        const base64 = EncBase64.stringify(hash);
+    
+        return safeBase64(base64).slice(0, collisionStrength);
+      }
+    }
 
-    return base64
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "")
-      .slice(0, collisionStrength);
-  }
-}
 
 export async function hashWordWithoutPublicSalt(
   word: string,
@@ -57,22 +60,14 @@ export async function hashWordWithoutPublicSalt(
 
     const encoded = new TextEncoder().encode(word);
     const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
+    const base64 = Buffer.from(hashBuffer).toString("base64");
 
-    return Buffer.from(hashBuffer)
-      .toString("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "")
-      .slice(0, collisionStrength);
+    return safeBase64(base64).slice(0, collisionStrength);
   } catch (err) {
     const hash = SHA256(word);
     const base64 = EncBase64.stringify(hash);
 
-    return base64
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "")
-      .slice(0, collisionStrength);
+    return safeBase64(base64).slice(0, collisionStrength);
   }
 }
 
