@@ -1,6 +1,6 @@
 {
   "name": "qapp-core",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Qortal's core React library with global state, UI components, and utilities",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

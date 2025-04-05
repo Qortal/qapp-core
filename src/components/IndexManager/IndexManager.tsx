@@ -567,7 +567,11 @@ const CreateIndex = ({
         const identifier = `idx-${hashedRootName}-${hashedLink}-`;
       const res = await fetch(`/arbitrary/indices/${nameParam}/${identifier}`)
       const data = await res.json()
-      setRecommendedIndices(data)
+      const uniqueByTerm = data.filter(
+        (item: any, index: number, self: any) =>
+          index === self.findIndex((t: any) => t.term === item.term)
+      );
+      setRecommendedIndices(uniqueByTerm)
     } catch (error) {
         
     }
@@ -656,7 +660,9 @@ const CreateIndex = ({
         
       
      
-          <Box>
+          <Box sx={{
+            width: '100%'
+          }}>
           <RadioGroup
         aria-labelledby="demo-controlled-radio-buttons-group"
         name="controlled-radio-buttons-group"
@@ -809,6 +815,7 @@ const YourIndices = ({
           const identifier = `idx-${hashedRootName}-${hashedLink}-`;
         const res = await fetch(`/arbitrary/indices/${nameParam}/${identifier}`)
         const data = await res.json()
+        
         setRecommendedIndices(data)
       } catch (error) {
           
@@ -898,7 +905,9 @@ const YourIndices = ({
           
         
        
-            <Box>
+            <Box sx={{
+            width: '100%'
+          }}>
             <RadioGroup
           aria-labelledby="demo-controlled-radio-buttons-group"
           name="controlled-radio-buttons-group"

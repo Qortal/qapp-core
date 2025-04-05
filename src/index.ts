@@ -1,6 +1,7 @@
 export { useResourceStatus } from './hooks/useResourceStatus';
 export { Spacer } from './common/Spacer';
 import './index.css'
+export { createQortalLink } from './utils/qortal';
 export { IndexCategory } from './state/indexes';
 export { hashWordWithoutPublicSalt } from './utils/encryption';
 export { createAvatarLink } from './utils/qortal';
