@@ -250,9 +250,7 @@ export const useResources = (retryAttempts: number = 2) => {
 
   const fetchResourcesResultsOnly = useCallback(
     async (
-      params: QortalSearchParams,
-      listName: string,
-      returnType: ReturnType = 'JSON'
+      params: QortalSearchParams
     ): Promise<QortalMetadata[]> => {
 
       let responseData: QortalMetadata[] = [];

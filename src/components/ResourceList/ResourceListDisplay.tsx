@@ -181,7 +181,7 @@ const addItems = useListStore((s) => s.addItems);
         const parsedParams = {...(JSON.parse(memoizedParamsSearchNewData))};
         parsedParams.identifier = generatedIdentifier
         parsedParams.after = lastItemTimestampRef.current
-        const responseData = await lists.fetchResourcesResultsOnly(parsedParams, listName, returnType); // Awaiting the async function
+        const responseData = await lists.fetchResourcesResultsOnly(parsedParams); // Awaiting the async function
         if(onNewData && responseData?.length > 0){
           onNewData(true)
         }

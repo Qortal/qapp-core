@@ -17,6 +17,12 @@ export enum EnumCollisionStrength {
   ENTITY_LABEL = 6,
 }
 
+const deprecatedSafeBase64 = (base64: string): string =>
+  base64
+.replace(/\+/g, "-")
+.replace(/\//g, "_")
+.replace(/=+$/, "")
+
 
 // Custom URL-safe replacements (reserving '-' and '_')
 const safeBase64 = (base64: string): string =>
