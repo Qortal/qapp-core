@@ -326,7 +326,7 @@ export const useResources = (retryAttempts: number = 2) => {
       deletes.push({
         service: resource.service,
         identifier: resource.identifier,
-        base64: "RA==",
+        data64: "RA==",
    });
  }
  await qortalRequestWithTimeout({

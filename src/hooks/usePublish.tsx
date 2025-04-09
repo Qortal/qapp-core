@@ -189,7 +189,7 @@ export const usePublish = (
       action: "PUBLISH_QDN_RESOURCE",
       service: publish.service,
       identifier: publish.identifier,
-      base64: "RA==",
+      data64: "RA==",
     });
 
     if (res?.signature) {

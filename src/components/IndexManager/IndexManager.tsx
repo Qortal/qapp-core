@@ -305,7 +305,7 @@ const AddMetadata = ({
         action: "PUBLISH_QDN_RESOURCE",
         service: "METADATA",
         identifier: identifier,
-        base64: toBase64,
+        data64: toBase64,
       });
 
       if (res?.signature) {
@@ -595,7 +595,7 @@ const CreateIndex = ({
         action: "PUBLISH_QDN_RESOURCE",
         service: "JSON",
         identifier: identifier,
-        base64: toBase64,
+        data64: toBase64,
       });
 
       if (res?.signature) {
@@ -840,7 +840,7 @@ const YourIndices = ({
           action: "PUBLISH_QDN_RESOURCE",
           service: "JSON",
           identifier: identifier,
-          base64: toBase64,
+          data64: toBase64,
         });
   
         if (res?.signature) {
