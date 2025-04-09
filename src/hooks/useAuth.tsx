@@ -19,14 +19,18 @@ export type BalanceSetting =
       interval?: number;
     };
 
-
+interface userAccountInfo {
+  address: string;
+  publicKey: string
+}
 export interface UseAuthProps {
   balanceSetting?: BalanceSetting;
   /** User will be prompted for authentication on start-up */
   authenticateOnMount?: boolean;
+  userAccountInfo?: userAccountInfo | null
 }
 
-export const useAuth = ({ balanceSetting, authenticateOnMount = true }: UseAuthProps) => {
+export const useAuth = ({ balanceSetting, authenticateOnMount = true, userAccountInfo = null }: UseAuthProps) => {
   const address = useAuthStore((s) => s.address);
 const publicKey = useAuthStore((s) => s.publicKey);
 const name = useAuthStore((s) => s.name);
@@ -45,12 +49,12 @@ const setBalance = useAuthStore((s) => s.setBalance);
 
   const balanceSetIntervalRef = useRef<null | ReturnType<typeof setInterval>>(null);
 
-  const authenticateUser = useCallback(async () => {
+  const authenticateUser = useCallback(async (userAccountInfo?: userAccountInfo) => {
     try {
       setErrorLoadingUser(null);
       setIsLoadingUser(true);
 
-      const account = await qortalRequest({
+      const account = userAccountInfo || await qortalRequest({
         action: "GET_USER_ACCOUNT",
       });
 
@@ -104,7 +108,10 @@ const setBalance = useAuthStore((s) => s.setBalance);
     if (authenticateOnMount) {
       authenticateUser();
     }
-  }, [authenticateOnMount, authenticateUser]);
+    if(userAccountInfo?.address && userAccountInfo?.publicKey){
+      authenticateUser(userAccountInfo);
+    }
+  }, [authenticateOnMount, authenticateUser, userAccountInfo?.address, userAccountInfo?.publicKey]);
 
   useEffect(() => {
     if (address && (balanceSetting?.onlyOnMount || (balanceSetting?.interval && !isNaN(balanceSetting?.interval)))) {
