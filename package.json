@@ -1,6 +1,6 @@
 {
   "name": "qapp-core",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Qortal's core React library with global state, UI components, and utilities",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -36,8 +36,8 @@
   "peerDependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^6.4.7",
-    "@mui/material": "^6.4.7",
+    "@mui/icons-material": "^7.0.1",
+    "@mui/material": "^7.0.1",
     "react": "^19.0.0"
 },
   "devDependencies": {
@@ -46,8 +46,8 @@
     "typescript": "^5.2.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^6.4.7",
-    "@mui/material": "^6.4.7",
+    "@mui/icons-material": "^7.0.1",
+    "@mui/material": "^7.0.1",
     "react": "^19.0.0",
     "@types/react": "^19.0.10"
   },
