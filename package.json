@@ -9,13 +9,17 @@
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./global": {
+      "types": "./dist/src/global.d.ts"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && npm run copy-types",
+    "copy-types": "cpy src/global.d.ts dist",
     "prepare": "npm run build",
     "clean": "rm -rf dist"
   },
@@ -39,17 +43,18 @@
     "@mui/icons-material": "^7.0.1",
     "@mui/material": "^7.0.1",
     "react": "^19.0.0"
-},
+  },
   "devDependencies": {
-    "@types/crypto-js": "^4.2.2",
-    "tsup": "^8.4.0",
-    "typescript": "^5.2.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.0.1",
     "@mui/material": "^7.0.1",
+    "@types/crypto-js": "^4.2.2",
+    "@types/react": "^19.0.10",
+    "cpy-cli": "^5.0.0",
     "react": "^19.0.0",
-    "@types/react": "^19.0.10"
+    "tsup": "^8.4.0",
+    "typescript": "^5.2.0"
   },
   "repository": {
     "type": "git",

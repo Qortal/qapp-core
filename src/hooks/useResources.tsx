@@ -211,7 +211,7 @@ export const useResources = (retryAttempts: number = 2) => {
 
       let responseData: QortalMetadata[] = [];
       let filteredResults: QortalMetadata[] = [];
-      let lastCreated = params.before || null;
+      let lastCreated = params.before || undefined;
       const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
 
       while (filteredResults.length < targetLimit) {
@@ -255,7 +255,7 @@ export const useResources = (retryAttempts: number = 2) => {
 
       let responseData: QortalMetadata[] = [];
       let filteredResults: QortalMetadata[] = [];
-      let lastCreated = params.before || null;
+      let lastCreated = params.before || undefined;
       const targetLimit = params.limit ?? 20;
   
       while (filteredResults.length < targetLimit) {

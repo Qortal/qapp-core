@@ -103,7 +103,7 @@ export function processText(input: string): string {
           e.stopPropagation()
           qortalRequest({
             action: 'JOIN_GROUP',
-            groupId: id
+            groupId: +id
           })
           return
         }
