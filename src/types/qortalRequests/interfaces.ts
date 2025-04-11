@@ -615,3 +615,11 @@ export interface SignTransactionQortalRequest extends BaseRequest {
   process?: boolean
 }
 
+export interface CreateAndCopyEmbedLinkQortalRequest extends BaseRequest {
+  action: 'CREATE_AND_COPY_EMBED_LINK'
+  type: string
+  identifier: string
+  service: Service
+  encryptionType: 'public' | 'private' | 'group'
+  name: string
+}
