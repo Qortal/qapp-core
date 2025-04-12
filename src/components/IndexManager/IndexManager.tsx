@@ -118,6 +118,11 @@ export const IndexManager = ({ username }: PropsIndexManager) => {
       sx={{
         zIndex: 999990,
       }}
+      slotProps={{
+        paper: {
+          elevation: 0,
+        },
+      }}
     >
       <DialogTitle>Index manager</DialogTitle>
       <IconButton
@@ -722,6 +727,11 @@ const CreateIndex = ({
         sx={{
           zIndex: 999991,
         }}
+        slotProps={{
+          paper: {
+            elevation: 1,
+          },
+        }}
       >
         <DialogTitle id="alert-dialog-title">
           Adding multiple indices
@@ -733,8 +743,8 @@ const CreateIndex = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onCancel}>Cancel</Button>
-          <Button onClick={onOk}>
+          <Button variant="contained" onClick={onCancel}>Cancel</Button>
+          <Button variant="contained" onClick={onOk}>
             Continue
           </Button>
         </DialogActions>
@@ -967,6 +977,11 @@ const YourIndices = ({
           sx={{
             zIndex: 999991,
           }}
+          slotProps={{
+            paper: {
+              elevation: 1,
+            },
+          }}
         >
           <DialogTitle id="alert-dialog-title">
             Adding multiple indices
@@ -978,8 +993,8 @@ const YourIndices = ({
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={onCancel}>Cancel</Button>
-            <Button onClick={onOk}>
+            <Button variant="contained" onClick={onCancel}>Cancel</Button>
+            <Button variant="contained" onClick={onOk}>
               Continue
             </Button>
           </DialogActions>
