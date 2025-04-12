@@ -1,6 +1,6 @@
 {
   "name": "qapp-core",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Qortal's core React library with global state, UI components, and utilities",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -11,15 +11,14 @@
       "require": "./dist/index.js"
     },
     "./global": {
-      "types": "./dist/src/global.d.ts"
+      "types": "./dist/global.d.ts"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup && npm run copy-types",
-    "copy-types": "cpy src/global.d.ts dist",
+    "build": "tsup",
     "prepare": "npm run build",
     "clean": "rm -rf dist"
   },

@@ -1,3 +1,5 @@
+/// <reference path="./global.ts" />
+
 export { useResourceStatus } from './hooks/useResourceStatus';
 export { Spacer } from './common/Spacer';
 import './index.css'

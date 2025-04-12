@@ -1,6 +1,11 @@
 import React from 'react'
 import './barSpinner.css'
-export const BarSpinner = ({width = '20px', color}) => {
+
+interface PropsBarSpinner {
+  width: string
+  color?: string
+}
+export const BarSpinner = ({width = '20px', color}: PropsBarSpinner) => {
   return (
     <div style={{
         width,
