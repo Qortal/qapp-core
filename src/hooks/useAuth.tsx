@@ -74,15 +74,18 @@ const setBalance = useAuthStore((s) => s.setBalance);
     }
   }, [setErrorLoadingUser, setIsLoadingUser, setUser]);
 
-  const getBalance = useCallback(async (address: string) => {
+  const getBalance = useCallback(async (address: string): Promise<number> => {
     try {
       const response = await qortalRequest({
         action: "GET_BALANCE",
         address,
       });
-      setBalance(Number(response) || 0);
+      const userBalance = Number(response) || 0
+      setBalance(userBalance);
+      return userBalance
     } catch (error) {
       setBalance(0);
+      return 0
     }
   }, [setBalance]);
 
@@ -122,6 +125,12 @@ const setBalance = useAuthStore((s) => s.setBalance);
     }
   }, [balanceSetting?.onlyOnMount, balanceSetting?.interval, address, getBalance, balanceSetInterval]);
 
+  const manualGetBalance = useCallback(async () : Promise<number | Error> =>  {
+    if(!address) throw new Error('Not authenticated')
+    const res = await getBalance(address)
+    return res
+  }, [address])
+
   return {
     address,
     publicKey,
@@ -130,7 +139,8 @@ const setBalance = useAuthStore((s) => s.setBalance);
     balance,
     isLoadingUser,
     isLoadingInitialBalance,
-    errorLoadingUser,
+    errorMessageLoadingUser: errorLoadingUser,
     authenticateUser,
+    getBalance: manualGetBalance
   };
 };
