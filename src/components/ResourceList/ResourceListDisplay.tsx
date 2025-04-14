@@ -73,7 +73,7 @@ interface BaseProps  {
   resourceCacheDuration?: number
   disablePagination?: boolean
   disableScrollTracker?: boolean
-  retryAttempts: number
+  retryAttempts?: number
   returnType: 'JSON' | 'BASE64'
   onResults?: (results: Results)=> void
   searchNewData?: {
