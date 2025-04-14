@@ -7,6 +7,7 @@ import nacl from "../deps/nacl-fast";
 import SHA256 from 'crypto-js/sha256';
 import EncBase64 from 'crypto-js/enc-base64';
 
+export const IDENTIFIER_BUILDER_VERSION = `v1`
 export const requestQueueGetPublicKeys = new RequestQueueWithPromise(10);
 
 export enum EnumCollisionStrength {
@@ -78,7 +79,7 @@ export async function hashWordWithoutPublicSalt(
 }
 
 
-const uid = new ShortUniqueId({ length: 10, dictionary: "alphanum" });
+const uid = new ShortUniqueId({ length: 15, dictionary: "alphanum" });
 
 interface EntityConfig {
   children?: Record<string, EntityConfig>;
@@ -162,7 +163,7 @@ export async function buildIdentifier(
     );
   }
 
-  return `${appHash}-${entityPrefix}-${parentRef}-${entityUid}`;
+  return `${appHash}-${entityPrefix}-${parentRef}-${entityUid}-${IDENTIFIER_BUILDER_VERSION}`;
 }
 
 export const createSymmetricKeyAndNonce = () => {
