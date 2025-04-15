@@ -70,7 +70,6 @@ export const usePublish = (
   const fetchPublish = useCallback(
     async (
       metadataProp: QortalGetMetadata,
-      returnTypeProp: ReturnType = "JSON"
     ) => {
       let resourceExists = null;
       let resource = null;
@@ -179,9 +178,14 @@ export const usePublish = (
     if (hasFetched.current) return;
     if (metadata?.identifier && metadata?.name && metadata?.service) {
       hasFetched.current = true;
-      fetchPublish(metadata, returnType);
+      fetchPublish(metadata);
     }
   }, [metadata, returnType]);
+
+  const refetchData =  useCallback(async ()=> {
+    if(!metadata) throw new Error('usePublish is missing metadata')
+    return await fetchPublish(metadata)
+  }, [metadata])
 
 
   const deleteResource = useCallback(async (publish: QortalGetMetadata) => {
@@ -268,7 +272,7 @@ export const usePublish = (
     error,
     resource: publish || null,
     hasResource,
-    refetch: fetchPublish,
+    refetch: refetchData,
     fetchPublish,
     updatePublish,
     deletePublish: deleteResource,
