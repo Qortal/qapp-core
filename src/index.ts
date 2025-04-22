@@ -23,7 +23,7 @@ export {QortalSearchParams, QortalMetadata} from './types/interfaces/resources'
 export {ImagePicker} from './common/ImagePicker'
 export {useNameSearch} from './hooks/useNameSearch'
 export {Resource} from './hooks/useResources'
-export {Service} from './types/interfaces/resources'
+export {Service, QortalGetMetadata} from './types/interfaces/resources'
 export {ListItem} from './state/cache'
 export {SymmetricKeys} from './utils/encryption'
 

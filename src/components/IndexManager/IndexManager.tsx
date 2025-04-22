@@ -84,8 +84,7 @@ export const IndexManager = ({ username }: PropsIndexManager) => {
           name: name,
           service: "METADATA",
           identifier,
-        },
-        "JSON"
+        }
       );
 
       if (

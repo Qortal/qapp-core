@@ -71,7 +71,7 @@ export const usePublish = (
     async (
       metadataProp: QortalGetMetadata,
     ) => {
-      let resourceExists = null;
+      let hasResource = null;
       let resource = null;
       let error = null;
       try {
@@ -90,7 +90,7 @@ export const usePublish = (
                 return {
                     resource: null,
                     error: null,
-                    resourceExists: false
+                    hasResource: false
                 }
             }
             if(metadata){
@@ -100,7 +100,7 @@ export const usePublish = (
             return {
                 resource: hasCache,
                 error: null,
-                resourceExists: true
+                hasResource: true
             }
         }
         const url = `/arbitrary/resources/search?mode=ALL&service=${metadataProp?.service}&limit=1&includemetadata=true&reverse=true&excludeblocked=true&name=${encodeURIComponent(metadataProp?.name)}&exactmatchnames=true&offset=0&identifier=${encodeURIComponent(metadataProp?.identifier)}`;
@@ -115,24 +115,24 @@ export const usePublish = (
             setError("Invalid search params");
           }
           return {
-            resourceExists,
+            hasResource,
             resource,
             error: "Invalid search params",
           };
         }
         const resMetadata = await responseMetadata.json();
         if (resMetadata?.length === 0) {
-          resourceExists = false;
+          hasResource = false;
           if (metadata) {
             setHasResource(false);
           }
         } else if (resMetadata[0]?.size === 32) {
-          resourceExists = false;
+          hasResource = false;
           if (metadata) {
             setHasResource(false);
           }
         } else {
-          resourceExists = true;
+          hasResource = true;
           if (metadata) {
             setHasResource(true);
           }
@@ -166,7 +166,7 @@ export const usePublish = (
         }
       }
       return {
-        resourceExists,
+        hasResource,
         resource,
         error,
       };
