@@ -1,6 +1,6 @@
 {
   "name": "qapp-core",
-  "version": "1.0.22",
+  "version": "1.0.24",
   "description": "Qortal's core React library with global state, UI components, and utilities",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -29,6 +29,7 @@
     "compressorjs": "^1.2.1",
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.13",
+    "dexie": "^4.0.11",
     "dompurify": "^3.2.4",
     "react-dropzone": "^14.3.8",
     "react-hot-toast": "^2.5.2",

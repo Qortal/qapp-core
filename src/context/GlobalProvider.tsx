@@ -4,7 +4,7 @@ import { useResources } from "../hooks/useResources";
 import { useAppInfo } from "../hooks/useAppInfo";
 import { useIdentifiers } from "../hooks/useIdentifiers";
 import { Toaster } from "react-hot-toast";
-import { useLocalStorage } from "../hooks/useLocalStorage";
+import { usePersistentStore } from "../hooks/usePersistentStore";
 import { IndexManager } from "../components/IndexManager/IndexManager";
 import { useIndexes } from "../hooks/useIndexes";
 
@@ -18,7 +18,7 @@ auth: ReturnType<typeof useAuth>;
 lists: ReturnType<typeof useResources>;
 appInfo: ReturnType<typeof useAppInfo>;
 identifierOperations: ReturnType<typeof useIdentifiers>
-localStorageOperations: ReturnType<typeof useLocalStorage>
+persistentOperations: ReturnType<typeof usePersistentStore>
 indexOperations: ReturnType<typeof useIndexes>
 }
 
@@ -48,10 +48,10 @@ export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProv
   const appInfo = useAppInfo(config.appName, config?.publicSalt)
   const lists = useResources()
   const identifierOperations = useIdentifiers(config.publicSalt, config.appName)
-  const localStorageOperations = useLocalStorage(config.publicSalt, config.appName)
+  const persistentOperations = usePersistentStore(config.publicSalt, config.appName, auth?.address)
   const indexOperations = useIndexes()
   // ✅ Merge all hooks into a single `contextValue`
-  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, localStorageOperations, indexOperations }), [auth, lists, appInfo, identifierOperations, localStorageOperations]);
+  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, persistentOperations, indexOperations }), [auth, lists, appInfo, identifierOperations, persistentOperations]);
 
 
   return (
