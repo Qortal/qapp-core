@@ -174,13 +174,13 @@ export const usePublish = (
     [metadata]
   );
 
+
   useEffect(() => {
-    if (hasFetched.current) return;
+
     if (metadata?.identifier && metadata?.name && metadata?.service) {
-      hasFetched.current = true;
       fetchPublish(metadata);
     }
-  }, [metadata, returnType]);
+  }, [metadata?.identifier, metadata?.service, metadata?.identifier, returnType]);
 
   const refetchData =  useCallback(async ()=> {
     if(!metadata) throw new Error('usePublish is missing metadata')
