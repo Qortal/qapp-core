@@ -48,7 +48,7 @@ export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProv
   const appInfo = useAppInfo(config.appName, config?.publicSalt)
   const lists = useResources()
   const identifierOperations = useIdentifiers(config.publicSalt, config.appName)
-  const persistentOperations = usePersistentStore(config.publicSalt, config.appName, auth?.address)
+  const persistentOperations = usePersistentStore(config.publicSalt, config.appName)
   const indexOperations = useIndexes()
   // ✅ Merge all hooks into a single `contextValue`
   const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, persistentOperations, indexOperations }), [auth, lists, appInfo, identifierOperations, persistentOperations]);

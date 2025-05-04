@@ -4,15 +4,14 @@ import { db } from '../utils/persistentDb';
 
 export const usePersistentStore = (
   publicSalt: string,
-  appName: string,
-  qortalAddress?: string | null
+  appName: string
 ) => {
   const getHashedId = useCallback(
     async (id: string) => {
-      const key = `${appName}-${qortalAddress ?? 'no-address'}-${id}`;
+      const key = `${appName}-${id}`;
       return await hashWord(key, EnumCollisionStrength.HIGH, publicSalt);
     },
-    [appName, publicSalt, qortalAddress]
+    [appName, publicSalt]
   );
 
   // --- TIMESTAMP FUNCTIONS ---
