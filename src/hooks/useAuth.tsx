@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAuthStore } from "../state/auth";
 
 // ✅ Define Types
@@ -131,7 +131,7 @@ const setBalance = useAuthStore((s) => s.setBalance);
     return res
   }, [address])
 
-  return {
+  return useMemo(() => ({
     address,
     publicKey,
     name,
@@ -141,6 +141,17 @@ const setBalance = useAuthStore((s) => s.setBalance);
     isLoadingInitialBalance,
     errorMessageLoadingUser: errorLoadingUser,
     authenticateUser,
-    getBalance: manualGetBalance
-  };
+    getBalance: manualGetBalance,
+  }), [
+    address,
+    publicKey,
+    name,
+    avatarUrl,
+    balance,
+    isLoadingUser,
+    isLoadingInitialBalance,
+    errorLoadingUser,
+    authenticateUser,
+    manualGetBalance,
+  ]);
 };

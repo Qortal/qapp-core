@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 
 interface NameListItem {
@@ -46,8 +46,10 @@ export const useNameSearch = (value: string, limit = 20) => {
       clearTimeout(handler);
     };
   }, [value, limit]);
-  return {
+
+  return useMemo(() => ({
     isLoading,
     results: nameList,
-  };
+  }), [isLoading, nameList]);
+  
 };

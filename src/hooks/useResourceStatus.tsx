@@ -186,12 +186,13 @@ export const useResourceStatus = ({
 
   const resourceUrl = resource ? `/arbitrary/${resource.service}/${resource.name}/${resource.identifier}` : null;
 
-  return {
+  return useMemo(() => ({
     status: status?.status || "SEARCHING",
     localChunkCount: status?.localChunkCount || 0,
     totalChunkCount: status?.totalChunkCount || 0,
     percentLoaded: status?.percentLoaded || 0,
     isReady: status?.status === 'READY',
     resourceUrl,
-  };  
+  }), [status?.status, status?.localChunkCount, status?.totalChunkCount, status?.percentLoaded, resourceUrl]);
+   
 };

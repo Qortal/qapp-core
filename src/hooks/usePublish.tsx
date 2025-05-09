@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePublishStore } from "../state/publishes";
 import { QortalGetMetadata, QortalMetadata } from "../types/interfaces/resources";
 import { base64ToObject, retryTransaction } from "../utils/publish";
@@ -267,14 +267,24 @@ export const usePublish = (
       deletePublish: deleteResource,
     };
 
-  return {
-    isLoading,
-    error,
-    resource: publish || null,
-    hasResource,
-    refetch: refetchData,
-    fetchPublish,
-    updatePublish,
-    deletePublish: deleteResource,
-  };
+    return useMemo(() => ({
+      isLoading,
+      error,
+      resource: publish || null,
+      hasResource,
+      refetch: refetchData,
+      fetchPublish,
+      updatePublish,
+      deletePublish: deleteResource,
+    }), [
+      isLoading,
+      error,
+      publish,
+      hasResource,
+      refetchData,
+      fetchPublish,
+      updatePublish,
+      deleteResource,
+    ]);
+    
 };
