@@ -624,3 +624,21 @@ export interface CreateAndCopyEmbedLinkQortalRequest extends BaseRequest {
   encryptionType: 'public' | 'private' | 'group'
   name: string
 }
+
+export interface TransferAssetQortalRequest extends BaseRequest {
+  action: 'TRANSFER_ASSET'
+  amount: number
+  assetId: number
+  recipient: string
+}
+
+export interface ShowPdfReaderQortalRequest extends BaseRequest {
+  action: 'SHOW_PDF_READER'
+  blob: Blob | File
+}
+
+export interface SaveFileQortalRequest extends BaseRequest {
+  action: 'SAVE_FILE'
+  blob: Blob | File
+  filename: string
+}
