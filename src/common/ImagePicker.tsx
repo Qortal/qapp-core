@@ -10,6 +10,13 @@ import { fileToBase64 } from "../utils/base64";
 
 type Mode = "single" | "multi";
 
+interface ImageResult {
+  base64: string;
+  name: string;
+  type: string;
+  size: number;
+}
+
 interface CommonProps {
   children: React.ReactNode;
   mode?: Mode;
@@ -19,12 +26,12 @@ interface CommonProps {
 
 interface SingleModeProps extends CommonProps {
   mode?: "single";
-  onPick: (base64: string) => void;
+  onPick: (result: ImageResult) => void;
 }
 
 interface MultiModeProps extends CommonProps {
   mode: "multi";
-  onPick: (base64s: string[]) => void;
+  onPick: (results: ImageResult[]) => void;
 }
 
 type ImageUploaderProps = SingleModeProps | MultiModeProps;
@@ -33,19 +40,18 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
   children,
   onPick,
   quality = 0.6,
-  maxWidth= 1200,
+  maxWidth = 1200,
   mode = "single",
 }) => {
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      const images =
-        mode === "single" ? acceptedFiles.slice(0, 1) : acceptedFiles;
+      const images = mode === "single" ? acceptedFiles.slice(0, 1) : acceptedFiles;
 
-      const base64s: string[] = [];
+      const results: ImageResult[] = [];
 
       for (const image of images) {
         try {
-          let fileToConvert: File;
+          let fileToConvert: Blob;
 
           if (image.type === "image/gif") {
             if (image.size > 500 * 1024) {
@@ -54,15 +60,13 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
             }
             fileToConvert = image;
           } else {
-            fileToConvert = await new Promise<File>((resolve, reject) => {
+            fileToConvert = await new Promise<Blob>((resolve, reject) => {
               new Compressor(image, {
                 quality,
                 maxWidth,
                 mimeType: "image/webp",
                 success(result) {
-                  resolve(
-                    new File([result], image.name, { type: "image/webp" })
-                  );
+                  resolve(result);
                 },
                 error(err) {
                   console.error("Compression error:", err);
@@ -73,21 +77,27 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
           }
 
           const base64 = await fileToBase64(fileToConvert);
-          base64s.push(base64);
+
+          results.push({
+            base64,
+            name: image.name,
+            type: image.type,
+            size: image.size,
+          });
         } catch (error) {
           console.error("File processing error:", error);
         }
       }
 
       if (mode === "single") {
-        if (base64s[0]) {
-          (onPick as (base64: string) => void)(base64s[0]);
+        if (results[0]) {
+          (onPick as (result: ImageResult) => void)(results[0]);
         }
       } else {
-        (onPick as (base64s: string[]) => void)(base64s);
+        (onPick as (results: ImageResult[]) => void)(results);
       }
     },
-    [onPick, mode]
+    [onPick, mode, quality, maxWidth]
   );
 
   const {

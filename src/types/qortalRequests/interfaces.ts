@@ -236,6 +236,7 @@ export type PublishMultipleQdnResourcesQortalRequest =
 export interface PublishQdnResourceQortalRequestBase extends BaseRequest {
   action: "PUBLISH_QDN_RESOURCE";
   service: Service;
+  name?: string;
   identifier: string;
   title?: string;
   description?: string;

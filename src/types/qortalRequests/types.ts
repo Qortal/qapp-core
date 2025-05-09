@@ -92,6 +92,7 @@ export type ForeignCoin =
   | {
       service: Service
       identifier: string
+      name?: string
       title?: string
       description?: string
       category?: string
@@ -103,6 +104,7 @@ export type ForeignCoin =
   | {
       service: Service
       identifier: string
+      name?: string
       title?: string
       description?: string
       category?: string
@@ -114,6 +116,7 @@ export type ForeignCoin =
   | {
       service: Service
       identifier: string
+      name: string
       title?: string
       description?: string
       category?: string
