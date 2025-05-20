@@ -637,8 +637,18 @@ export interface ShowPdfReaderQortalRequest extends BaseRequest {
   blob: Blob | File
 }
 
-export interface SaveFileQortalRequest extends BaseRequest {
-  action: 'SAVE_FILE'
-  blob: Blob | File
-  filename: string
-}
+export type SaveFileQortalRequest =
+  | ({
+      action: 'SAVE_FILE';
+      blob: Blob | File;
+      location?: never;
+    } & BaseRequest & { filename: string })
+  | ({
+      action: 'SAVE_FILE';
+      location: {
+        identifier?: string;
+        service: Service;
+        name: string
+      };
+      blob?: never;
+    } & BaseRequest & { filename: string });
