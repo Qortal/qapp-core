@@ -60,10 +60,10 @@ const setBalance = useAuthStore((s) => s.setBalance);
 
       if (account?.address) {
         const nameData = await qortalRequest({
-          action: "GET_ACCOUNT_NAMES",
+          action: "GET_PRIMARY_NAME",
           address: account.address,
         });
-        setUser({ ...account, name: nameData[0]?.name || "" });
+        setUser({ ...account, name: nameData?.name || "" });
       }
     } catch (error) {
       setErrorLoadingUser(

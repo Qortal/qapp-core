@@ -135,6 +135,11 @@ export interface GetAccountNamesQortalRequest extends BaseRequest {
   offset?: number;
   reverse?: boolean;
 }
+export interface GetPrimaryNameQortalRequest extends BaseRequest {
+  action: "GET_PRIMARY_NAME";
+  address: string;
+}
+
 
 export interface SearchNamesQortalRequest extends BaseRequest {
   action: "SEARCH_NAMES";
