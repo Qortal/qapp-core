@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   QortalMetadata,
   QortalSearchParams,
@@ -341,14 +341,15 @@ export const useResources = (retryAttempts: number = 2) => {
 
   
 
-  return {
+  return useMemo(() => ({
     fetchResources,
     addNewResources,
     updateNewResources,
     deleteResource,
     deleteList,
     fetchResourcesResultsOnly
-  };
+  }), [fetchResources, addNewResources, updateNewResources, deleteResource, deleteList, fetchResourcesResultsOnly]);
+  
 };
 
 export const generateCacheKey = (params: QortalSearchParams): string => {

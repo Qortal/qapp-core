@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { OpenIndex, useIndexStore } from "../state/indexes";
 
 export const useIndexes = () => {
@@ -16,7 +16,8 @@ export const useIndexes = () => {
     [setOpen]
   );
 
-  return {
-    openPageIndexManager,
-  };
+
+  return useMemo(() => ({
+    openPageIndexManager
+  }), [openPageIndexManager]);
 };

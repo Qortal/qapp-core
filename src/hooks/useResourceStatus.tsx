@@ -3,14 +3,14 @@ import { usePublishStore } from "../state/publishes";
 import { QortalGetMetadata } from "../types/interfaces/resources";
 
 interface PropsUseResourceStatus {
-  resource: QortalGetMetadata;
+  resource: QortalGetMetadata | null;
   retryAttempts?: number;
 }
 export const useResourceStatus = ({
   resource,
   retryAttempts = 15,
 }: PropsUseResourceStatus) => {
-  const resourceId = `${resource.service}-${resource.name}-${resource.identifier}`;
+  const resourceId = !resource ? null : `${resource.service}-${resource.name}-${resource.identifier}`;
   const status = usePublishStore((state)=> state.getResourceStatus(resourceId)) || null
   const intervalRef = useRef<null | number>(null)
   const timeoutRef = useRef<null | number>(null)

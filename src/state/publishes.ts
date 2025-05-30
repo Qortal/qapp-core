@@ -34,7 +34,7 @@ interface PublishState {
   resourceStatus: Record<string, ResourceStatus | null>;
   setResourceStatus: (qortalGetMetadata: QortalGetMetadata, data: ResourceStatus | null) => void;
   getPublish: (qortalGetMetadata: QortalGetMetadata | null, ignoreExpire?: boolean) => Resource | null;
-  getResourceStatus: (resourceId: string) => ResourceStatus | null;
+  getResourceStatus: (resourceId: string | null) => ResourceStatus | null;
   setPublish: (qortalGetMetadata: QortalGetMetadata, data: Resource | null, customExpiry?: number) => void;
   clearExpiredPublishes: () => void;
   publishExpiryDuration: number; // Default expiry duration
@@ -91,6 +91,7 @@ export const usePublishStore = create<PublishState>((set, get) => ({
     }));
   },
   getResourceStatus: (resourceId) => {
+    if(!resourceId) return null;
     const status = get().resourceStatus[resourceId];
     return status || null;
   },

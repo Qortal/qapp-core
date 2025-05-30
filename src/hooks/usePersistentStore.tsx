@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { EnumCollisionStrength, hashWord } from '../utils/encryption';
 import { db } from '../utils/persistentDb';
 
@@ -75,7 +75,7 @@ export const usePersistentStore = (
     return await db.dynamicData.toArray();
   }, []);
 
-  return {
+  return useMemo(() => ({
     setTimestamp,
     getTimestamp,
     isNewTimestamp,
@@ -83,5 +83,5 @@ export const usePersistentStore = (
     getData,
     deleteData,
     listAllData,
-  };
+  }), [setTimestamp, getTimestamp, isNewTimestamp, saveData, getData, deleteData, listAllData]);
 };
