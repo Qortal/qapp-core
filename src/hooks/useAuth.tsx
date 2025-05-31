@@ -63,7 +63,7 @@ const setBalance = useAuthStore((s) => s.setBalance);
           action: "GET_PRIMARY_NAME",
           address: account.address,
         });
-        setUser({ ...account, name: nameData?.name || "" });
+        setUser({ ...account, name: nameData || "" });
       }
     } catch (error) {
       setErrorLoadingUser(

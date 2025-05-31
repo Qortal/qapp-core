@@ -32,7 +32,7 @@ export const mergeUniqueItems = (array1: QortalMetadata[], array2: QortalMetadat
 };
 
 export interface ListItem {
-  data?: any
+  data: any
   qortalMetadata: QortalMetadata
 }
 

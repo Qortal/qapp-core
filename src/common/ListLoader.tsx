@@ -2,13 +2,15 @@ import { Box, Typography } from "@mui/material";
 import { BarSpinner } from "./Spinners/BarSpinner/BarSpinner";
 import { CSSProperties } from "react";
 
+export type LoaderListStatus = "LOADING" | "NO_RESULTS"
+
 interface ListLoaderProps {
   isLoading: boolean;
   loadingMessage?: string; // Optional message while loading
   resultsLength: number;
   noResultsMessage?: string; // Optional message when no results
   children: React.ReactNode; // Required, to render the list content
-  loaderList?:  (status: "LOADING" | "NO_RESULTS") => React.ReactNode; // Function type
+  loaderList?:  (status: LoaderListStatus) => React.ReactNode; // Function type
   loaderHeight?: CSSProperties
 }
 

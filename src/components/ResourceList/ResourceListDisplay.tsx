@@ -505,7 +505,7 @@ export const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
   // Example transformation (Modify item if needed)
   const transformedItem = findCachedResource
     ? findCachedResource
-    : { qortalMetadata: item };
+    : { qortalMetadata: item, data: null };
 
   return <>{render(transformedItem, index)}</>;
 };
