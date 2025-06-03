@@ -19,7 +19,7 @@ interface PropsVirtualizedList {
 }
 export const VirtualizedList = ({ list, children, onSeenLastItem, listName }: PropsVirtualizedList) => {
   const parentRef = useRef(null);
-useScrollTrackerRef(listName, parentRef)
+  useScrollTrackerRef(listName, list?.length > 0, parentRef)
 
   const rowVirtualizer = useVirtualizer({
     count: list.length,

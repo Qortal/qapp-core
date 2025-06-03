@@ -26,10 +26,11 @@ export const useScrollTracker = (listName: string, hasList: boolean, disableScro
     };
 
     window.addEventListener("scroll", handleScroll);
-
     return () => {
-      sessionStorage.setItem(SCROLL_KEY, scrollPositionRef.current.toString());
-      window.removeEventListener("scroll", handleScroll);
+      if(!disableScrollTracker){
+        sessionStorage.setItem(SCROLL_KEY, scrollPositionRef.current.toString());
+        window.removeEventListener("scroll", handleScroll);
+      }
     };
   }, [listName, hasList, disableScrollTracker]);
 

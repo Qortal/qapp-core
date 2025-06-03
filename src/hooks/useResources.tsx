@@ -240,7 +240,7 @@ export const useResources = (retryAttempts: number = 2) => {
         if (!lastCreated) break;
       }
 
-      setSearchCache(listName, cacheKey, filteredResults, JSON.stringify(params));
+      setSearchCache(listName, cacheKey, filteredResults, cancelRequests ? JSON.stringify(params) : null);
       fetchDataFromResults(filteredResults, returnType);
 
       return filteredResults;

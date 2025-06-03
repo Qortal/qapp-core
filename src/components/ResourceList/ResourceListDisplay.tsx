@@ -24,6 +24,7 @@ import { HorizontalPaginatedList } from "./HorizontalPaginationList";
 import { VerticalPaginatedList } from "./VerticalPaginationList";
 import { useIdentifiers } from "../../hooks/useIdentifiers";
 import { useGlobal } from "../../context/GlobalProvider";
+import { useScrollTrackerRef } from "../../common/useScrollTrackerRef";
 type Direction = "VERTICAL" | "HORIZONTAL";
 
 interface ResourceListStyles {
@@ -82,6 +83,7 @@ interface BaseProps  {
   }
   onNewData?: (hasNewData: boolean) => void;
   ref?: any
+  scrollerRef?: React.RefObject<HTMLElement | null>
 }
 
 // ✅ Restrict `direction` only when `disableVirtualization = false`
@@ -121,7 +123,8 @@ export const MemorizedComponent = ({
   onResults,
   searchNewData,
   onNewData,
-  ref
+  ref,
+  scrollerRef
 }: PropsResourceListDisplay)  => {
   const {identifierOperations, lists} = useGlobal()
   const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
@@ -271,22 +274,19 @@ const addItems = useListStore((s) => s.addItems);
         const parsedParams = {...(JSON.parse(memoizedParamsRef.current))};
         parsedParams.identifier = generatedIdentifier
         const stringedParams = JSON.stringify(parsedParams)
-
-        if(stringedParams === isListExpiredRef.current  && !initialized.current){
+        if(stringedParams === isListExpiredRef.current){
           setIsLoading(false)
-        initialized.current = true
         return
         }
         
       }
-       
     sessionStorage.removeItem(`scroll-position-${listName}`);
     prevGeneratedIdentifierRef.current = generatedIdentifier
     getResourceList();
   }, [getResourceList, generatedIdentifier]); // Runs when dependencies change
 
-  const {elementRef} = useScrollTracker(listName, list?.length > 0, disableScrollTracker);
-
+  const {elementRef} = useScrollTracker(listName, list?.length > 0, scrollerRef ? true : !disableVirtualization ? true : disableScrollTracker);
+  useScrollTrackerRef(listName, list?.length > 0,  scrollerRef)
   const setSearchCacheExpiryDuration = useCacheStore((s) => s.setSearchCacheExpiryDuration);
 const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheExpiryDuration);
 
