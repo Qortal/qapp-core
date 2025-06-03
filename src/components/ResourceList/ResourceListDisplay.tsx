@@ -137,10 +137,12 @@ export const MemorizedComponent = ({
   const [isLoading, setIsLoading] = useState(list?.length > 0 ? false : true);
 
   const isListExpired = useCacheStore().isListExpired(listName)
-  const isListExpiredRef = useRef<boolean>(true)
+  const isListExpiredRef = useRef<boolean | string>(true)
+  const memoizedParamsRef = useRef<string>('')
   useEffect(()=> {
     isListExpiredRef.current = isListExpired
-  }, [isListExpired])
+    memoizedParamsRef.current = memoizedParams
+  }, [isListExpired, memoizedParams])
 
   const filterOutDeletedResources = useCacheStore((s) => s.filterOutDeletedResources);
 const deletedResources = useCacheStore((s) => s.deletedResources);
@@ -264,11 +266,18 @@ const addItems = useListStore((s) => s.addItems);
  }, [resetSearch])
   useEffect(() => {
     if(!generatedIdentifier) return
-   
-      if(!isListExpiredRef.current && !initialized.current) {
-        setIsLoading(false)
+    
+      if(typeof isListExpiredRef.current === 'string' && typeof memoizedParamsRef.current === 'string') {
+        const parsedParams = {...(JSON.parse(memoizedParamsRef.current))};
+        parsedParams.identifier = generatedIdentifier
+        const stringedParams = JSON.stringify(parsedParams)
+
+        if(stringedParams === isListExpiredRef.current  && !initialized.current){
+          setIsLoading(false)
         initialized.current = true
         return
+        }
+        
       }
        
     sessionStorage.removeItem(`scroll-position-${listName}`);

@@ -10,6 +10,7 @@ interface SearchCache {
     };
     temporaryNewResources: QortalMetadata[],
     expiry: number; // Expiry timestamp for the whole list
+    searchParamsStringified: string;
   };
 }
 
@@ -55,7 +56,7 @@ interface CacheState {
   // Search cache actions
   setResourceCache: (id: string, data: ListItem | false | null, customExpiry?: number) => void;
 
-  setSearchCache: (listName: string, searchTerm: string, data: QortalMetadata[], customExpiry?: number) => void;
+  setSearchCache: (listName: string, searchTerm: string, data: QortalMetadata[], searchParamsStringified: string, customExpiry?: number) => void;
   getSearchCache: (listName: string, searchTerm: string) => QortalMetadata[] | null;
   clearExpiredCache: () => void;
   getResourceCache: (id: string, ignoreExpire?: boolean) => ListItem | false | null;
@@ -64,7 +65,7 @@ interface CacheState {
   deletedResources: DeletedResources;
   markResourceAsDeleted: (item: QortalMetadata) => void;
   filterOutDeletedResources: (items: QortalMetadata[]) => QortalMetadata[];
-  isListExpired: (listName: string)=> boolean
+  isListExpired: (listName: string)=> boolean | string;
   searchCacheExpiryDuration: number;
   resourceCacheExpiryDuration: number;
   setSearchCacheExpiryDuration: (duration: number) => void;
@@ -107,7 +108,7 @@ export const useCacheStore = create<CacheState>
           };
         }),
 
-        setSearchCache: (listName, searchTerm, data, customExpiry) =>
+        setSearchCache: (listName, searchTerm, data, searchParamsStringified, customExpiry) =>
           set((state) => {
             const expiry = Date.now() + (customExpiry || get().searchCacheExpiryDuration);
       
@@ -121,6 +122,7 @@ export const useCacheStore = create<CacheState>
                   },
                   temporaryNewResources: state.searchCache[listName]?.temporaryNewResources || [],
                   expiry,
+                  searchParamsStringified
                 },
               },
             };
@@ -207,9 +209,10 @@ export const useCacheStore = create<CacheState>
           (item) => !deletedResources[`${item.service}-${item.name}-${item.identifier}`]
         );
       },
-      isListExpired: (listName: string): boolean => {
+      isListExpired: (listName: string): boolean | string => {
         const cache = get().searchCache[listName];
-        return cache ? cache.expiry <= Date.now() : true; // ✅ Expired if expiry timestamp is in the past
+        const isExpired = cache ? cache.expiry <= Date.now() : true; // ✅ Expired if expiry timestamp is in the past
+        return isExpired === true ? true : cache.searchParamsStringified
       },
       
 
