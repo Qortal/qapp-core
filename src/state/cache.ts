@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { QortalMetadata } from "../types/interfaces/resources";
+import { QortalGetMetadata, QortalMetadata } from "../types/interfaces/resources";
 import { persist } from "zustand/middleware";
 
 
@@ -63,7 +63,7 @@ interface CacheState {
   addTemporaryResource: (listName: string, newResources: QortalMetadata[], customExpiry?: number)=> void;
   getTemporaryResources:(listName: string)=> QortalMetadata[]
   deletedResources: DeletedResources;
-  markResourceAsDeleted: (item: QortalMetadata) => void;
+  markResourceAsDeleted: (item: QortalMetadata | QortalGetMetadata) => void;
   filterOutDeletedResources: (items: QortalMetadata[]) => QortalMetadata[];
   isListExpired: (listName: string)=> boolean | string;
   searchCacheExpiryDuration: number;

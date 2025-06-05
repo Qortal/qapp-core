@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import {
+  QortalGetMetadata,
   QortalMetadata,
   QortalSearchParams,
 } from "../types/interfaces/resources";
@@ -314,7 +315,7 @@ export const useResources = (retryAttempts: number = 2) => {
     });
   }, []);
 
-  const deleteResource = useCallback(async (resourcesToDelete: QortalMetadata[]) => {
+  const deleteResource = useCallback(async (resourcesToDelete: (QortalMetadata | QortalGetMetadata)[]) => {
 
     
    
