@@ -11,11 +11,54 @@ interface StoredPublish {
     data: any;
     timestamp: number;
   }
-export const usePublish = (
-  maxFetchTries: number = 3,
-  returnType: ReturnType = "JSON",
-  metadata?: QortalGetMetadata
-) => {
+
+  type UsePublishWithMetadata = {
+    isLoading: boolean;
+    error: string | null;
+    resource: { qortalMetadata: QortalMetadata; data: any } | null;
+    hasResource: boolean | null;
+    refetch: () => Promise<{
+      hasResource: boolean | null;
+      resource: { qortalMetadata: QortalMetadata; data: any } | null;
+      error: string | null;
+    }>
+    fetchPublish: (metadataProp: QortalGetMetadata) => Promise<{
+      hasResource: boolean | null;
+      resource: { qortalMetadata: QortalMetadata; data: any } | null;
+      error: string | null;
+    }>;
+    updatePublish: (publish: QortalGetMetadata, data: any) => Promise<void>;
+    deletePublish: (publish: QortalGetMetadata) => Promise<boolean | undefined>;
+  };
+  
+  type UsePublishWithoutMetadata = {
+    fetchPublish: (metadataProp: QortalGetMetadata) => Promise<{
+      hasResource: boolean | null;
+      resource: { qortalMetadata: QortalMetadata; data: any } | null;
+      error: string | null;
+    }>;
+    updatePublish: (publish: QortalGetMetadata, data: any) => Promise<void>;
+    deletePublish: (publish: QortalGetMetadata) => Promise<boolean | undefined>;
+  };
+
+  export function usePublish(
+    maxFetchTries: number,
+    returnType: ReturnType,
+    metadata: QortalGetMetadata
+  ): UsePublishWithMetadata;
+  
+  export function usePublish(
+    maxFetchTries?: number,
+    returnType?: ReturnType,
+    metadata?: null
+  ): UsePublishWithoutMetadata;
+  
+  // ✅ Actual implementation (must be a `function`, not `const`)
+  export function usePublish(
+    maxFetchTries: number = 3,
+    returnType: ReturnType = "JSON",
+    metadata?: QortalGetMetadata | null
+  ): UsePublishWithMetadata | UsePublishWithoutMetadata {
   const {auth, appInfo} = useGlobal()
   const username = auth?.name
   const appNameHashed = appInfo?.appNameHashed

@@ -3,6 +3,8 @@
 export { useResourceStatus } from './hooks/useResourceStatus';
 export { Spacer } from './common/Spacer';
 export { useModal } from './hooks/useModal';
+export { AudioPlayerControls , OnTrackChangeMeta, AudioPlayerProps} from './components/AudioPlayer/AudioPlayerControls';
+export { useAudioPlayerHotkeys } from './components/AudioPlayer/useAudioPlayerHotkeys';
 import './index.css'
 export { formatBytes, formatDuration } from './utils/numbers';
 export { createQortalLink } from './utils/qortal';
