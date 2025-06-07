@@ -34,6 +34,7 @@ import { useResourceStatus } from '../../hooks/useResourceStatus';
     onResourceStatus?: (
       resourceStatus: ReturnType<typeof useResourceStatus>
     ) => void;
+    retryAttempts?: number
   }
   
   export interface AudioPlayerHandle {
@@ -70,6 +71,7 @@ import { useResourceStatus } from '../../hooks/useResourceStatus';
         onError,
         onProgress,
         onResourceStatus,
+        retryAttempts = 50
       },
       ref
     ) => {
@@ -119,6 +121,7 @@ import { useResourceStatus } from '../../hooks/useResourceStatus';
       );
       const resourceStatus = useResourceStatus({
         resource: activeTrack || null,
+        retryAttempts
       });
       const { isReady, resourceUrl } = resourceStatus;
       const hasNext = trackIndex < srcs.length - 1;
@@ -207,7 +210,6 @@ import { useResourceStatus } from '../../hooks/useResourceStatus';
             t.service === activeTrack?.service &&
             t.name === activeTrack?.name
         );
-        console.log('srcs2', srcs, activeTrack, index);
         if (index !== -1) {
           onTrackChange?.(activeTrack, {
             hasNext: index < srcs.length - 1,
