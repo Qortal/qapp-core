@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { usePublishStore } from "../state/publishes";
+import { ResourceStatus, usePublishStore } from "../state/publishes";
 import { QortalGetMetadata } from "../types/interfaces/resources";
 
 interface PropsUseResourceStatus {
@@ -15,9 +15,23 @@ export const useResourceStatus = ({
   const intervalRef = useRef<null | number>(null)
   const timeoutRef = useRef<null | number>(null)
   const setResourceStatus = usePublishStore((state) => state.setResourceStatus);
+  const statusRef = useRef<ResourceStatus | null>(null)
+
+  useEffect(()=> {
+    statusRef.current = status
+  }, [status])
   const downloadResource = useCallback(
     ({ service, name, identifier }: QortalGetMetadata, build?: boolean) => {
       try {
+        if(statusRef.current && statusRef.current?.status === 'READY'){
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+          }
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+          return
+        }
         setResourceStatus(
             { service, name, identifier },
             {
