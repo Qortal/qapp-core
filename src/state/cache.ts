@@ -57,6 +57,7 @@ interface CacheState {
   setResourceCache: (id: string, data: ListItem | false | null, customExpiry?: number) => void;
 
   setSearchCache: (listName: string, searchTerm: string, data: QortalMetadata[], searchParamsStringified: string | null, customExpiry?: number) => void;
+  setSearchParamsForList: (ListName: string, searchParamsStringified: string)=> void;
   getSearchCache: (listName: string, searchTerm: string) => QortalMetadata[] | null;
   clearExpiredCache: () => void;
   getResourceCache: (id: string, ignoreExpire?: boolean) => ListItem | false | null;
@@ -127,7 +128,20 @@ export const useCacheStore = create<CacheState>
               },
             };
           }),
-      
+          setSearchParamsForList: (listName, searchParamsStringified) =>
+            set((state) => {
+              const existingList = state.searchCache[listName] || {};
+          
+              return {
+                searchCache: {
+                  ...state.searchCache,
+                  [listName]: {
+                    ...existingList,
+                    searchParamsStringified,
+                  },
+                },
+              };
+            }),
 
         getSearchCache: (listName, searchTerm) => {
           const cache = get().searchCache[listName];

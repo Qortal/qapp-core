@@ -27,6 +27,7 @@ export const useResources = (retryAttempts: number = 2) => {
   const setResourceCache = useCacheStore((s) => s.setResourceCache);
   const addTemporaryResource = useCacheStore((s) => s.addTemporaryResource);
   const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
+  const setSearchParamsForList = useCacheStore((s) => s.setSearchParamsForList);
   
   const deleteList = useListStore(state => state.deleteList)
   const requestControllers = new Map<string, AbortController>();
@@ -207,6 +208,11 @@ export const useResources = (retryAttempts: number = 2) => {
       const cacheKey = generateCacheKey(params);
       const searchCache = getSearchCache(listName, cacheKey);
       if (searchCache) {
+        const copyParams = {...params}
+        delete copyParams.after
+        delete copyParams.before
+        delete copyParams.offset
+        setSearchParamsForList(listName, JSON.stringify(copyParams))
         return searchCache;
       }
 
@@ -240,8 +246,11 @@ export const useResources = (retryAttempts: number = 2) => {
         lastCreated = responseData[responseData.length - 1]?.created;
         if (!lastCreated) break;
       }
-
-      setSearchCache(listName, cacheKey, filteredResults, cancelRequests ? JSON.stringify(params) : null);
+      const copyParams = {...params}
+        delete copyParams.after
+        delete copyParams.before
+        delete copyParams.offset
+      setSearchCache(listName, cacheKey, filteredResults, cancelRequests ? JSON.stringify(copyParams) : null);
       fetchDataFromResults(filteredResults, returnType);
 
       return filteredResults;

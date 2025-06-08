@@ -86,6 +86,10 @@ interface BaseProps  {
   scrollerRef?: React.RefObject<HTMLElement | null>
 }
 
+const defaultStyles = {
+  gap: 1
+}
+
 // ✅ Restrict `direction` only when `disableVirtualization = false`
 interface VirtualizedProps extends BaseProps {
   disableVirtualization?: false;
@@ -103,9 +107,7 @@ type PropsResourceListDisplay = VirtualizedProps | NonVirtualizedProps;
 export const MemorizedComponent = ({
   search,
   listItem,
-  styles = {
-    gap: 1,
-  },
+  styles = defaultStyles,
   defaultLoaderParams,
   loaderItem,
   loaderList,
@@ -127,7 +129,9 @@ export const MemorizedComponent = ({
   scrollerRef
 }: PropsResourceListDisplay)  => {
   const {identifierOperations, lists} = useGlobal()
-  const memoizedParams = useMemo(() => JSON.stringify(search), [search]);
+  const [generatedIdentifier, setGeneratedIdentifier] = useState("")
+  const [memoizedParams, setMemorizedParams] = useState('')
+  const setSearchParamsForList = useCacheStore((s) => s.setSearchParamsForList);
   const memoizedParamsSearchNewData = useMemo(() => {
     if(searchNewData?.intervalSearch){
       return JSON.stringify(searchNewData?.intervalSearch)
@@ -155,10 +159,7 @@ const removeFromList = useListStore((s) => s.removeFromList);
 const addItems = useListStore((s) => s.addItems);
 
 
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const initialized = useRef(false)
-  const [generatedIdentifier, setGeneratedIdentifier] = useState("")
-  const prevGeneratedIdentifierRef = useRef('')
+
   const searchIntervalRef = useRef<null | number>(null)
   const lastItemTimestampRef = useRef<null | number>(null)
   const stringifiedEntityParams = useMemo(()=> {
@@ -218,6 +219,8 @@ const addItems = useListStore((s) => s.addItems);
           )
           if(res){
             setGeneratedIdentifier(res)
+            setMemorizedParams(JSON.stringify({...search, identifier: res}))
+
           }
         }
     
@@ -226,10 +229,11 @@ const addItems = useListStore((s) => s.addItems);
         return
       }
       setGeneratedIdentifier(search?.identifier)
+      setMemorizedParams(JSON.stringify({...search, identifier: search?.identifier}))
     } catch (error) {
       console.error(error)
     }
-  }, [stringifiedEntityParams, search.identifier, identifierOperations.buildSearchPrefix])
+  }, [stringifiedEntityParams, search , identifierOperations.buildSearchPrefix])
 
   const getResourceList = useCallback(async () => {
     try {
@@ -243,9 +247,7 @@ const addItems = useListStore((s) => s.addItems);
     
       lastItemTimestampRef.current = null
       const parsedParams = {...(JSON.parse(memoizedParams))};
-      parsedParams.identifier = generatedIdentifier
       const responseData = await lists.fetchResources(parsedParams, listName, returnType, true); // Awaiting the async function
-
         addList(listName,  responseData || []);
         if(onNewData){
           onNewData(false)
@@ -255,7 +257,7 @@ const addItems = useListStore((s) => s.addItems);
     } finally {
       setIsLoading(false);
     }
-  }, [memoizedParams, lists.fetchResources, generatedIdentifier]); // Added dependencies for re-fetching
+  }, [memoizedParams, generatedIdentifier, lists.fetchResources]); // Added dependencies for re-fetching
 
   const resetSearch = useCallback(async ()=> {
     lists.deleteList(listName);
@@ -268,22 +270,28 @@ const addItems = useListStore((s) => s.addItems);
    }
  }, [resetSearch])
   useEffect(() => {
-    if(!generatedIdentifier) return
-    
-      if(typeof isListExpiredRef.current === 'string' && typeof memoizedParamsRef.current === 'string') {
-        const parsedParams = {...(JSON.parse(memoizedParamsRef.current))};
-        parsedParams.identifier = generatedIdentifier
-        const stringedParams = JSON.stringify(parsedParams)
-        if(stringedParams === isListExpiredRef.current){
+    if(!listName || !memoizedParams) return
+    const isExpired = useCacheStore.getState().isListExpired(listName);
+      if(typeof isExpired === 'string' && typeof memoizedParams=== 'string') {
+        let copyMemoizedParams = {...(JSON.parse(memoizedParams))}
+        delete copyMemoizedParams.after
+        delete copyMemoizedParams.before
+        delete copyMemoizedParams.offset
+        copyMemoizedParams = JSON.stringify(copyMemoizedParams)
+        if(copyMemoizedParams === isExpired){
+          const copyParams = {...(JSON.parse(memoizedParams))}
+        delete copyParams.after
+        delete copyParams.before
+        delete copyParams.offset
+          setSearchParamsForList(listName, copyParams)
           setIsLoading(false)
         return
         }
         
       }
     sessionStorage.removeItem(`scroll-position-${listName}`);
-    prevGeneratedIdentifierRef.current = generatedIdentifier
     getResourceList();
-  }, [getResourceList, generatedIdentifier]); // Runs when dependencies change
+  }, [getResourceList, listName]); // Runs when dependencies change
 
   const {elementRef} = useScrollTracker(listName, list?.length > 0, scrollerRef ? true : !disableVirtualization ? true : disableScrollTracker);
   useScrollTrackerRef(listName, list?.length > 0,  scrollerRef)
@@ -317,11 +325,9 @@ const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheEx
   const getResourceMoreList = useCallback(async (displayLimit?: number) => {
     try {
       if(!generatedIdentifier) return
-      setIsLoadingMore(true)
       const parsedParams = {...(JSON.parse(memoizedParams))};
       parsedParams.before = list.length === 0 ? null : list[list.length - 1]?.created
       parsedParams.offset = null
-      parsedParams.identifier = generatedIdentifier
       if(displayLimit){
         parsedParams.limit = displayLimit
       }
@@ -329,13 +335,8 @@ const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheEx
       addItems(listName, responseData || [])
     } catch (error) {
       console.error("Failed to fetch resources:", error);
-    } finally {
-      setTimeout(() => {
-        setIsLoadingMore(false);
-
-      }, 1000);
-    }
-  }, [memoizedParams, listName, list, generatedIdentifier]); 
+    } 
+  }, [memoizedParams, listName, list]); 
 
 
 
