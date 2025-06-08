@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useCacheStore } from "../state/cache";
 
 export const useScrollTracker = (listName: string, hasList: boolean, disableScrollTracker?: boolean) => {
   const elementRef = useRef<HTMLDivElement | null>(null);
@@ -10,7 +11,8 @@ export const useScrollTracker = (listName: string, hasList: boolean, disableScro
     if (!listName || !hasList) return;
     
     const SCROLL_KEY = `scroll-position-${listName}`;
-
+        const isExpired = useCacheStore.getState().isListExpired(listName);
+      if(isExpired === true) return
     // 🔹 Restore scroll when the component mounts
     const savedPosition = sessionStorage.getItem(SCROLL_KEY);
     if (savedPosition) {

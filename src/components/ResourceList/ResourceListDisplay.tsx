@@ -283,7 +283,7 @@ const addItems = useListStore((s) => s.addItems);
         delete copyParams.after
         delete copyParams.before
         delete copyParams.offset
-          setSearchParamsForList(listName, copyParams)
+          setSearchParamsForList(listName, JSON.stringify(copyParams))
           setIsLoading(false)
         return
         }
