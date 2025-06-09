@@ -1,16 +1,11 @@
-import {
-  Ref,
-  RefObject,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Ref, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QortalGetMetadata } from "../../types/interfaces/resources";
 import { VideoContainer, VideoElement } from "./VideoPlayer-styles";
 import { useVideoPlayerHotKeys } from "./useVideoPlayerHotKeys";
 import { useProgressStore, useVideoStore } from "../../state/video";
 import { useVideoPlayerController } from "./useVideoPlayerController";
+import { LoadingVideo } from "./LoadingVideo";
+import { VideoControlsBar } from "./VideoControlsBar";
 
 type StretchVideoType = "contain" | "fill" | "cover" | "none" | "scale-down";
 
@@ -21,7 +16,7 @@ export interface VideoPlayerProps {
   showControls?: boolean;
   poster?: string;
   autoPlay?: boolean;
-  onEnded?: (e: React.SyntheticEvent<HTMLVideoElement, Event>)=> void
+  onEnded?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
 }
 
 const videoStyles = {
@@ -35,16 +30,22 @@ export const VideoPlayer = ({
   showControls,
   poster,
   autoPlay,
-  onEnded
+  onEnded,
 }: VideoPlayerProps) => {
   const containerRef = useRef<RefObject<HTMLDivElement> | null>(null);
   const [videoObjectFit] = useState<StretchVideoType>("contain");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0);
+  const { volume, setVolume } = useVideoStore((state) => ({
+    volume: state.playbackSettings.volume,
+    setVolume: state.setVolume,
+  }));
+
   const [isMuted, setIsMuted] = useState(false);
   const { setProgress } = useProgressStore();
+  const [localProgress, setLocalProgress] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [isLoading, setIsLoading] = useState(false);
 
   const {
     reloadVideo,
@@ -67,7 +68,13 @@ export const VideoPlayer = ({
     startPlay,
     setProgressAbsolute,
     setAlwaysShowControls,
-  } = useVideoPlayerController({ autoPlay, videoRef, qortalVideoResource, retryAttempts });
+    status, percentLoaded
+  } = useVideoPlayerController({
+    autoPlay,
+    videoRef,
+    qortalVideoResource,
+    retryAttempts
+  });
 
   const hotkeyHandlers = useMemo(
     () => ({
@@ -109,8 +116,18 @@ export const VideoPlayer = ({
     if (!ref.current || !videoLocation) return;
     if (typeof ref.current.currentTime === "number") {
       setProgress(videoLocation, ref.current.currentTime);
+      setLocalProgress(ref.current.currentTime)
     }
   };
+  useEffect(() => {
+    const ref = videoRef as React.RefObject<HTMLVideoElement>;
+    if (!ref.current) return;
+    if (ref.current) {
+      ref.current.volume = volume;
+    }
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onPlay = useCallback(() => {
     setIsPlaying(true);
@@ -152,11 +169,37 @@ export const VideoPlayer = ({
     };
   }, [videoObjectFit, showControls, isFullscreen]);
 
-  const handleEnded = useCallback((e: React.SyntheticEvent<HTMLVideoElement, Event>)=> {
-    if(onEnded){
-        onEnded(e)
-    }
-  }, [onEnded])
+  const handleEnded = useCallback(
+    (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+      if (onEnded) {
+        onEnded(e);
+      }
+    },
+    [onEnded]
+  );
+
+  const handleCanPlay = useCallback(()=> {
+    setIsLoading(false);
+  }, [setIsLoading])
+
+  useEffect(() => {
+    const ref = videoRef as React.RefObject<HTMLVideoElement>;
+    if (!ref.current) return;
+    const video = ref.current;
+    if (!video) return;
+
+    const handleLoadedMetadata = () => {
+        if(video?.duration){
+            setDuration(video.duration)
+        }
+    };
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    };
+  }, []);
 
   return (
     <VideoContainer
@@ -166,7 +209,7 @@ export const VideoPlayer = ({
       onMouseLeave={handleMouseLeave}
       ref={containerRef}
     >
-      {/* <LoadingVideo /> */}
+      <LoadingVideo togglePlay={togglePlay} isReady={isReady} status={status} percentLoaded={percentLoaded} isLoading={isLoading} />
       <VideoElement
         id={qortalVideoResource?.identifier}
         ref={videoRef}
@@ -175,18 +218,16 @@ export const VideoPlayer = ({
         poster={startPlay ? "" : poster}
         onTimeUpdate={updateProgress}
         autoPlay={autoPlay}
-        onClick={() => togglePlay()}
-          onEnded={handleEnded}
-        onCanPlay={() => {
-          setIsLoading(false);
-        }}
+        onClick={togglePlay}
+        onEnded={handleEnded}
+        onCanPlay={handleCanPlay}
         preload="metadata"
         style={videoStylesVideo}
         onPlay={onPlay}
         onPause={onPause}
         onVolumeChange={onVolumeChangeHandler}
       />
-      {/* {showControls && <VideoControlsBar />} */}
+     <VideoControlsBar onVolumeChange={onVolumeChange} volume={volume}  togglePlay={togglePlay} reloadVideo={hotkeyHandlers.reloadVideo} isPlaying={isPlaying} canPlay={true} isScreenSmall={false} controlsHeight={controlsHeight} videoRef={videoRef} duration={duration} progress={localProgress} />
     </VideoContainer>
   );
 };

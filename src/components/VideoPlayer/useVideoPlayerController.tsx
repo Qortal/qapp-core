@@ -42,7 +42,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
   const { playbackSettings, setPlaybackRate, setVolume } = useVideoStore();
   const { getProgress } = useProgressStore();
 
-  const { isReady, resourceUrl } = useResourceStatus({
+  const { isReady, resourceUrl, status, percentLoaded } = useResourceStatus({
     resource: !startedFetch ? null : qortalVideoResource,
     retryAttempts,
   });
@@ -194,7 +194,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     ref.current.load();
     ref.current.currentTime = currentTime;
     ref.current.play();
-  }, []);
+  }, [isReady, resourceUrl]);
 
   useEffect(() => {
     if (autoPlay) togglePlay();
@@ -227,5 +227,6 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     isReady,
     resourceUrl,
     startPlay,
+    status, percentLoaded
   };
 };

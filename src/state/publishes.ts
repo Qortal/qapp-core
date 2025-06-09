@@ -21,6 +21,7 @@ export type Status =
 | 'FAILED_TO_DOWNLOAD'
 | 'REFETCHING'
 | 'SEARCHING'
+| 'INITIAL'
 
 export interface ResourceStatus {
     status: Status
