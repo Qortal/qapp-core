@@ -5,6 +5,7 @@ export { Spacer } from './common/Spacer';
 export { useModal } from './hooks/useModal';
 export { AudioPlayerControls , OnTrackChangeMeta, AudioPlayerProps, AudioPlayerHandle} from './components/AudioPlayer/AudioPlayerControls';
 export { useAudioPlayerHotkeys } from './components/AudioPlayer/useAudioPlayerHotkeys';
+export { VideoPlayer } from './components/VideoPlayer/VideoPlayer';
 import './index.css'
 export { executeEvent, subscribeToEvent, unsubscribeFromEvent } from './utils/events';
 export { formatBytes, formatDuration } from './utils/numbers';
@@ -32,4 +33,3 @@ export {Service, QortalGetMetadata} from './types/interfaces/resources'
 export {ListItem} from './state/cache'
 export {SymmetricKeys} from './utils/encryption'
 export {LoaderListStatus} from './common/ListLoader'
-

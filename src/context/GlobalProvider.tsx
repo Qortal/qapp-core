@@ -1,4 +1,10 @@
-import React, { createContext, CSSProperties, useContext, useMemo } from "react";
+import React, {
+  createContext,
+  CSSProperties,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 import { useAuth, UseAuthProps } from "../hooks/useAuth";
 import { useResources } from "../hooks/useResources";
 import { useAppInfo } from "../hooks/useAppInfo";
@@ -7,21 +13,17 @@ import { Toaster } from "react-hot-toast";
 import { usePersistentStore } from "../hooks/usePersistentStore";
 import { IndexManager } from "../components/IndexManager/IndexManager";
 import { useIndexes } from "../hooks/useIndexes";
-
-
-
-
+import { useProgressStore } from "../state/video";
 
 // ✅ Define Global Context Type
 interface GlobalContextType {
-auth: ReturnType<typeof useAuth>;
-lists: ReturnType<typeof useResources>;
-appInfo: ReturnType<typeof useAppInfo>;
-identifierOperations: ReturnType<typeof useIdentifiers>
-persistentOperations: ReturnType<typeof usePersistentStore>
-indexOperations: ReturnType<typeof useIndexes>
+  auth: ReturnType<typeof useAuth>;
+  lists: ReturnType<typeof useResources>;
+  appInfo: ReturnType<typeof useAppInfo>;
+  identifierOperations: ReturnType<typeof useIdentifiers>;
+  persistentOperations: ReturnType<typeof usePersistentStore>;
+  indexOperations: ReturnType<typeof useIndexes>;
 }
-
 
 // ✅ Define Config Type for Hook Options
 interface GlobalProviderProps {
@@ -30,42 +32,64 @@ interface GlobalProviderProps {
     /** Authentication settings. */
     auth?: UseAuthProps;
     appName: string;
-    publicSalt: string
+    publicSalt: string;
   };
-  toastStyle?: CSSProperties
+  toastStyle?: CSSProperties;
 }
 
 // ✅ Create Context with Proper Type
 const GlobalContext = createContext<GlobalContextType | null>(null);
 
-
-
 // 🔹 Global Provider (Handles Multiple Hooks)
-export const GlobalProvider = ({ children, config, toastStyle = {} }: GlobalProviderProps) => {
+export const GlobalProvider = ({
+  children,
+  config,
+  toastStyle = {},
+}: GlobalProviderProps) => {
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
-  
-  const appInfo = useAppInfo(config.appName, config?.publicSalt)
-  const lists = useResources()
-  const identifierOperations = useIdentifiers(config.publicSalt, config.appName)
-  const persistentOperations = usePersistentStore(config.publicSalt, config.appName)
-  const indexOperations = useIndexes()
-  // ✅ Merge all hooks into a single `contextValue`
-  const contextValue = useMemo(() => ({ auth, lists, appInfo, identifierOperations, persistentOperations, indexOperations }), [auth, lists, appInfo, identifierOperations, persistentOperations]);
 
+  const appInfo = useAppInfo(config.appName, config?.publicSalt);
+  const lists = useResources();
+  const identifierOperations = useIdentifiers(
+    config.publicSalt,
+    config.appName
+  );
+  const persistentOperations = usePersistentStore(
+    config.publicSalt,
+    config.appName
+  );
+  const indexOperations = useIndexes();
+  // ✅ Merge all hooks into a single `contextValue`
+  const contextValue = useMemo(
+    () => ({
+      auth,
+      lists,
+      appInfo,
+      identifierOperations,
+      persistentOperations,
+      indexOperations,
+    }),
+    [auth, lists, appInfo, identifierOperations, persistentOperations]
+  );
+  const { clearOldProgress } = useProgressStore();
+  
+  useEffect(() => {
+    clearOldProgress();
+  }, []);
 
   return (
     <GlobalContext.Provider value={contextValue}>
-       <Toaster
+      <Toaster
         position="top-center"
         toastOptions={{
           duration: 4000,
-          style: toastStyle
+          style: toastStyle,
         }}
-        containerStyle={{zIndex: 999999}}
+        containerStyle={{ zIndex: 999999 }}
       />
- <IndexManager username={auth?.name} />
-      
+      <IndexManager username={auth?.name} />
+
       {children}
     </GlobalContext.Provider>
   );
