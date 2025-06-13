@@ -28,6 +28,92 @@ const videoStyles = {
   videoContainer: { aspectRatio: "16 / 9" },
   video: { aspectRatio: "16 / 9" },
 };
+
+async function loadMediaInfo(wasmPath = '/MediaInfoModule.wasm') {
+  const mediaInfoModule = await import('mediainfo.js');
+  return await mediaInfoModule.default({
+    format: 'JSON',
+    full: true,
+    locateFile: () => wasmPath,
+  });
+}
+
+async function getVideoMimeTypeFromUrl(qortalVideoResource: any): Promise<string | null> {
+
+  try {
+    const metadataResponse = await fetch(`/arbitrary/metadata/${qortalVideoResource.service}/${qortalVideoResource.name}/${qortalVideoResource.identifier}`)
+  const metadataData = await metadataResponse.json()
+  return metadataData?.mimeType || null
+  } catch (error) {
+    return null
+  }
+  // const mediaInfo = await loadMediaInfo();
+  // const chunkCache = new Map<string, Uint8Array>();
+
+  // let fileSize = 0;
+  // try {
+  //   const headResp = await fetch(videoUrl, { method: 'HEAD' });
+  //   const lengthHeader = headResp.headers.get('Content-Length');
+  //   if (!lengthHeader) throw new Error('Missing content length');
+  //   fileSize = parseInt(lengthHeader, 10);
+  // } catch (err) {
+  //   console.error('Error fetching content length:', err);
+  //   return null;
+  // }
+
+  // try {
+  //   const rawResult = await mediaInfo.analyzeData(
+  //     () => fileSize,
+  //     async (chunkSize: number, offset: number): Promise<Uint8Array> => {
+  //       const key = `${offset}:${chunkSize}`;
+  //       if (chunkCache.has(key)) return chunkCache.get(key)!;
+
+  //       const end = Math.min(fileSize - 1, offset + chunkSize - 1);
+  //       const resp = await fetch(videoUrl, {
+  //         headers: { Range: `bytes=${offset}-${end}` },
+  //       });
+
+  //       if (!resp.ok || (resp.status !== 206 && fileSize > chunkSize)) {
+  //         console.warn(`Range request failed: ${resp.status}`);
+  //         return new Uint8Array();
+  //       }
+
+  //       const blob = await resp.blob();
+  //       const buffer = new Uint8Array(await blob.arrayBuffer());
+  //       chunkCache.set(key, buffer);
+  //       return buffer;
+  //     }
+  //   );
+
+  //   const result = JSON.parse(rawResult);
+  //   const tracks = result?.media?.track;
+
+  //   const videoTrack = tracks?.find((t: any) => t['@type'] === 'Video');
+  //   const format = videoTrack?.Format?.toLowerCase();
+
+  //   switch (format) {
+  //     case 'avc':
+  //     case 'h264':
+  //     case 'mpeg-4':
+  //     case 'mp4':
+  //       return 'video/mp4';
+  //     case 'vp8':
+  //     case 'vp9':
+  //       return 'video/webm';
+  //     case 'hevc':
+  //     case 'h265':
+  //       return 'video/mp4'; // still usually wrapped in MP4
+  //     case 'matroska':
+  //       return 'video/webm';
+  //     default:
+  //       return 'video/mp4'; // fallback
+  //   }
+  // } catch (err) {
+  //   console.error('Error analyzing media info:', err);
+  //   return null;
+  // }
+}
+
 export const VideoPlayer = ({
   videoRef,
   qortalVideoResource,
@@ -308,41 +394,55 @@ ref.current.textTracks     ,  // Subtitles/closed captions
 ref.current.videoTracks )
   }
 
+  const videoLocactionStringified = useMemo(()=> {
+    return JSON.stringify(qortalVideoResource)
+  }, [qortalVideoResource])
 
-  useEffect(() => {
-    if(!resourceUrl || !isReady) return
-     const options = {
-    autoplay: true,
-    controls: false,
-    responsive: true,
-    fluid: true,
-    poster: startPlay ? "" : poster,
-    sources: [
-      {
-        src: resourceUrl,
-        type: 'video/mp4'
-      },
-    ],
-  };
-      const ref = videoRef as any;
+useEffect(() => {
+  if (!resourceUrl || !isReady || !videoLocactionStringified) return;
+  const resource = JSON.parse(videoLocactionStringified)
+  let canceled = false;
+
+  const setupPlayer = async () => {
+    const type = await getVideoMimeTypeFromUrl(resource);
+    if (canceled) return;
+
+    const options = {
+      autoplay: true,
+      controls: false,
+      responsive: true,
+      fluid: true,
+      poster: startPlay ? "" : poster,
+      sources: [
+        {
+          src: resourceUrl,
+          type: type || 'video/mp4', // fallback
+        },
+      ],
+    };
+    console.log('options', options)
+    const ref = videoRef as any;
     if (!ref.current) return;
-    // Only initialize once
+
     if (!playerRef.current && ref.current) {
       playerRef.current = videojs(ref.current, options, () => {
         playerRef.current?.poster('');
-        if (playerRef.current){
-          playerRef.current.play()
-        }
+        playerRef.current?.play();
       });
     }
+  };
 
-    return () => {
-      if (playerRef.current) {
-        playerRef.current.dispose();
-        playerRef.current = null;
-      }
-    };
-  }, [isReady, resourceUrl]);
+  setupPlayer();
+
+  return () => {
+    canceled = true;
+    if (playerRef.current) {
+      playerRef.current.dispose();
+      playerRef.current = null;
+    }
+  };
+}, [isReady, resourceUrl, startPlay, poster, videoLocactionStringified]);
+
   
   return (
     <VideoContainer
