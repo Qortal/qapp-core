@@ -160,7 +160,7 @@ const addItems = useListStore((s) => s.addItems);
 
 
 
-  const searchIntervalRef = useRef<null | number>(null)
+  const searchIntervalRef = useRef<any>(null)
   const lastItemTimestampRef = useRef<null | number>(null)
   const stringifiedEntityParams = useMemo(()=> {
     if(!entityParams) return null

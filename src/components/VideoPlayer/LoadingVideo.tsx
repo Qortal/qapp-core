@@ -19,6 +19,7 @@ export const LoadingVideo = ({
     const progress = percentLoaded;
     return Number.isNaN(progress) ? "" : progress.toFixed(0) + "%";
   };
+  if(status === 'READY') return null
 
   return (
     <>

@@ -26,9 +26,15 @@ interface VideoControlsBarProps {
   reloadVideo: ()=> void;
   volume: number
   onVolumeChange: (_: any, val: number)=> void
+  toggleFullscreen: ()=> void
+  extractFrames: (time: number)=> void
+  showControls: boolean;
+  showControlsFullScreen: boolean;
+  isFullScreen: boolean;
+  playerRef: any
 }
 
-export const VideoControlsBar = ({reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, videoRef, duration, progress, togglePlay}: VideoControlsBarProps) => {
+export const VideoControlsBar = ({showControls, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, videoRef, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames}: VideoControlsBarProps) => {
 
   const showMobileControls = isScreenSmall && canPlay;
 
@@ -39,23 +45,46 @@ export const VideoControlsBar = ({reloadVideo, onVolumeChange, volume, isPlaying
     height: controlsHeight,
   };
 
+  let additionalStyles: React.CSSProperties = {}
+  if(isFullScreen && showControlsFullScreen){
+    additionalStyles = {
+      opacity: 1,
+      position: 'fixed',
+      bottom: 0
+    }
+  }
+
   return (
     <ControlsContainer
       style={{
         padding: "0px",
-        height: controlsHeight,
+        opacity: showControls ? 1 : 0,
+        pointerEvents: showControls ? 'auto' : 'none',
+        transition: 'opacity 0.4s ease-in-out',
+        // ...additionalStyles
+        // height: controlsHeight,
       }}
     >
       {showMobileControls ? (
         null
         // <MobileControlsBar />
       ) : canPlay ? (
-        <>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%'
+        }}>
+         
+        <ProgressSlider extractFrames={extractFrames} playerRef={playerRef} progress={progress} duration={duration} />
+        <Box sx={{
+          width: '100%',
+          display: 'flex'
+        }}>
           <Box sx={controlGroupSX}>
             <PlayButton isPlaying={isPlaying} togglePlay={togglePlay}/>
             <ReloadButton reloadVideo={reloadVideo} />
 
-            <ProgressSlider videoRef={videoRef} progress={progress} duration={duration} />
+            
 
             <VolumeControl onVolumeChange={onVolumeChange} volume={volume} sliderWidth={"100px"} />
             <VideoTime videoRef={videoRef} progress={progress}/>
@@ -65,9 +94,10 @@ export const VideoControlsBar = ({reloadVideo, onVolumeChange, volume, isPlaying
             <PlaybackRate />
             <ObjectFitButton />
             <PictureInPictureButton />
-            <FullscreenButton />
+            <FullscreenButton toggleFullscreen={toggleFullscreen} />
           </Box>
-        </>
+          </Box>
+        </Box>
       ) : null}
     </ControlsContainer>
   );

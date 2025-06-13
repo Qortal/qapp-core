@@ -11,19 +11,33 @@ export const VideoContainer = styled(Box)(({ theme }) => ({
   height: "100%",
   margin: 0,
   padding: 0,
+  borderRadius: '12px',
+  overflow: 'hidden',
   "&:focus": { outline: "none" },
 }));
 
 export const VideoElement = styled("video")(({ theme }) => ({
-  width: "100%",
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  right: 0,
+  left: 0,
   background: "rgb(33, 33, 33)",
   "&:focus": { outline: "none" },
+  "&::-webkit-media-controls": {
+  display:"none !important"
+},
+"&:fullscreen": {
+  paddingBottom: '50px'
+}
 }));
 //1075 x 604
 export const ControlsContainer = styled(Box)`
   width: 100%;
+  position: absolute;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: rgba(0, 0, 0, 0.6);
+background-image: linear-gradient(0deg,#000,#0000);
 `;

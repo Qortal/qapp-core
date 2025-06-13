@@ -12,8 +12,8 @@ export const useResourceStatus = ({
 }: PropsUseResourceStatus) => {
   const resourceId = !resource ? null : `${resource.service}-${resource.name}-${resource.identifier}`;
   const status = usePublishStore((state)=> state.getResourceStatus(resourceId)) || null
-  const intervalRef = useRef<null | number>(null)
-  const timeoutRef = useRef<null | number>(null)
+  const intervalRef = useRef<any>(null)
+  const timeoutRef = useRef<any>(null)
   const setResourceStatus = usePublishStore((state) => state.setResourceStatus);
   const statusRef = useRef<ResourceStatus | null>(null)
 

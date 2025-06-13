@@ -8,11 +8,10 @@ import {
   useRef,
   useImperativeHandle,
 } from "react";
-import { Key } from "ts-key-enum";
 import { useProgressStore, useVideoStore } from "../../state/video";
-import { VideoPlayerProps } from "./VideoPlayer";
 import { QortalGetMetadata } from "../../types/interfaces/resources";
 import { useResourceStatus } from "../../hooks/useResourceStatus";
+import useIdleTimeout from "../../common/useIdleTimeout";
 
 const controlsHeight = "42px";
 const minSpeed = 0.25;
@@ -30,10 +29,10 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
   const { autoPlay, videoRef, qortalVideoResource, retryAttempts } = props;
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControlsFullScreen, setShowControlsFullScreen] = useState(false)
   const [videoObjectFit, setVideoObjectFit] = useState<"contain" | "fill">(
     "contain"
   );
-  const [showControlsFullScreen, setShowControlsFullScreen] = useState(true);
   const [alwaysShowControls, setAlwaysShowControls] = useState(false);
   const [startPlay, setStartPlay] = useState(false);
   const [startedFetch, setStartedFetch] = useState(false);
@@ -47,6 +46,12 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     retryAttempts,
   });
 
+   const idleTime = 5000; // Time in milliseconds
+    useIdleTimeout({
+      onIdle: () => (setShowControlsFullScreen(false)),
+      onActive: () => (setShowControlsFullScreen(true)),
+      idleTime,
+    });
 
 
   const videoLocation = useMemo(() => {
@@ -213,7 +218,6 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     increaseSpeed,
     decreaseSpeed,
     toggleMute,
-    showControlsFullScreen,
     isFullscreen,
     toggleObjectFit,
     controlsHeight,
@@ -221,12 +225,11 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     toggleAlwaysShowControls,
     changeVolume,
     setProgressAbsolute,
-    setShowControlsFullScreen,
     setAlwaysShowControls,
     startedFetch,
     isReady,
     resourceUrl,
     startPlay,
-    status, percentLoaded
+    status, percentLoaded, showControlsFullScreen
   };
 };

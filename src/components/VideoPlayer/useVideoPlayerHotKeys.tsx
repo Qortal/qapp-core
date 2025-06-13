@@ -1,5 +1,4 @@
 import { useEffect, useCallback } from 'react';
-import { Key } from 'ts-key-enum';
 
 interface UseVideoControls {
   reloadVideo: () => void;
@@ -31,15 +30,15 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
-const tag = target.tagName.toUpperCase();
-const role = target.getAttribute("role");
-const isTypingOrInteractive =
-  ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(tag) ||
-  target.isContentEditable ||
-  role === "button";
+    const tag = target.tagName.toUpperCase();
+    const role = target.getAttribute("role");
+    const isTypingOrInteractive =
+      ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(tag) ||
+      target.isContentEditable ||
+      role === "button";
 
     if (isTypingOrInteractive) return;
-    e.preventDefault()
+    e.preventDefault();
     const key = e.key;
     const mod = (s: number) => setProgressRelative(s);
 
@@ -50,32 +49,30 @@ const isTypingOrInteractive =
       case "c":
         toggleAlwaysShowControls();
         break;
-      case Key.Add:
       case "+":
       case ">":
         increaseSpeed(false);
         break;
-      case Key.Subtract:
       case "-":
       case "<":
         decreaseSpeed();
         break;
-      case Key.ArrowLeft:
+      case "ArrowLeft":
         if (e.shiftKey) mod(-300);
         else if (e.ctrlKey) mod(-60);
         else if (e.altKey) mod(-10);
         else mod(-5);
         break;
-      case Key.ArrowRight:
+      case "ArrowRight":
         if (e.shiftKey) mod(300);
         else if (e.ctrlKey) mod(60);
         else if (e.altKey) mod(10);
         else mod(5);
         break;
-      case Key.ArrowDown:
+      case "ArrowDown":
         changeVolume(-0.05);
         break;
-      case Key.ArrowUp:
+      case "ArrowUp":
         changeVolume(0.05);
         break;
       case " ":
@@ -139,6 +136,5 @@ const isTypingOrInteractive =
     };
   }, [handleKeyDown]);
 
-  // Optional: return if you still want manual use
-  return null
+  return null;
 };
