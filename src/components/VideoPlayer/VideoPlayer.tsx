@@ -10,6 +10,7 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
 import Player from "video.js/dist/types/player";
+import { SubtitleManager } from "./SubtitleManager";
 
 
 type StretchVideoType = "contain" | "fill" | "cover" | "none" | "scale-down";
@@ -25,8 +26,8 @@ type StretchVideoType = "contain" | "fill" | "cover" | "none" | "scale-down";
 }
 
 const videoStyles = {
-  videoContainer: { aspectRatio: "16 / 9" },
-  video: { aspectRatio: "16 / 9" },
+  videoContainer: { },
+  video: { },
 };
 
 async function loadMediaInfo(wasmPath = '/MediaInfoModule.wasm') {
@@ -125,12 +126,14 @@ export const VideoPlayer = ({
   const containerRef = useRef<RefObject<HTMLDivElement> | null>(null);
   const [videoObjectFit] = useState<StretchVideoType>("contain");
   const [isPlaying, setIsPlaying] = useState(false);
-  const { volume, setVolume } = useVideoStore((state) => ({
+  const { volume, setVolume, setPlaybackRate, playbackRate } = useVideoStore((state) => ({
     volume: state.playbackSettings.volume,
     setVolume: state.setVolume,
+    setPlaybackRate: state.setPlaybackRate,
+    playbackRate: state.playbackSettings.playbackRate
   }));
   const playerRef = useRef<Player | null>(null);
-
+  const [isPlayerInitialized, setIsPlayerInitialized] = useState(false)
   const [videoCodec, setVideoCodec] = useState<null | false | string>(null)
   const [isMuted, setIsMuted] = useState(false);
   const { setProgress } = useProgressStore();
@@ -138,6 +141,7 @@ export const VideoPlayer = ({
   const [duration, setDuration] = useState(0)
   const [isLoading, setIsLoading] = useState(true);
   const [showControls, setShowControls] = useState(false)
+  const [isOpenSubtitleManage, setIsOpenSubtitleManage] = useState(false)
   const {
     reloadVideo,
     togglePlay,
@@ -158,12 +162,14 @@ export const VideoPlayer = ({
     setProgressAbsolute,
     setAlwaysShowControls,
     status, percentLoaded,
-    showControlsFullScreen
+    showControlsFullScreen,
+    
   } = useVideoPlayerController({
     autoPlay,
-    videoRef,
+    playerRef,
     qortalVideoResource,
-    retryAttempts
+    retryAttempts,
+    isPlayerInitialized
   });
 
   const hotkeyHandlers = useMemo(
@@ -199,8 +205,12 @@ export const VideoPlayer = ({
 
 
 
-
-  
+const closeSubtitleManager = useCallback(()=> {
+  setIsOpenSubtitleManage(false)
+}, [])
+  const openSubtitleManager = useCallback(()=> {
+  setIsOpenSubtitleManage(true)
+}, [])
 
   const videoLocation = useMemo(() => {
     if (!qortalVideoResource) return null;
@@ -208,23 +218,27 @@ export const VideoPlayer = ({
   }, [qortalVideoResource]);
   useVideoPlayerHotKeys(hotkeyHandlers);
 
-  const updateProgress = () => {
-    const ref = videoRef as React.RefObject<HTMLVideoElement>;
-    if (!ref.current || !videoLocation) return;
-    if (typeof ref.current.currentTime === "number") {
-      setProgress(videoLocation, ref.current.currentTime);
-      setLocalProgress(ref.current.currentTime)
-    }
-  };
-  useEffect(() => {
-    const ref = videoRef as React.RefObject<HTMLVideoElement>;
-    if (!ref.current) return;
-    if (ref.current) {
-      ref.current.volume = volume;
-    }
-    // Only run on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const updateProgress = useCallback(() => {
+    console.log('currentTime2')
+  const player = playerRef?.current;
+  if (!player || typeof player?.currentTime !== 'function') return;
+
+  const currentTime = player.currentTime();
+  console.log('currentTime3', currentTime)
+  if (typeof currentTime === 'number' && videoLocation && currentTime > 0.1) {
+    setProgress(videoLocation, currentTime);
+    setLocalProgress(currentTime);
+  }
+}, [videoLocation]);
+  // useEffect(() => {
+  //   const ref = videoRef as React.RefObject<HTMLVideoElement>;
+  //   if (!ref.current) return;
+  //   if (ref.current) {
+  //     ref.current.volume = volume;
+  //   }
+  //   // Only run on mount
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   const onPlay = useCallback(() => {
     setIsPlaying(true);
@@ -235,9 +249,14 @@ export const VideoPlayer = ({
   }, [setIsPlaying]);
   const onVolumeChangeHandler = useCallback(
     (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-      const video = e.currentTarget;
+      try {
+        const video = e.currentTarget;
+        console.log('onVolumeChangeHandler')
       setVolume(video.volume);
       setIsMuted(video.muted);
+      } catch (error) {
+        console.error('onVolumeChangeHandler', onVolumeChangeHandler)
+      }
     },
     [setIsMuted, setVolume]
   );
@@ -246,10 +265,11 @@ export const VideoPlayer = ({
 
   const videoStylesContainer = useMemo(() => {
     return {
-      cursor: !showControls && isFullscreen ? "none" : "auto",
+      cursor: showControls ? 'auto' : 'none',
+      aspectRatio: '16 / 9',
       ...videoStyles?.videoContainer,
     };
-  }, [showControls, isFullscreen]);
+  }, [showControls]);
 
   console.log('isFullscreen', isFullscreen, showControlsFullScreen)
 
@@ -276,24 +296,25 @@ export const VideoPlayer = ({
     setIsLoading(false);
   }, [setIsLoading])
 
-  useEffect(() => {
-    const ref = videoRef as React.RefObject<HTMLVideoElement>;
-    if (!ref.current) return;
-    const video = ref.current;
-    if (!video) return;
+ useEffect(() => {
+  if(!isPlayerInitialized) return
+  const player = playerRef.current;
+  if (!player || typeof player.on !== 'function') return;
 
-    const handleLoadedMetadata = () => {
-        if(video?.duration){
-            setDuration(video.duration)
-        }
-    };
+  const handleLoadedMetadata = () => {
+    const duration = player.duration?.();
+    if (typeof duration === 'number' && !isNaN(duration)) {
+      setDuration(duration);
+    }
+  };
 
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+  player.on('loadedmetadata', handleLoadedMetadata);
 
-    return () => {
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-    };
-  }, []);
+  return () => {
+    player.off('loadedmetadata', handleLoadedMetadata);
+  };
+}, [isPlayerInitialized]);
+
 
   const enterFullscreen = () => {
     const ref = containerRef?.current as any;
@@ -318,41 +339,41 @@ export const VideoPlayer = ({
 
 const canvasRef = useRef(null)
 const videoRefForCanvas = useRef<any>(null)
-const extractFrames = useCallback(async (time: number): Promise<string | null> => {
-  const video = videoRefForCanvas?.current;
-  const canvas: any = canvasRef.current;
+const extractFrames = useCallback( (time: number): void => {
+  // const video = videoRefForCanvas?.current;
+  // const canvas: any = canvasRef.current;
 
-  if (!video || !canvas) return null;
+  // if (!video || !canvas) return null;
 
-  // Avoid unnecessary resize if already correct
-  if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-  }
+  // // Avoid unnecessary resize if already correct
+  // if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+  //   canvas.width = video.videoWidth;
+  //   canvas.height = video.videoHeight;
+  // }
 
-  const context = canvas.getContext("2d");
-  if (!context) return null;
+  // const context = canvas.getContext("2d");
+  // if (!context) return null;
 
-  // If video is already near the correct time, don't seek again
-  const threshold = 0.01; // 10ms threshold
-  if (Math.abs(video.currentTime - time) > threshold) {
-    await new Promise<void>((resolve) => {
-      const onSeeked = () => resolve();
-      video.addEventListener("seeked", onSeeked, { once: true });
-      video.currentTime = time;
-    });
-  }
+  // // If video is already near the correct time, don't seek again
+  // const threshold = 0.01; // 10ms threshold
+  // if (Math.abs(video.currentTime - time) > threshold) {
+  //   await new Promise<void>((resolve) => {
+  //     const onSeeked = () => resolve();
+  //     video.addEventListener("seeked", onSeeked, { once: true });
+  //     video.currentTime = time;
+  //   });
+  // }
 
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  // context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  // Use a faster method for image export (optional tradeoff)
-  const blob = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob((blob: any) => resolve(blob), "image/webp", 0.7);
-  });
+  // // Use a faster method for image export (optional tradeoff)
+  // const blob = await new Promise<Blob | null>((resolve) => {
+  //   canvas.toBlob((blob: any) => resolve(blob), "image/webp", 0.7);
+  // });
 
-  if (!blob) return null;
+  // if (!blob) return null;
 
-  return URL.createObjectURL(blob);
+  // return URL.createObjectURL(blob);
 }, []);
 
 
@@ -385,25 +406,20 @@ useEffect(() => {
     if (hideTimeout.current) clearTimeout(hideTimeout.current);
   }, [setShowControls]);
 
-  const onLoadedMetadata= (e: any)=> {
-    console.log('eeeeeeeeeee', e)
-        const ref = videoRef as any;
-    if (!ref.current) return;
-    console.log('datataa', ref.current.audioTracks ,     // List of available audio tracks
-ref.current.textTracks     ,  // Subtitles/closed captions
-ref.current.videoTracks )
-  }
 
   const videoLocactionStringified = useMemo(()=> {
     return JSON.stringify(qortalVideoResource)
   }, [qortalVideoResource])
 
 useEffect(() => {
-  if (!resourceUrl || !isReady || !videoLocactionStringified) return;
+  if (!resourceUrl || !isReady || !videoLocactionStringified || !startPlay) return;
+  console.log("EFFECT TRIGGERED", { isReady, resourceUrl, startPlay, poster, videoLocactionStringified });
+
   const resource = JSON.parse(videoLocactionStringified)
   let canceled = false;
 
-  const setupPlayer = async () => {
+ try {
+   const setupPlayer = async () => {
     const type = await getVideoMimeTypeFromUrl(resource);
     if (canceled) return;
 
@@ -413,6 +429,7 @@ useEffect(() => {
       responsive: true,
       fluid: true,
       poster: startPlay ? "" : poster,
+      aspectRatio: '16:9' ,
       sources: [
         {
           src: resourceUrl,
@@ -426,25 +443,75 @@ useEffect(() => {
 
     if (!playerRef.current && ref.current) {
       playerRef.current = videojs(ref.current, options, () => {
+        setIsPlayerInitialized(true)
         playerRef.current?.poster('');
+        playerRef.current?.playbackRate(playbackRate)
+        playerRef.current?.volume(volume);
+        
+        playerRef.current?.addRemoteTextTrack({
+    kind: 'subtitles',
+    src: 'http://127.0.0.1:22393/arbitrary/DOCUMENT/a-test/test-identifier',
+    srclang: 'en',
+    label: 'English',
+    default: true
+  }, true); 
         playerRef.current?.play();
+    
       });
+            playerRef.current?.on('error', () => {
+    const error = playerRef.current?.error();
+    console.error('Video.js playback error:', error);
+    // Optional: display user-friendly message
+  });
     }
   };
 
   setupPlayer();
 
-  return () => {
-    canceled = true;
-    if (playerRef.current) {
-      playerRef.current.dispose();
-      playerRef.current = null;
+ } catch (error) {
+  console.error('useEffect start player', error)
+ }
+ return () => {
+  console.log('canceled')
+  canceled = true;
+  const player = playerRef.current;
+
+  if (player && typeof player.dispose === 'function') {
+    try {
+      player.dispose();
+    } catch (err) {
+      console.error('Error disposing Video.js player:', err);
     }
-  };
+    playerRef.current = null;
+  }
+};
 }, [isReady, resourceUrl, startPlay, poster, videoLocactionStringified]);
 
-  
+  useEffect(() => {
+    if(!isPlayerInitialized) return
+  const player = playerRef?.current;
+  console.log('player rate', player)
+  if (!player) return;
+
+  const handleRateChange = () => {
+    const newRate = player?.playbackRate();
+    console.log('Playback rate changed:', newRate);
+    if(newRate){
+      setPlaybackRate(newRate); // or any other state/action
+    }
+  };
+
+  player.on('ratechange', handleRateChange);
+
+  return () => {
+    player.off('ratechange', handleRateChange);
+  };
+}, [isPlayerInitialized]);
+
   return (
+    <>
+     {/* <video controls  src={"http://127.0.0.1:22393/arbitrary/VIDEO/a-test/MYTEST2_like_MYTEST2_vid_test-parallel_cSYmIk"} ref={videoRefForCanvas} ></video> */}
+   
     <VideoContainer
       tabIndex={0}
       style={videoStylesContainer}
@@ -458,7 +525,7 @@ useEffect(() => {
         tabIndex={0}
           className="video-js"
 
-        // src={isReady && startPlay ? resourceUrl || undefined : undefined}
+        src={isReady && startPlay ? resourceUrl || undefined : undefined}
         poster={startPlay ? "" : poster}
         onTimeUpdate={updateProgress}
         autoPlay={autoPlay}
@@ -471,17 +538,18 @@ useEffect(() => {
         onPause={onPause}
         onVolumeChange={onVolumeChangeHandler}
         controls={false}
-        onLoadedMetadata={onLoadedMetadata}
     
       />
-            <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
-            <video  src={isReady && startPlay ? resourceUrl || undefined : undefined} ref={videoRefForCanvas} style={{ display: "none" }}></video>
+            {/* <canvas ref={canvasRef} style={{ display: "none" }}></canvas> */}
+           
           
         {isReady && (
-             <VideoControlsBar playerRef={playerRef} isFullScreen={isFullscreen} showControlsFullScreen={showControlsFullScreen} showControls={showControls} extractFrames={extractFrames} toggleFullscreen={toggleFullscreen} onVolumeChange={onVolumeChange} volume={volume}  togglePlay={togglePlay} reloadVideo={hotkeyHandlers.reloadVideo} isPlaying={isPlaying} canPlay={true} isScreenSmall={false} controlsHeight={controlsHeight}  videoRef={videoRef} duration={duration} progress={localProgress} />
+             <VideoControlsBar  playbackRate={playbackRate}   increaseSpeed={hotkeyHandlers.increaseSpeed}
+      decreaseSpeed={hotkeyHandlers.decreaseSpeed} playerRef={playerRef} isFullScreen={isFullscreen} showControlsFullScreen={showControlsFullScreen} showControls={showControls} extractFrames={extractFrames} toggleFullscreen={toggleFullscreen} onVolumeChange={onVolumeChange} volume={volume}  togglePlay={togglePlay} reloadVideo={hotkeyHandlers.reloadVideo} isPlaying={isPlaying} canPlay={true} isScreenSmall={false} controlsHeight={controlsHeight}  duration={duration} progress={localProgress} openSubtitleManager={openSubtitleManager} />
         )}       
   
-          
+          <SubtitleManager close={closeSubtitleManager} open={isOpenSubtitleManage} qortalMetadata={qortalVideoResource} />
     </VideoContainer>
+     </>
   );
 };

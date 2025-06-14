@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 import { ControlsContainer } from "./VideoPlayer-styles";
 // import { MobileControlsBar } from "./MobileControlsBar";
 import {
@@ -18,7 +18,6 @@ interface VideoControlsBarProps {
   canPlay: boolean
   isScreenSmall: boolean
   controlsHeight?: string
-  videoRef:Ref<HTMLVideoElement>;
   progress: number;
   duration: number
   isPlaying: boolean;
@@ -32,9 +31,13 @@ interface VideoControlsBarProps {
   showControlsFullScreen: boolean;
   isFullScreen: boolean;
   playerRef: any
+  increaseSpeed: ()=> void
+  decreaseSpeed: ()=> void
+  playbackRate: number
+  openSubtitleManager: ()=> void
 }
 
-export const VideoControlsBar = ({showControls, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, videoRef, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames}: VideoControlsBarProps) => {
+export const VideoControlsBar = ({showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager}: VideoControlsBarProps) => {
 
   const showMobileControls = isScreenSmall && canPlay;
 
@@ -75,7 +78,7 @@ export const VideoControlsBar = ({showControls, isFullScreen, showControlsFullSc
           width: '100%'
         }}>
          
-        <ProgressSlider extractFrames={extractFrames} playerRef={playerRef} progress={progress} duration={duration} />
+        <ProgressSlider  playerRef={playerRef} progress={progress} duration={duration} />
         <Box sx={{
           width: '100%',
           display: 'flex'
@@ -87,12 +90,15 @@ export const VideoControlsBar = ({showControls, isFullScreen, showControlsFullSc
             
 
             <VolumeControl onVolumeChange={onVolumeChange} volume={volume} sliderWidth={"100px"} />
-            <VideoTime videoRef={videoRef} progress={progress}/>
+            <VideoTime  progress={progress} duration={duration}/>
           </Box>
 
           <Box sx={controlGroupSX}>
-            <PlaybackRate />
+            <PlaybackRate playbackRate={playbackRate} increaseSpeed={increaseSpeed} decreaseSpeed={decreaseSpeed} />
             <ObjectFitButton />
+            <IconButton onClick={openSubtitleManager}>
+              sub
+            </IconButton>
             <PictureInPictureButton />
             <FullscreenButton toggleFullscreen={toggleFullscreen} />
           </Box>

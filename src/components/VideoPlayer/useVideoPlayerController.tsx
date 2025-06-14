@@ -19,14 +19,15 @@ const maxSpeed = 4.0;
 const speedChange = 0.25;
 
 interface UseVideoControls {
-  videoRef: Ref<HTMLVideoElement>;
+  playerRef: any;
   autoPlay?: boolean;
   qortalVideoResource: QortalGetMetadata;
   retryAttempts?: number;
+  isPlayerInitialized: boolean
 }
 
 export const useVideoPlayerController = (props: UseVideoControls) => {
-  const { autoPlay, videoRef, qortalVideoResource, retryAttempts } = props;
+  const { autoPlay,   playerRef, qortalVideoResource, retryAttempts, isPlayerInitialized } = props;
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControlsFullScreen, setShowControlsFullScreen] = useState(false)
@@ -60,48 +61,67 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
   }, [qortalVideoResource]);
 
   useEffect(() => {
-    if (videoLocation) {
-      const ref = videoRef as React.RefObject<HTMLVideoElement>;
+    if (videoLocation && isPlayerInitialized) {
+      console.log('hellohhhh5')
+      try {
+        const ref = playerRef as any;
       if (!ref.current) return;
 
       const savedProgress = getProgress(videoLocation);
+      console.log('savedProgress', savedProgress)
       if (typeof savedProgress === "number") {
-        ref.current.currentTime = savedProgress;
+        playerRef.current?.currentTime(savedProgress);
+
+      }
+      } catch (error) {
+        console.error('line 74', error)
       }
     }
-  }, [videoLocation, getProgress]);
+  }, [videoLocation, getProgress, isPlayerInitialized]);
 
   const [playbackRate, _setLocalPlaybackRate] = useState(
     playbackSettings.playbackRate
   );
 
   const updatePlaybackRate = useCallback(
-    (newSpeed: number) => {
-      const ref = videoRef as React.RefObject<HTMLVideoElement>;
-      if (!ref.current) return;
+  (newSpeed: number) => {
+    try {
+      const player = playerRef.current;
+    if (!player) return;
 
-      if (newSpeed > maxSpeed || newSpeed < minSpeed) newSpeed = minSpeed;
-      ref.current.playbackRate = newSpeed;
-      _setLocalPlaybackRate(newSpeed);
-      setPlaybackRate(newSpeed);
-    },
-    [setPlaybackRate, _setLocalPlaybackRate]
-  );
+    if (newSpeed > maxSpeed || newSpeed < minSpeed) newSpeed = minSpeed;
+
+    const clampedSpeed = Math.min(Math.max(newSpeed, minSpeed), maxSpeed);
+    player.playbackRate(clampedSpeed); // ✅ Video.js API
+
+    // _setLocalPlaybackRate(clampedSpeed);
+    // setPlaybackRate(clampedSpeed);
+    } catch (error) {
+      console.error('updatePlaybackRate', error)
+    }
+  },
+  [setPlaybackRate, _setLocalPlaybackRate, minSpeed, maxSpeed]
+);
+
 
   const increaseSpeed = useCallback(
     (wrapOverflow = true) => {
-      const changedSpeed = playbackRate + speedChange;
+      try {
+        const changedSpeed = playbackSettings.playbackRate + speedChange;
       const newSpeed = wrapOverflow
         ? changedSpeed
         : Math.min(changedSpeed, maxSpeed);
       updatePlaybackRate(newSpeed);
+      } catch (error) {
+        console.error('increaseSpeed', increaseSpeed)
+      }
     },
-    [updatePlaybackRate, playbackRate]
+    [updatePlaybackRate, playbackSettings.playbackRate]
   );
 
   const decreaseSpeed = useCallback(() => {
-    updatePlaybackRate(playbackRate - speedChange);
-  }, [updatePlaybackRate, playbackRate]);
+    updatePlaybackRate(playbackSettings.playbackRate - speedChange);
+  }, [updatePlaybackRate, playbackSettings.playbackRate]);
 
   const toggleAlwaysShowControls = useCallback(() => {
     setAlwaysShowControls((prev) => !prev);
@@ -118,88 +138,139 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
 
   const onVolumeChange = useCallback(
     (_: any, value: number | number[]) => {
-      const newVolume = value as number;
-      const ref = videoRef as React.RefObject<HTMLVideoElement>;
+      try {
+        const newVolume = value as number;
+      const ref = playerRef as any;
       if (!ref.current) return;
-      if (ref.current) ref.current.volume = newVolume;
+      if (ref.current) {
+        playerRef.current?.volume(newVolume);
+
+      }
+      } catch (error) {
+        console.error('onVolumeChange', error)
+      }
     },
     []
   );
 
   const toggleMute = useCallback(() => {
-    const ref = videoRef as React.RefObject<HTMLVideoElement>;
-    if (!ref.current) return;
+    try {
+       const ref = playerRef as any;
+    if (!ref.current?.muted) return;
   
-    ref.current.muted = !ref.current.muted;
+    ref.current?.muted(!ref.current?.muted)
+    } catch (error) {
+      console.error('toggleMute', toggleMute)
+    }
   }, []);
 
   const changeVolume = useCallback(
-    (delta: number) => {
-      const ref = videoRef as React.RefObject<HTMLVideoElement>;
-      if (!ref.current) return;
-  
-      // Get current volume directly from video element
-      const currentVolume = ref.current.volume;
-      let newVolume = Math.max(0, Math.min(currentVolume + delta, 1));
-      newVolume = +newVolume.toFixed(2);
-  
-      ref.current.volume = newVolume;
-      ref.current.muted = false;
-  
-    },
-    []
-  );
+  (delta: number) => {
+    try {
+      const player = playerRef.current;
+    if (!player || typeof player.volume !== 'function') return;
+
+    const currentVolume = player.volume(); // Get current volume (0–1)
+    let newVolume = Math.max(0, Math.min(currentVolume + delta, 1));
+    newVolume = +newVolume.toFixed(2); // Round to 2 decimal places
+
+    player.volume(newVolume);     // Set new volume
+    player.muted(false);          // Ensure it's unmuted
+    } catch (error) {
+      console.error('changeVolume', error)
+    }
+  },
+  []
+);
+
   
 
-  const setProgressRelative = useCallback((seconds: number) => {
-    const ref = videoRef as React.RefObject<HTMLVideoElement>;
-    const current = ref.current.currentTime;
-    const duration = ref.current.duration || 100;
-    const newTime = Math.max(0, Math.min(current + seconds, duration));
-    ref.current.currentTime = newTime;
-  }, []);
+const setProgressRelative = useCallback((seconds: number) => {
+  try {
+    const player = playerRef.current;
+  if (!player || typeof player.currentTime !== 'function' || typeof player.duration !== 'function') return;
 
-  const setProgressAbsolute = useCallback((percent: number) => {
-    const ref = videoRef as React.RefObject<HTMLVideoElement>;
+  const current = player.currentTime();
+  const duration = player.duration() || 100;
+  const newTime = Math.max(0, Math.min(current + seconds, duration));
 
-    if (!ref.current) return;
-    const finalTime =
-      (ref.current.duration * Math.min(100, Math.max(0, percent))) / 100;
-    ref.current.currentTime = finalTime;
-  }, []);
+  player.currentTime(newTime);
+  } catch (error) {
+    console.error('setProgressRelative', error)
+  }
+}, []);
+
+
+ const setProgressAbsolute = useCallback((percent: number) => {
+try {
+    const player = playerRef.current;
+  if (!player || typeof player.duration !== 'function' || typeof player.currentTime !== 'function') return;
+
+  const duration = player.duration();
+  const clampedPercent = Math.min(100, Math.max(0, percent));
+  const finalTime = (duration * clampedPercent) / 100;
+
+  player.currentTime(finalTime);
+} catch (error) {
+  console.error('setProgressAbsolute', error)
+}
+}, []);
+
 
   const toggleObjectFit = useCallback(() => {
     setVideoObjectFit(videoObjectFit === "contain" ? "fill" : "contain");
   }, [setVideoObjectFit]);
 
-  const togglePlay = useCallback(async () => {
-    const ref = videoRef as React.RefObject<HTMLVideoElement>;
-    if (!ref.current) return;
-    if (!startedFetchRef.current) {
-      setStartedFetch(true);
-      startedFetchRef.current = true;
-      setStartPlay(true);
-      return;
-    }
-    if (isReady && ref.current) {
-      if (ref.current.paused) {
-        ref.current.play();
-      } else {
-        ref.current.pause();
-      }
-    
-    }
-  }, [ setStartedFetch, isReady]);
+const togglePlay = useCallback(async () => {
+ 
 
-  const reloadVideo = useCallback(async () => {
-    const ref = videoRef as React.RefObject<HTMLVideoElement>;
-    if (!ref?.current || !isReady || !resourceUrl) return;
-    const currentTime = ref.current.currentTime;
-    ref.current.src = resourceUrl;
-    ref.current.load();
-    ref.current.currentTime = currentTime;
-    ref.current.play();
-  }, [isReady, resourceUrl]);
+  try {
+    if (!startedFetchRef.current) {
+    setStartedFetch(true);
+    startedFetchRef.current = true;
+    setStartPlay(true);
+    return;
+  }
+ const player = playerRef.current;
+  if (!player) return;
+  if (isReady) {
+    if (player.paused()) {
+      try {
+        await player.play();
+      } catch (err) {
+        console.warn('Play failed:', err);
+      }
+    } else {
+      player.pause();
+    }
+  }
+  } catch (error) {
+    console.error('togglePlay', error)
+  }
+}, [setStartedFetch, isReady]);
+
+
+ const reloadVideo = useCallback(async () => {
+  try {
+    const player = playerRef.current;
+  if (!player || !isReady || !resourceUrl) return;
+
+  const currentTime = player.currentTime();
+
+  player.src({ src: resourceUrl, type: 'video/mp4' }); // Adjust type if needed
+  player.load();
+
+  player.ready(() => {
+    player.currentTime(currentTime);
+    player.play().catch((err: any) => {
+      console.warn('Playback failed after reload:', err);
+    });
+  });
+  } catch (error) {
+    console.error(error)
+  }
+}, [isReady, resourceUrl]);
+
 
   useEffect(() => {
     if (autoPlay) togglePlay();

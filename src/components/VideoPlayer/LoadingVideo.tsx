@@ -42,7 +42,10 @@ export const LoadingVideo = ({
             height: "100%",
           }}
         >
-          <CircularProgress color="secondary" />
+          {status !== "NOT_PUBLISHED" && (
+                      <CircularProgress color="secondary" />
+
+          )}
           {status && (
             <Typography
               variant="subtitle2"
@@ -53,10 +56,10 @@ export const LoadingVideo = ({
                 textAlign: "center",
               }}
             >
-              {status === "NOT_PUBLISHED" && (
+             
+              {status === "NOT_PUBLISHED" ? (
                 <>Video file was not published. Please inform the publisher!</>
-              )}
-              {status === "REFETCHING" ? (
+              ) : status === "REFETCHING" ? (
                 <>
                   <>
                     {getDownloadProgress(

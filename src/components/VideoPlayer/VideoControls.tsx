@@ -50,7 +50,7 @@ export const ReloadButton = ({reloadVideo, isScreenSmall}: any) => {
   );
 };
 
-export const ProgressSlider = ({progress,  duration,  playerRef, extractFrames}: any) => {
+export const ProgressSlider = ({progress,  duration,  playerRef}: any) => {
   const sliderRef = useRef(null);
 
   const [hoverX, setHoverX] = useState<number | null>(null);
@@ -58,7 +58,8 @@ export const ProgressSlider = ({progress,  duration,  playerRef, extractFrames}:
   const [showDuration, setShowDuration] = useState(0)
   const onProgressChange = (_: any, value: number | number[]) => {
       if (!playerRef.current) return;
-  playerRef.current.currentTime(value as number);
+
+  playerRef.current?.currentTime(value as number);
   };
 
   const THUMBNAIL_DEBOUNCE = 500;
@@ -68,31 +69,7 @@ export const ProgressSlider = ({progress,  duration,  playerRef, extractFrames}:
   const debounceTimeoutRef = useRef<any>(null);
   const previousBlobUrlRef = useRef<string | null>(null);
 
-  const debouncedExtract = useCallback(
-    (time: number, clientX: number) => {
-      const last = lastRequestedTimeRef.current;
-          console.log('hello101')
-      console.log('last', last)
-      if (last !== null && Math.abs(time - last) < THUMBNAIL_MIN_DIFF) return;
-      lastRequestedTimeRef.current = time;
-          console.log('hello102')
-
-      extractFrames(time).then((blobUrl: string | null) => {
-        console.log('blobUrl', blobUrl)
-        if (!blobUrl) return;
-
-        // Clean up previous blob URL
-        if (previousBlobUrlRef.current) {
-          URL.revokeObjectURL(previousBlobUrlRef.current);
-        }
-
-        previousBlobUrlRef.current = blobUrl;
-        setThumbnailUrl(blobUrl);
-        
-      });
-    },
-    [extractFrames]
-  );
+ 
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const slider = sliderRef.current;
@@ -139,6 +116,8 @@ export const ProgressSlider = ({progress,  duration,  playerRef, extractFrames}:
 console.log('thumbnailUrl', thumbnailUrl, hoverX)
 
   }
+
+  console.log('duration', duration)
 
   return (
     <Box position="relative" sx={{
@@ -230,7 +209,8 @@ console.log('thumbnailUrl', thumbnailUrl, hoverX)
   );
 };
 
-export const VideoTime = ({videoRef, progress, isScreenSmall}: any) => {
+export const VideoTime = ({progress, isScreenSmall, duration}: any) => {
+
 
   return (
     <CustomFontTooltip
@@ -241,16 +221,14 @@ export const VideoTime = ({videoRef, progress, isScreenSmall}: any) => {
       <Typography
         sx={{
           fontSize: isScreenSmall ? fontSizeExSmall : fontSizeSmall,
-          color: "white",
-          visibility: !videoRef.current?.duration ? "hidden" : "visible",
-          whiteSpace: "nowrap",
+          color: 'white',
+          visibility: typeof duration !== 'number' ? 'hidden' : 'visible',
+          whiteSpace: 'nowrap',
         }}
       >
-        {videoRef.current?.duration ? formatTime(progress) : ""}
-        {" / "}
-        {videoRef.current?.duration
-          ? formatTime(videoRef.current?.duration)
-          : ""}
+        {typeof duration === 'number' ? formatTime(progress) : ''}
+        {' / '}
+        {typeof duration === 'number' ? formatTime(duration) : ''}
       </Typography>
     </CustomFontTooltip>
   );
