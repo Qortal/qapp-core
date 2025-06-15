@@ -280,6 +280,7 @@ const togglePlay = useCallback(async () => {
     }
   }, [togglePlay, isReady]);
 
+
   return {
     reloadVideo,
     togglePlay,
@@ -299,6 +300,6 @@ const togglePlay = useCallback(async () => {
     isReady,
     resourceUrl,
     startPlay,
-    status, percentLoaded, showControlsFullScreen
+    status, percentLoaded, showControlsFullScreen, onSelectPlaybackRate: updatePlaybackRate
   };
 };

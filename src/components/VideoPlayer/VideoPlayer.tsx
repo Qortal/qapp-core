@@ -206,6 +206,7 @@ export const VideoPlayer = ({
     status,
     percentLoaded,
     showControlsFullScreen,
+    onSelectPlaybackRate
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
@@ -213,6 +214,27 @@ export const VideoPlayer = ({
     retryAttempts,
     isPlayerInitialized,
   });
+
+  console.log('isFullscreen', isFullscreen)
+
+   const enterFullscreen = useCallback(() => {
+    const ref = containerRef?.current as any;
+    if (!ref) return;
+
+    if (ref.requestFullscreen && !isFullscreen) {
+      ref.requestFullscreen();
+    }
+  }, []);
+
+  const exitFullscreen = useCallback(() => {
+   document?.exitFullscreen();
+  }, [isFullscreen]);
+
+  const toggleFullscreen = useCallback(() => {
+    console.log('togglefull', isFullscreen)
+    isFullscreen ? exitFullscreen() : enterFullscreen();
+  }, [isFullscreen]);
+
 
   const hotkeyHandlers = useMemo(
     () => ({
@@ -227,6 +249,7 @@ export const VideoPlayer = ({
       toggleMute,
       setProgressAbsolute,
       setAlwaysShowControls,
+      toggleFullscreen
     }),
     [
       reloadVideo,
@@ -240,6 +263,7 @@ export const VideoPlayer = ({
       toggleMute,
       setProgressAbsolute,
       setAlwaysShowControls,
+      toggleFullscreen
     ]
   );
 
@@ -346,23 +370,7 @@ export const VideoPlayer = ({
     };
   }, [isPlayerInitialized]);
 
-  const enterFullscreen = () => {
-    const ref = containerRef?.current as any;
-    if (!ref) return;
-
-    if (ref.requestFullscreen && !isFullscreen) {
-      ref.requestFullscreen();
-    }
-  };
-
-  const exitFullscreen = () => {
-    if (isFullscreen) document.exitFullscreen();
-  };
-
-  const toggleFullscreen = () => {
-    isFullscreen ? exitFullscreen() : enterFullscreen();
-  };
-
+ 
   const canvasRef = useRef(null);
   const videoRefForCanvas = useRef<any>(null);
   const extractFrames = useCallback((time: number): void => {
@@ -744,6 +752,7 @@ export const VideoPlayer = ({
             duration={duration}
             progress={localProgress}
             openSubtitleManager={openSubtitleManager}
+            onSelectPlaybackRate={onSelectPlaybackRate}
           />
         )}
 

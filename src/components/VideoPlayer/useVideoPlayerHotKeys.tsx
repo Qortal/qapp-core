@@ -12,6 +12,7 @@ interface UseVideoControls {
   changeVolume: (delta: number) => void;
   toggleMute: () => void;
   setProgressAbsolute: (percent: number) => void;
+  toggleFullscreen: ()=> void;
 }
 
 export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
@@ -26,6 +27,7 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
     changeVolume,
     toggleMute,
     setProgressAbsolute,
+    toggleFullscreen
   } = props;
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -45,6 +47,9 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
     switch (key) {
       case "o":
         toggleObjectFit();
+        break;
+       case "f":
+        toggleFullscreen();
         break;
       case "c":
         toggleAlwaysShowControls();
@@ -127,6 +132,7 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
     changeVolume,
     toggleMute,
     setProgressAbsolute,
+    toggleFullscreen
   ]);
 
   useEffect(() => {

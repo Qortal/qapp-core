@@ -1,4 +1,16 @@
-import { Box, IconButton, Popper, Slider, Typography } from "@mui/material";
+import {
+  alpha,
+  Box,
+  ButtonBase,
+  Divider,
+  Fade,
+  IconButton,
+  Popover,
+  Popper,
+  Slider,
+  Typography,
+  useTheme,
+} from "@mui/material";
 export const fontSizeExSmall = "60%";
 export const fontSizeSmall = "80%";
 import AspectRatioIcon from "@mui/icons-material/AspectRatio";
@@ -14,11 +26,14 @@ import {
 import { formatTime } from "../../utils/time.js";
 import { CustomFontTooltip } from "./CustomFontTooltip.js";
 import { useCallback, useEffect, useRef, useState } from "react";
-
+import SlowMotionVideoIcon from "@mui/icons-material/SlowMotionVideo";
 const buttonPaddingBig = "6px";
 const buttonPaddingSmall = "4px";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import CheckIcon from "@mui/icons-material/Check";
 
-export const PlayButton = ({togglePlay, isPlaying , isScreenSmall}: any) => {
+export const PlayButton = ({ togglePlay, isPlaying, isScreenSmall }: any) => {
   return (
     <CustomFontTooltip title="Pause/Play (Spacebar)" placement="bottom" arrow>
       <IconButton
@@ -34,7 +49,7 @@ export const PlayButton = ({togglePlay, isPlaying , isScreenSmall}: any) => {
   );
 };
 
-export const ReloadButton = ({reloadVideo, isScreenSmall}: any) => {
+export const ReloadButton = ({ reloadVideo, isScreenSmall }: any) => {
   return (
     <CustomFontTooltip title="Reload Video (R)" placement="bottom" arrow>
       <IconButton
@@ -50,16 +65,16 @@ export const ReloadButton = ({reloadVideo, isScreenSmall}: any) => {
   );
 };
 
-export const ProgressSlider = ({progress,  duration,  playerRef}: any) => {
+export const ProgressSlider = ({ progress, duration, playerRef }: any) => {
   const sliderRef = useRef(null);
 
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
-  const [showDuration, setShowDuration] = useState(0)
+  const [showDuration, setShowDuration] = useState(0);
   const onProgressChange = (_: any, value: number | number[]) => {
-      if (!playerRef.current) return;
+    if (!playerRef.current) return;
 
-  playerRef.current?.currentTime(value as number);
+    playerRef.current?.currentTime(value as number);
   };
 
   const THUMBNAIL_DEBOUNCE = 500;
@@ -69,8 +84,6 @@ export const ProgressSlider = ({progress,  duration,  playerRef}: any) => {
   const debounceTimeoutRef = useRef<any>(null);
   const previousBlobUrlRef = useRef<string | null>(null);
 
- 
-
   const handleMouseMove = (e: React.MouseEvent) => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -79,10 +92,10 @@ export const ProgressSlider = ({progress,  duration,  playerRef}: any) => {
     const x = e.clientX - rect.left;
     const percent = x / rect.width;
     const time = Math.min(Math.max(0, percent * duration), duration);
-        console.log('hello100')
+    console.log("hello100");
     setHoverX(e.clientX);
 
-    setShowDuration(time)
+    setShowDuration(time);
     if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
 
     // debounceTimeoutRef.current = setTimeout(() => {
@@ -112,29 +125,31 @@ export const ProgressSlider = ({progress,  duration,  playerRef}: any) => {
   }, []);
 
   const hoverAnchorRef = useRef<HTMLDivElement | null>(null);
-  if(hoverX){
-console.log('thumbnailUrl', thumbnailUrl, hoverX)
-
+  if (hoverX) {
+    console.log("thumbnailUrl", thumbnailUrl, hoverX);
   }
 
-  console.log('duration', duration)
+  console.log("duration", duration);
 
   return (
-    <Box position="relative" sx={{
-      width: '100%',
-         padding: '0px 10px'
-    }}>
+    <Box
+      position="relative"
+      sx={{
+        width: "100%",
+        padding: "0px 10px",
+      }}
+    >
       <Box
-  ref={hoverAnchorRef}
-  sx={{
-    position: 'absolute',
-    left: hoverX ?? -9999,
-    top: 0,
-    width: '1px',
-    height: '1px',
-    pointerEvents: 'none',
-  }}
-/>
+        ref={hoverAnchorRef}
+        sx={{
+          position: "absolute",
+          left: hoverX ?? -9999,
+          top: 0,
+          width: "1px",
+          height: "1px",
+          pointerEvents: "none",
+        }}
+      />
       <Slider
         ref={sliderRef}
         onMouseMove={handleMouseMove}
@@ -145,37 +160,54 @@ console.log('thumbnailUrl', thumbnailUrl, hoverX)
         max={duration || 100}
         step={0.1}
         sx={{
-         
           color: "#00abff",
           padding: "0px",
-          borderRadius: '0px',
-          height: '0px',
+          borderRadius: "0px",
+          height: "0px",
           "@media (pointer: coarse)": { padding: "0px" },
           "& .MuiSlider-thumb": {
             backgroundColor: "red",
             width: "14px",
             height: "14px",
           },
-          "& .MuiSlider-thumb::after": { width: "14px", height: "14px", backgroundColor: 'red' },
-          "& .MuiSlider-rail": { opacity: 0.5, height: "6px", backgroundColor: '#73859f80' },
-          "& .MuiSlider-track": { height: "6px", border: "0px" , backgroundColor: 'red'},
+          "& .MuiSlider-thumb::after": {
+            width: "14px",
+            height: "14px",
+            backgroundColor: "red",
+          },
+          "& .MuiSlider-rail": {
+            opacity: 0.5,
+            height: "6px",
+            backgroundColor: "#73859f80",
+          },
+          "& .MuiSlider-track": {
+            height: "6px",
+            border: "0px",
+            backgroundColor: "red",
+          },
         }}
       />
-      {hoverX !== null  && (
+      {hoverX !== null && (
         <Popper
           open
-         anchorEl={hoverAnchorRef.current} placement="top"
- 
-      
+          anchorEl={hoverAnchorRef.current}
+          placement="top"
           disablePortal
-          modifiers={[{ name: "offset", options: { offset: [-20, 0] } }]}
+          modifiers={[{ name: "offset", options: { offset: [-10, 0] } }]}
+          
+ 
         >
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
-          }}>
-          {/* <Box
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              bgcolor: alpha("#181818", 0.75),
+              padding: '5px',
+              borderRadius: '5px'
+            }}
+          >
+            {/* <Box
             sx={{
               width: 250,
               height: 125,
@@ -197,11 +229,15 @@ console.log('thumbnailUrl', thumbnailUrl, hoverX)
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </Box> */}
-          <Typography sx={{
-            fontSize: '0.8rom',
-            textShadow: '0 0 5px rgba(0, 0, 0, 0.7)'
-
-          }}>{formatTime(showDuration)}</Typography>
+            <Typography
+              sx={{
+                fontSize: "0.8rom",
+                textShadow: "0 0 5px rgba(0, 0, 0, 0.7)",
+                fontFamily: "sans-serif"
+              }}
+            >
+              {formatTime(showDuration)}
+            </Typography>
           </Box>
         </Popper>
       )}
@@ -209,9 +245,7 @@ console.log('thumbnailUrl', thumbnailUrl, hoverX)
   );
 };
 
-export const VideoTime = ({progress, isScreenSmall, duration}: any) => {
-
-
+export const VideoTime = ({ progress, isScreenSmall, duration }: any) => {
   return (
     <CustomFontTooltip
       title="Seek video in 10% increments (0-9)"
@@ -221,20 +255,21 @@ export const VideoTime = ({progress, isScreenSmall, duration}: any) => {
       <Typography
         sx={{
           fontSize: isScreenSmall ? fontSizeExSmall : fontSizeSmall,
-          color: 'white',
-          visibility: typeof duration !== 'number' ? 'hidden' : 'visible',
-          whiteSpace: 'nowrap',
+          color: "white",
+          visibility: typeof duration !== "number" ? "hidden" : "visible",
+          whiteSpace: "nowrap",
+          fontFamily: "sans-serif"
         }}
       >
-        {typeof duration === 'number' ? formatTime(progress) : ''}
-        {' / '}
-        {typeof duration === 'number' ? formatTime(duration) : ''}
+        {typeof duration === "number" ? formatTime(progress) : ""}
+        {" / "}
+        {typeof duration === "number" ? formatTime(duration) : ""}
       </Typography>
     </CustomFontTooltip>
   );
 };
 
-const VolumeButton = ({isMuted, toggleMute}: any) => {
+const VolumeButton = ({ isMuted, toggleMute }: any) => {
   return (
     <CustomFontTooltip
       title="Toggle Mute (M), Raise (UP), Lower (DOWN)"
@@ -289,33 +324,173 @@ export const VolumeControl = ({ sliderWidth, onVolumeChange, volume }: any) => {
       sx={{ display: "flex", gap: "5px", alignItems: "center", width: "100%" }}
     >
       <VolumeButton />
-      <VolumeSlider width={sliderWidth} onVolumeChange={onVolumeChange} volume={volume} />
+      <VolumeSlider
+        width={sliderWidth}
+        onVolumeChange={onVolumeChange}
+        volume={volume}
+      />
     </Box>
   );
 };
 
-export const PlaybackRate = ({playbackRate, increaseSpeed, isScreenSmall}: any) => {
+const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3];
+
+export const PlaybackRate = ({
+  playbackRate,
+  increaseSpeed,
+  isScreenSmall,
+  onSelect,
+}: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const btnRef = useRef(null);
+  const theme = useTheme();
+  const onBack = () => {
+    setIsOpen(false);
+  };
+
   return (
-    <CustomFontTooltip
-      title="Video Speed. Increase (+ or >), Decrease (- or <)"
-      placement="bottom"
-      arrow
-    >
-      <IconButton
-        sx={{
-          color: "white",
-          fontSize: fontSizeSmall,
-          padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
-        }}
-        onClick={() => increaseSpeed()}
+    <>
+      <CustomFontTooltip
+        title="Video Speed. Increase (+ or >), Decrease (- or <)"
+        placement="bottom"
+        arrow
       >
-        {playbackRate}x
-      </IconButton>
-    </CustomFontTooltip>
+        <IconButton
+        ref={btnRef}
+          sx={{
+            color: "white",
+            fontSize: fontSizeSmall,
+            padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
+          }}
+          onClick={() => setIsOpen(true)}
+        >
+          <SlowMotionVideoIcon />
+        </IconButton>
+      </CustomFontTooltip>
+
+      <Popover
+        open={isOpen}
+        anchorEl={btnRef.current}
+        onClose={() => setIsOpen(false)}
+        slots={{
+          transition: Fade,
+        }}
+        slotProps={{
+          transition: {
+            timeout: 200,
+          },
+          paper: {
+            sx: {
+              bgcolor: alpha("#181818", 0.98),
+              color: "white",
+              opacity: 0.9,
+              borderRadius: 2,
+              boxShadow: 5,
+              p: 1,
+              minWidth: 225,
+              height: 300,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            },
+          },
+        }}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+      >
+        <Box
+          sx={{
+            padding: "5px 0px 10px 0px",
+            display: "flex",
+            gap: "10px",
+            width: "100%",
+          }}
+        >
+          <ButtonBase onClick={onBack}>
+            <ArrowBackIosIcon
+              sx={{
+                fontSize: "1.15em",
+              }}
+            />
+          </ButtonBase>
+          <ButtonBase>
+            <Typography
+              onClick={onBack}
+              sx={{
+                fontSize: "0.85rem",
+              }}
+            >
+              Playback speed
+            </Typography>
+          </ButtonBase>
+        </Box>
+        <Divider />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flexGrow: 1,
+            overflow: "auto",
+            "::-webkit-scrollbar-track": {
+              backgroundColor: "transparent",
+            },
+
+            "::-webkit-scrollbar": {
+              width: "16px",
+              height: "10px",
+            },
+
+            "::-webkit-scrollbar-thumb": {
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: "8px",
+              backgroundClip: "content-box",
+              border: "4px solid transparent",
+              transition: "0.3s background-color",
+            },
+
+            "::-webkit-scrollbar-thumb:hover": {
+              backgroundColor: theme.palette.primary.dark,
+            },
+          }}
+        >
+          {speeds?.map((speed) => {
+            const isSelected = speed === playbackRate;
+            return (
+              <ButtonBase
+                disabled={isSelected}
+                key={speed}
+                onClick={() => {
+                  onSelect(speed)
+                  setIsOpen(false)
+                }}
+                sx={{
+                  px: 2,
+                  py: 1,
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                  width: "100%",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography>{speed}</Typography>
+                {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
+              </ButtonBase>
+            );
+          })}
+        </Box>
+      </Popover>
+    </>
   );
 };
 
-export const ObjectFitButton = ({toggleObjectFit, isScreenSmall}: any) => {
+export const ObjectFitButton = ({ toggleObjectFit, isScreenSmall }: any) => {
   return (
     <CustomFontTooltip title="Toggle Aspect Ratio (O)" placement="bottom" arrow>
       <IconButton
@@ -331,8 +506,12 @@ export const ObjectFitButton = ({toggleObjectFit, isScreenSmall}: any) => {
   );
 };
 
-export const PictureInPictureButton = ({isFullscreen, toggleRef, togglePictureInPicture, isScreenSmall}: any) => {
-  
+export const PictureInPictureButton = ({
+  isFullscreen,
+  toggleRef,
+  togglePictureInPicture,
+  isScreenSmall,
+}: any) => {
   return (
     <>
       {!isFullscreen && (
@@ -357,8 +536,7 @@ export const PictureInPictureButton = ({isFullscreen, toggleRef, togglePictureIn
   );
 };
 
-export const FullscreenButton = ({toggleFullscreen, isScreenSmall}: any) => {
-
+export const FullscreenButton = ({ toggleFullscreen, isScreenSmall }: any) => {
   return (
     <CustomFontTooltip title="Toggle Fullscreen (F)" placement="bottom" arrow>
       <IconButton

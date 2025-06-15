@@ -14,6 +14,7 @@ import {
 } from "./VideoControls";
 import { Ref } from "react";
 import SubtitlesIcon from '@mui/icons-material/Subtitles';
+import { CustomFontTooltip } from "./CustomFontTooltip";
 interface VideoControlsBarProps {
   canPlay: boolean
   isScreenSmall: boolean
@@ -36,9 +37,10 @@ interface VideoControlsBarProps {
   playbackRate: number
   openSubtitleManager: ()=> void
   subtitleBtnRef: any
+  onSelectPlaybackRate: (rate: number)=> void;
 }
 
-export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager}: VideoControlsBarProps) => {
+export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager, onSelectPlaybackRate}: VideoControlsBarProps) => {
 
   const showMobileControls = isScreenSmall && canPlay;
 
@@ -96,12 +98,18 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
           </Box>
 
           <Box sx={{...controlGroupSX, marginLeft: 'auto'}}>
-            <PlaybackRate playbackRate={playbackRate} increaseSpeed={increaseSpeed} decreaseSpeed={decreaseSpeed} />
-            <ObjectFitButton />
+            <PlaybackRate onSelect={onSelectPlaybackRate} playbackRate={playbackRate} increaseSpeed={increaseSpeed} decreaseSpeed={decreaseSpeed} />
+            {/* <ObjectFitButton /> */}
+            <CustomFontTooltip
+                    title="Subtitles"
+                    placement="bottom"
+                    arrow
+                  >
             <IconButton ref={subtitleBtnRef} onClick={openSubtitleManager}>
               <SubtitlesIcon />
             </IconButton>
-            <PictureInPictureButton />
+            </CustomFontTooltip>
+            {/* <PictureInPictureButton /> */}
             <FullscreenButton toggleFullscreen={toggleFullscreen} />
           </Box>
           </Box>
