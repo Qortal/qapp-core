@@ -12,22 +12,47 @@ export default function LanguageSelector({
   onChange: (value: string | null) => void;
 }) {
   return (
-    <Autocomplete
-      options={languageOptions}
-      getOptionLabel={(option) => `${option.name} (${option.code})`}
-      value={languageOptions.find((opt) => opt.code === value) || null}
-      onChange={(event, newValue) => onChange(newValue?.code || null)}
-      renderInput={(params) => <TextField {...params} label="Subtitle Language" />}
-      isOptionEqualToValue={(option, val) => option.code === val.code}
-      sx={{ width: 300 }}
-     slotProps={{
+   <Autocomplete
+  size="small"
+  options={languageOptions}
+  getOptionLabel={(option) => `${option.name} (${option.code})`}
+  value={languageOptions.find((opt) => opt.code === value) || null}
+  onChange={(event, newValue) => onChange(newValue?.code || null)}
+  renderInput={(params) => (
+    <TextField
+      required
+      {...params}
+      label="Subtitle Language"
+      sx={{
+        fontSize: '1rem', // Input text size
+        '& .MuiInputBase-input': {
+          fontSize: '1rem', // Inner input
+        },
+        '& .MuiInputLabel-root': {
+          fontSize: '0.75rem', // Label text
+        },
+      }}
+    />
+  )}
+  isOptionEqualToValue={(option, val) => option.code === val.code}
+  sx={{
+    width: '100%',
+    fontSize: '1rem', // affects root font size
+    '& .MuiAutocomplete-input': {
+      fontSize: '1rem',
+    },
+  }}
+  slotProps={{
     popper: {
       sx: {
-        zIndex: 999991, // Must be higher than Dialog's default zIndex (1300)
+        zIndex: 999991,
+        '& .MuiAutocomplete-paper': {
+          fontSize: '1rem', // dropdown font size
+        },
       },
     },
   }}
+/>
 
-    />
   );
 }

@@ -5,5 +5,12 @@ import { QortalGetMetadata } from "../types/interfaces/resources";
 
 export function useListReturn(listName: string): QortalGetMetadata[] {
   const list = useListStore((state) => state.lists[listName]?.items) || [];
-  return list
+    const filterOutDeletedResources = useCacheStore((s) => s.filterOutDeletedResources);
+  const deletedResources = useCacheStore((s) => s.deletedResources);
+    const temporaryResources = useCacheStore().getTemporaryResources(listName)
+  
+    const listToDisplay = useMemo(()=> {
+      return filterOutDeletedResources([...temporaryResources, ...(list || [])])
+    }, [list, listName, deletedResources, temporaryResources])
+  return listToDisplay
 }

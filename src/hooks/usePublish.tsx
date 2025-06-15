@@ -4,8 +4,8 @@ import { QortalGetMetadata, QortalMetadata } from "../types/interfaces/resources
 import { base64ToObject, retryTransaction } from "../utils/publish";
 import { useGlobal } from "../context/GlobalProvider";
 import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
+import { useCacheStore } from "../state/cache";
 
-const STORAGE_EXPIRY_DURATION = 5 * 60 * 1000;
 interface StoredPublish {
     qortalMetadata: QortalMetadata;
     data: any;
@@ -68,6 +68,8 @@ interface StoredPublish {
   const publish = usePublishStore().getPublish(metadata || null, true);
   const setPublish = usePublishStore((state)=> state.setPublish)
   const getPublish = usePublishStore(state=> state.getPublish)
+  const setResourceCache = useCacheStore((s) => s.setResourceCache);
+  const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
 
   const [hasResource, setHasResource] = useState<boolean | null>(null);
   const fetchRawData = useCallback(async (item: QortalGetMetadata) => {
@@ -85,30 +87,7 @@ interface StoredPublish {
     return `qortal_publish_${username}_${appNameHashed}`;
   }, [username, appNameHashed]);
 
-  useEffect(() => {
-    if (!username || !appNameHashed) return;
-    
-    const storageKey = getStorageKey();
-    if (!storageKey) return;
 
-    const storedData: StoredPublish[]  = JSON.parse(localStorage.getItem(storageKey) || "[]");
-
-    if (Array.isArray(storedData) && storedData.length > 0) {
-      const now = Date.now();
-      const validPublishes = storedData.filter((item) => now - item.timestamp < STORAGE_EXPIRY_DURATION);
-
-      // ✅ Re-populate the Zustand store only with recent publishes
-      validPublishes.forEach((publishData) => {
-        setPublish(publishData.qortalMetadata, {
-            qortalMetadata: publishData.qortalMetadata,
-            data: publishData.data
-        }, Date.now() -  publishData.timestamp);
-      });
-
-      // ✅ Re-store only valid (non-expired) publishes
-      localStorage.setItem(storageKey, JSON.stringify(validPublishes));
-    }
-  }, [username, appNameHashed, getStorageKey, setPublish]);
 
   const fetchPublish = useCallback(
     async (
@@ -121,8 +100,9 @@ interface StoredPublish {
         if (metadata) {
           setIsLoading(true);
         }
-        const hasCache = getPublish(metadataProp)
-    
+   
+        const hasCache =  getPublish(metadataProp)
+
         if(hasCache){
             if(hasCache?.qortalMetadata.size === 32){
                 if(metadata){
@@ -139,6 +119,7 @@ interface StoredPublish {
             if(metadata){
                 setHasResource(true)
                 setError(null)
+                setPublish(metadataProp, hasCache);
             }
             return {
                 resource: hasCache,
@@ -240,30 +221,11 @@ interface StoredPublish {
     });
 
     if (res?.signature) {
-        const storageKey = getStorageKey();
-      if (storageKey) {
-        const existingPublishes = JSON.parse(localStorage.getItem(storageKey) || "[]");
-
-        // Remove any previous entries for the same identifier
-        const updatedPublishes = existingPublishes.filter(
-          (item: StoredPublish) => item.qortalMetadata.identifier !== publish.identifier && item.qortalMetadata.service !== publish.service && item.qortalMetadata.name !== publish.name
-        );
-
-        // Add the new one with timestamp
-        updatedPublishes.push({ qortalMetadata: {
-            ...publish,
-        created: Date.now(),
-        updated: Date.now(),
-        size: 32
-        }, data: "RA==", timestamp: Date.now() });
-
-        // Save back to storage
-        localStorage.setItem(storageKey, JSON.stringify(updatedPublishes));
-      }
       setPublish(publish, null);
       setError(null)
       setIsLoading(false)
       setHasResource(false)
+      markResourceAsDeleted(publish)
       return true;
     }
   }, [getStorageKey]);
@@ -279,27 +241,16 @@ interface StoredPublish {
         updated: Date.now(),
         size: 100
       }, data});
-
-      const storageKey = getStorageKey();
-      if (storageKey) {
-        const existingPublishes = JSON.parse(localStorage.getItem(storageKey) || "[]");
-
-        // Remove any previous entries for the same identifier
-        const updatedPublishes = existingPublishes.filter(
-          (item: StoredPublish) => item.qortalMetadata.identifier !== publish.identifier && item.qortalMetadata.service !== publish.service && item.qortalMetadata.name !== publish.name
-        );
-
-        // Add the new one with timestamp
-        updatedPublishes.push({ qortalMetadata: {
-            ...publish,
+ setResourceCache(
+          `${publish?.service}-${publish?.name}-${publish?.identifier}`,
+          {qortalMetadata: {
+        ...publish,
         created: Date.now(),
         updated: Date.now(),
         size: 100
-        }, data, timestamp: Date.now() });
+      }, data}
+        );
 
-        // Save back to storage
-        localStorage.setItem(storageKey, JSON.stringify(updatedPublishes));
-      }
     
   }, [getStorageKey, setPublish]);
 

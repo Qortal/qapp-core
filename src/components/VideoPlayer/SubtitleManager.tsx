@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   QortalGetMetadata,
   QortalMetadata,
@@ -9,6 +9,7 @@ import {
   Box,
   Button,
   ButtonBase,
+  Card,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,10 +18,12 @@ import {
   Fade,
   IconButton,
   Popover,
+  Tab,
+  Tabs,
   Typography,
 } from "@mui/material";
-import CheckIcon from '@mui/icons-material/Check';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import CheckIcon from "@mui/icons-material/Check";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import CloseIcon from "@mui/icons-material/Close";
@@ -39,6 +42,7 @@ import { fileToBase64, objectToBase64 } from "../../utils/base64";
 import { ResourceToPublish } from "../../types/qortalRequests/types";
 import { useListReturn } from "../../hooks/useListData";
 import { usePublish } from "../../hooks/usePublish";
+import { Spacer } from "../../common/Spacer";
 interface SubtitleManagerProps {
   qortalMetadata: QortalGetMetadata;
   close: () => void;
@@ -67,6 +71,14 @@ export const languageOptions = ISO6391.getAllCodes().map((code) => ({
   name: ISO6391.getName(code),
   nativeName: ISO6391.getNativeName(code),
 }));
+
+function a11yProps(index: number) {
+  return {
+    id: `subtitle-tab-${index}`,
+    "aria-controls": `subtitle-tabpanel-${index}`,
+  };
+}
+
 const SubtitleManagerComponent = ({
   qortalMetadata,
   open,
@@ -76,13 +88,18 @@ const SubtitleManagerComponent = ({
   currentSubTrack,
 }: SubtitleManagerProps) => {
   const [mode, setMode] = useState(1);
+  const [isOpenPublish, setIsOpenPublish] = useState(false);
   const { lists, identifierOperations, auth } = useGlobal();
   const { fetchResources } = useResources();
   // const [subtitles, setSubtitles] = useState([])
   const subtitles = useListReturn(
     `subs-${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`
   );
-
+  console.log('subtitles222', subtitles)
+  const mySubtitles = useMemo(()=> {
+    if(!auth?.name)return []
+    return subtitles?.filter((sub)=> sub.name === auth?.name)
+  }, [subtitles, auth?.name])
   console.log("subtitles222", subtitles);
   const getPublishedSubtitles = useCallback(async () => {
     try {
@@ -193,93 +210,95 @@ const SubtitleManagerComponent = ({
   };
 
   const onSelectHandler = (sub: SubtitlePublishedData) => {
-    console.log('onSelectHandler')
+    console.log("onSelectHandler");
     onSelect(sub);
     close();
   };
 
   return (
-    <Popover
-      open={!!open}
-      anchorEl={subtitleBtnRef.current}
-      onClose={handleClose}
-      slots={{
-        transition: Fade,
-      }}
-      slotProps={{
-        transition: {
-          timeout: 200,
-        },
-        paper: {
-          sx: {
-            bgcolor: alpha("#181818", 0.98),
-            color: "white",
-            opacity: 0.9,
-            borderRadius: 2,
-            boxShadow: 5,
-            p: 1,
-            minWidth: 200,
+    <>
+      <Popover
+        open={!!open}
+        anchorEl={subtitleBtnRef.current}
+        onClose={handleClose}
+        slots={{
+          transition: Fade,
+        }}
+        slotProps={{
+          transition: {
+            timeout: 200,
           },
-        },
-      }}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "center",
-      }}
-      transformOrigin={{
-        vertical: "bottom",
-        horizontal: "center",
-      }}
-    >
-      <Box
-        sx={{
-          padding: "5px 0px 10px 0px",
-          display: "flex",
-          gap: "10px",
-          width: "100%",
+          paper: {
+            sx: {
+              bgcolor: alpha("#181818", 0.98),
+              color: "white",
+              opacity: 0.9,
+              borderRadius: 2,
+              boxShadow: 5,
+              p: 1,
+              minWidth: 200,
+            },
+          },
+        }}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
         }}
       >
-        <ButtonBase onClick={onBack}>
-          <ArrowBackIosIcon
-            sx={{
-              fontSize: "1.15em",
-            }}
-          />
-        </ButtonBase>
-        <ButtonBase>
-          <Typography
-            onClick={onBack}
-            sx={{
-              fontSize: "0.85rem",
-            }}
-          >
-            Subtitles
-          </Typography>
-        </ButtonBase>
-        <ButtonBase
+        <Box
           sx={{
-            marginLeft: "auto",
+            padding: "5px 0px 10px 0px",
+            display: "flex",
+            gap: "10px",
+            width: "100%",
           }}
         >
-          <ModeEditIcon
+          <ButtonBase onClick={onBack}>
+            <ArrowBackIosIcon
+              sx={{
+                fontSize: "1.15em",
+              }}
+            />
+          </ButtonBase>
+          <ButtonBase>
+            <Typography
+              onClick={onBack}
+              sx={{
+                fontSize: "0.85rem",
+              }}
+            >
+              Subtitles
+            </Typography>
+          </ButtonBase>
+          <ButtonBase
             sx={{
-              fontSize: "1.15rem",
+              marginLeft: "auto",
             }}
+            onClick={() => setIsOpenPublish(true)}
+          >
+            <ModeEditIcon
+              sx={{
+                fontSize: "1.15rem",
+              }}
+            />
+          </ButtonBase>
+        </Box>
+        <Divider />
+        {mode === 1 && (
+          <PublisherSubtitles
+            subtitles={subtitles}
+            publisherName={qortalMetadata.name}
+            setMode={setMode}
+            onSelect={onSelectHandler}
+            onBack={onBack}
+            currentSubTrack={currentSubTrack}
           />
-        </ButtonBase>
-      </Box>
-      <Divider />
-      {mode === 1 && (
-        <PublisherSubtitles
-          subtitles={subtitles}
-          publisherName={qortalMetadata.name}
-          setMode={setMode}
-          onSelect={onSelectHandler}
-          onBack={onBack}
-          currentSubTrack={currentSubTrack}
-        />
-      )}
-      {/* <Box>
+        )}
+        {/* <Box>
           {[
             'Ambient mode',
             'Annotations',
@@ -303,7 +322,15 @@ const SubtitleManagerComponent = ({
             </Typography>
           ))}
         </Box> */}
-    </Popover>
+      </Popover>
+
+      <PublishSubtitles
+        isOpen={isOpenPublish}
+        setIsOpen={setIsOpenPublish}
+        publishHandler={publishHandler}
+        mySubtitles={mySubtitles}
+      />
+    </>
     // <Dialog
     //   open={!!open}
     //   fullWidth={true}
@@ -374,7 +401,7 @@ interface PublisherSubtitlesProps {
   setMode: (val: number) => void;
   onSelect: (subtitle: any) => void;
   onBack: () => void;
-  currentSubTrack: string | null
+  currentSubTrack: string | null;
 }
 
 const PublisherSubtitles = ({
@@ -383,7 +410,7 @@ const PublisherSubtitles = ({
   setMode,
   onSelect,
   onBack,
-  currentSubTrack
+  currentSubTrack,
 }: PublisherSubtitlesProps) => {
   return (
     <>
@@ -403,11 +430,20 @@ const PublisherSubtitles = ({
 
 interface PublishSubtitlesProps {
   publishHandler: (subs: Subtitle[]) => void;
+  isOpen: boolean;
+  setIsOpen: (val: boolean) => void;
+  mySubtitles: QortalGetMetadata[]
 }
 
-const PublishSubtitles = ({ publishHandler }: PublishSubtitlesProps) => {
+const PublishSubtitles = ({
+  publishHandler,
+  isOpen,
+  setIsOpen,
+  mySubtitles
+}: PublishSubtitlesProps) => {
   const [language, setLanguage] = useState<null | string>(null);
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
+  const {lists} = useGlobal()
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const newSubtitles: Subtitle[] = [];
     for (const file of acceptedFiles) {
@@ -457,16 +493,74 @@ const PublishSubtitles = ({ publishHandler }: PublishSubtitlesProps) => {
   };
   console.log("subtitles", subtitles);
 
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
+  const [value, setValue] = useState(0);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
+
+  const onDelete = useCallback(async (sub: QortalGetMetadata)=> {
+    try {
+      await lists.deleteResource([
+        sub
+      ])
+    } catch (error) {
+      
+    }
+  },[])
+
   return (
-    <>
+    <Dialog
+      open={isOpen}
+      fullWidth={true}
+      maxWidth={"md"}
+      sx={{
+        zIndex: 999990,
+      }}
+      slotProps={{
+        paper: {
+          elevation: 0,
+        },
+      }}
+    >
+      <DialogTitle>My Subtitles</DialogTitle>
+      <IconButton
+        aria-label="close"
+        onClick={handleClose}
+        sx={(theme) => ({
+          position: "absolute",
+          right: 8,
+          top: 8,
+        })}
+      >
+        <CloseIcon />
+      </IconButton>
       <DialogContent>
-        <Box
+        <Box sx={{ width: "100%" }}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              aria-label="basic tabs example"
+            >
+              <Tab label="New" {...a11yProps(0)} />
+              <Tab label="Existing" {...a11yProps(1)} />
+            </Tabs>
+          </Box>
+        </Box>
+        <Spacer height="25px" />
+        {value === 0 && (
+                <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             gap: "20px",
             width: "100%",
-            alignItems: "flex-start",
+            alignItems: "center",
           }}
         >
           <Box {...getRootProps()}>
@@ -483,17 +577,81 @@ const PublishSubtitles = ({ publishHandler }: PublishSubtitlesProps) => {
           </Box>
           {subtitles?.map((sub, i) => {
             return (
-              <>
+              <Card
+                sx={{
+                  padding: "10px",
+                  width: "500px",
+                  maxWidth: "100%",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: "1rem",
+                  }}
+                >
+                  {sub.filename}
+                </Typography>
+                <Spacer height="10px" />
                 <LanguageSelect
                   value={sub.language}
                   onChange={(val: string | null) =>
                     onChangeValue("language", val, i)
                   }
                 />
-              </>
+                <Spacer height="10px" />
+                <Box
+                  sx={{
+                    justifyContent: "flex-end",
+                    width: "100%",
+                    display: "flex",
+                  }}
+                >
+                  <Button
+                    onClick={() => {
+                      setSubtitles((prev) => {
+                        const newSubtitles = [...prev];
+                        newSubtitles.splice(i, 1); // Remove 1 item at index i
+                        return newSubtitles;
+                      });
+                    }}
+                    variant="contained"
+                    size="small"
+                    color="secondary"
+                  >
+                    remove
+                  </Button>
+                </Box>
+              </Card>
             );
           })}
         </Box>
+        )}
+        {value === 1 && (
+                <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+            width: "100%",
+            alignItems: "center",
+          }}
+        >
+         
+          {mySubtitles?.map((sub, i) => {
+            return (
+              <Card
+                sx={{
+                  padding: "10px",
+                  width: "500px",
+                  maxWidth: "100%",
+                }}
+              >
+                <MySubtitle onDelete={onDelete}  sub={sub} />
+              </Card>
+            );
+          })}
+        </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Button
@@ -501,45 +659,86 @@ const PublishSubtitles = ({ publishHandler }: PublishSubtitlesProps) => {
           // disabled={disableButton}
           variant="contained"
         >
-          Publish index
+          Publish
         </Button>
       </DialogActions>
-    </>
+    </Dialog>
   );
 };
 
 interface SubProps {
   sub: QortalGetMetadata;
   onSelect: (subtitle: Subtitle) => void;
-  currentSubtrack: null | string
+  currentSubtrack: null | string;
 }
 const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
   const { resource, isLoading } = usePublish(2, "JSON", sub);
   console.log("resource", resource);
-  const isSelected = currentSubtrack === resource?.data?.language
+  const isSelected = currentSubtrack === resource?.data?.language;
   return (
-    <ButtonBase onClick={() => onSelect(isSelected ? null : resource?.data)} sx={{
+    <ButtonBase
+      onClick={() => onSelect(isSelected ? null : resource?.data)}
+      sx={{
         px: 2,
         py: 1,
         "&:hover": {
           backgroundColor: "rgba(255, 255, 255, 0.1)",
         },
-        width: '100%',
-        justifyContent: 'space-between'
-      }}>
-        <Typography
-      
-      
+        width: "100%",
+        justifyContent: "space-between",
+      }}
     >
-      {resource?.data?.language}
-    </Typography>
-    {isSelected ? (
-         <CheckIcon />
-    ) : (
-        <ArrowForwardIosIcon />
-    )}
-       
+      <Typography>{resource?.data?.language}</Typography>
+      {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
     </ButtonBase>
+  );
+};
+
+interface MySubtitleProps {
+  sub: QortalGetMetadata;
+  onDelete: (subtitle: QortalGetMetadata) => void;
+}
+const MySubtitle = ({ sub, onDelete }: MySubtitleProps) => {
+  const { resource, isLoading } = usePublish(2, "JSON", sub);
+  console.log("resource", resource);
+  return (
+       <Card
+                sx={{
+                  padding: "10px",
+                  width: "500px",
+                  maxWidth: "100%",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: "1rem",
+                  }}
+                >
+                  {resource?.data?.filename}
+                </Typography>
+                <Spacer height="10px" />
+                  <Typography sx={{
+                    fontSize: '1rem'
+                  }}>{resource?.data?.language}</Typography>
+                <Spacer height="10px" />
+                <Box
+                  sx={{
+                    justifyContent: "flex-end",
+                    width: "100%",
+                    display: "flex",
+                  }}
+                >
+                  <Button
+                   onClick={() => onDelete(sub)}
+                    variant="contained"
+                    size="small"
+                    color="secondary"
+                  >
+                    delete
+                  </Button>
+                </Box>
+              </Card>
+
   );
 };
 

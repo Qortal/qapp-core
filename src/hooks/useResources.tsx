@@ -10,6 +10,7 @@ import { base64ToUint8Array, uint8ArrayToObject } from "../utils/base64";
 import { retryTransaction } from "../utils/publish";
 import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
 import { useListStore } from "../state/lists";
+import { usePublishStore } from "../state/publishes";
 
 export const requestQueueProductPublishes = new RequestQueueWithPromise(20);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
@@ -20,7 +21,7 @@ export interface Resource {
   qortalMetadata: QortalMetadata;
   data: any;
 }
-export const useResources = (retryAttempts: number = 2) => {
+export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
   const setSearchCache = useCacheStore((s) => s.setSearchCache);
   const getSearchCache = useCacheStore((s) => s.getSearchCache);
   const getResourceCache = useCacheStore((s) => s.getResourceCache);
@@ -29,6 +30,7 @@ export const useResources = (retryAttempts: number = 2) => {
   const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
   const setSearchParamsForList = useCacheStore((s) => s.setSearchParamsForList);
   const addList = useListStore((s) => s.addList);
+    const setPublish = usePublishStore((state)=> state.setPublish)
   
   const deleteList = useListStore(state => state.deleteList)
   const requestControllers = new Map<string, AbortController>();
@@ -240,7 +242,7 @@ export const useResources = (retryAttempts: number = 2) => {
         }
 
         responseData = response;
-        const validResults = responseData.filter((item) => item.size !== 32);
+        const validResults = responseData.filter((item) => item.size !== 32 && item.size < maxSize);
         console.log('validResults', validResults)
         filteredResults = [...filteredResults, ...validResults];
 
@@ -258,7 +260,6 @@ export const useResources = (retryAttempts: number = 2) => {
         delete copyParams.after
         delete copyParams.before
         delete copyParams.offset
-        console.log('listName2', listName, filteredResults)
       setSearchCache(listName, cacheKey, filteredResults, cancelRequests ? JSON.stringify(copyParams) : null);
       fetchDataFromResults(filteredResults, returnType);
 
@@ -309,7 +310,7 @@ export const useResources = (retryAttempts: number = 2) => {
 
   const addNewResources = useCallback(
     (listName: string, resources: Resource[]) => {
-
+      console.log('resources1212', resources)
       addTemporaryResource(
         listName,
         resources.map((item) => item.qortalMetadata)
@@ -319,6 +320,7 @@ export const useResources = (retryAttempts: number = 2) => {
           `${temporaryResource?.qortalMetadata?.service}-${temporaryResource?.qortalMetadata?.name}-${temporaryResource?.qortalMetadata?.identifier}`,
           temporaryResource
         );
+        setPublish(temporaryResource?.qortalMetadata, temporaryResource);
       });
     },
     []
@@ -330,6 +332,7 @@ export const useResources = (retryAttempts: number = 2) => {
         `${temporaryResource?.qortalMetadata?.service}-${temporaryResource?.qortalMetadata?.name}-${temporaryResource?.qortalMetadata?.identifier}`,
         temporaryResource
       );
+        setPublish(temporaryResource?.qortalMetadata, temporaryResource);
     });
   }, []);
 
