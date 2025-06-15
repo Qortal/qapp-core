@@ -13,7 +13,7 @@ import {
   VolumeControl,
 } from "./VideoControls";
 import { Ref } from "react";
-
+import SubtitlesIcon from '@mui/icons-material/Subtitles';
 interface VideoControlsBarProps {
   canPlay: boolean
   isScreenSmall: boolean
@@ -99,7 +99,7 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
             <PlaybackRate playbackRate={playbackRate} increaseSpeed={increaseSpeed} decreaseSpeed={decreaseSpeed} />
             <ObjectFitButton />
             <IconButton ref={subtitleBtnRef} onClick={openSubtitleManager}>
-              sub
+              <SubtitlesIcon />
             </IconButton>
             <PictureInPictureButton />
             <FullscreenButton toggleFullscreen={toggleFullscreen} />

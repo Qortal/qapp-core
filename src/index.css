@@ -6,3 +6,14 @@
   box-sizing: border-box;
 }
 
+video:focus,
+video:focus-visible,
+.vjs-tech:focus,
+.vjs-tech:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.video-js *:focus:not(:focus-visible) {
+  outline: none !important;
+}

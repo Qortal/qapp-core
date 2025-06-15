@@ -591,6 +591,8 @@ export const VideoPlayer = ({
         if (!playerRef.current && ref.current) {
           playerRef.current = videojs(ref.current, options, () => {
             setIsPlayerInitialized(true);
+            ref.current.tabIndex = -1; // Prevents focus entirely
+    ref.current.style.outline = 'none'; // Backup
             playerRef.current?.poster("");
             playerRef.current?.playbackRate(playbackRate);
             playerRef.current?.volume(volume);
@@ -701,7 +703,7 @@ export const VideoPlayer = ({
         />
         <VideoElement
           ref={videoRef}
-          tabIndex={0}
+          tabIndex={-1}
           className="video-js"
           src={isReady && startPlay ? resourceUrl || undefined : undefined}
           poster={startPlay ? "" : poster}

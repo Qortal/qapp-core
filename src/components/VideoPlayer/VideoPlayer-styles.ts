@@ -23,14 +23,23 @@ export const VideoElement = styled("video")(({ theme }) => ({
   right: 0,
   left: 0,
   background: "rgb(33, 33, 33)",
-  "&:focus": { outline: "none" },
+
+  "&:focus": {
+    outline: "none !important",
+    boxShadow: "none !important",
+  },
+  "&:focus-visible": {
+    outline: "none !important",
+    boxShadow: "none !important",
+  },
   "&::-webkit-media-controls": {
-  display:"none !important"
-},
-"&:fullscreen": {
-  paddingBottom: '50px'
-}
+    display: "none !important",
+  },
+  "&:fullscreen": {
+    paddingBottom: '50px',
+  },
 }));
+
 //1075 x 604
 export const ControlsContainer = styled(Box)`
   width: 100%;
