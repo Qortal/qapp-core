@@ -38,9 +38,11 @@ interface VideoControlsBarProps {
   openSubtitleManager: ()=> void
   subtitleBtnRef: any
   onSelectPlaybackRate: (rate: number)=> void;
+  isMuted: boolean
+  toggleMute: ()=> void
 }
 
-export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager, onSelectPlaybackRate}: VideoControlsBarProps) => {
+export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager, onSelectPlaybackRate, isMuted, toggleMute}: VideoControlsBarProps) => {
 
   const showMobileControls = isScreenSmall && canPlay;
 
@@ -93,7 +95,7 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
 
             
 
-            <VolumeControl onVolumeChange={onVolumeChange} volume={volume} sliderWidth={"100px"} />
+            <VolumeControl onVolumeChange={onVolumeChange} volume={volume} sliderWidth={"100px"} isMuted={isMuted} toggleMute={toggleMute} />
             <VideoTime  progress={progress} duration={duration}/>
           </Box>
 

@@ -318,12 +318,12 @@ const VolumeSlider = ({ width, volume, onVolumeChange }: any) => {
   );
 };
 
-export const VolumeControl = ({ sliderWidth, onVolumeChange, volume }: any) => {
+export const VolumeControl = ({ sliderWidth, onVolumeChange, volume , isMuted, toggleMute}: any) => {
   return (
     <Box
       sx={{ display: "flex", gap: "5px", alignItems: "center", width: "100%" }}
     >
-      <VolumeButton />
+      <VolumeButton isMuted={isMuted} toggleMute={toggleMute} />
       <VolumeSlider
         width={sliderWidth}
         onVolumeChange={onVolumeChange}

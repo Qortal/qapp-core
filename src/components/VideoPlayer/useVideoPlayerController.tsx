@@ -24,10 +24,11 @@ interface UseVideoControls {
   qortalVideoResource: QortalGetMetadata;
   retryAttempts?: number;
   isPlayerInitialized: boolean
+  isMuted: boolean
 }
 
 export const useVideoPlayerController = (props: UseVideoControls) => {
-  const { autoPlay,   playerRef, qortalVideoResource, retryAttempts, isPlayerInitialized } = props;
+  const { autoPlay,   playerRef, qortalVideoResource, retryAttempts, isPlayerInitialized, isMuted } = props;
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControlsFullScreen, setShowControlsFullScreen] = useState(false)
@@ -153,14 +154,16 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
 
   const toggleMute = useCallback(() => {
     try {
+      console.log('toggleMute')
        const ref = playerRef as any;
-    if (!ref.current?.muted) return;
-  
-    ref.current?.muted(!ref.current?.muted)
+    if (!ref.current) return;
+            
+
+    ref.current?.muted(!isMuted)
     } catch (error) {
       console.error('toggleMute', toggleMute)
     }
-  }, []);
+  }, [isMuted]);
 
   const changeVolume = useCallback(
   (delta: number) => {

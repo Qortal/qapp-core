@@ -206,13 +206,14 @@ export const VideoPlayer = ({
     status,
     percentLoaded,
     showControlsFullScreen,
-    onSelectPlaybackRate
+    onSelectPlaybackRate,
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
     qortalVideoResource,
     retryAttempts,
     isPlayerInitialized,
+    isMuted
   });
 
   console.log('isFullscreen', isFullscreen)
@@ -753,6 +754,8 @@ export const VideoPlayer = ({
             progress={localProgress}
             openSubtitleManager={openSubtitleManager}
             onSelectPlaybackRate={onSelectPlaybackRate}
+            isMuted={isMuted}
+            toggleMute={toggleMute}
           />
         )}
 
