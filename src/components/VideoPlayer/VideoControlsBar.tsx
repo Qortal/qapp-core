@@ -65,6 +65,7 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
         opacity: showControls ? 1 : 0,
         pointerEvents: showControls ? 'auto' : 'none',
         transition: 'opacity 0.4s ease-in-out',
+        width: '100%'
         // ...additionalStyles
         // height: controlsHeight,
       }}
@@ -94,7 +95,7 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
             <VideoTime  progress={progress} duration={duration}/>
           </Box>
 
-          <Box sx={controlGroupSX}>
+          <Box sx={{...controlGroupSX, marginLeft: 'auto'}}>
             <PlaybackRate playbackRate={playbackRate} increaseSpeed={increaseSpeed} decreaseSpeed={decreaseSpeed} />
             <ObjectFitButton />
             <IconButton ref={subtitleBtnRef} onClick={openSubtitleManager}>
