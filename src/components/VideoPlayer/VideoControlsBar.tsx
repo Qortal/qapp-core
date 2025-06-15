@@ -35,9 +35,10 @@ interface VideoControlsBarProps {
   decreaseSpeed: ()=> void
   playbackRate: number
   openSubtitleManager: ()=> void
+  subtitleBtnRef: any
 }
 
-export const VideoControlsBar = ({showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager}: VideoControlsBarProps) => {
+export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager}: VideoControlsBarProps) => {
 
   const showMobileControls = isScreenSmall && canPlay;
 
@@ -96,7 +97,7 @@ export const VideoControlsBar = ({showControls, playbackRate, increaseSpeed,decr
           <Box sx={controlGroupSX}>
             <PlaybackRate playbackRate={playbackRate} increaseSpeed={increaseSpeed} decreaseSpeed={decreaseSpeed} />
             <ObjectFitButton />
-            <IconButton onClick={openSubtitleManager}>
+            <IconButton ref={subtitleBtnRef} onClick={openSubtitleManager}>
               sub
             </IconButton>
             <PictureInPictureButton />

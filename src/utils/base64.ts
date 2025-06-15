@@ -119,3 +119,23 @@ export function base64ToObject(base64: string){
 
 	return toObject
 }
+
+export const base64ToBlobUrl = (base64: string, mimeType = 'text/vtt'): string => {
+	console.log('base64ToBlobUrl', base64, mimeType)
+  const cleanedBase64 = base64.length % 4 === 0 ? base64 : base64 + '='.repeat(4 - base64.length % 4);
+
+  try {
+    const binary = atob(cleanedBase64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    const blob = new Blob([bytes], { type: mimeType });
+    return URL.createObjectURL(blob);
+  } catch (err) {
+    console.error("Failed to decode base64:", err);
+    return '';
+  }
+};

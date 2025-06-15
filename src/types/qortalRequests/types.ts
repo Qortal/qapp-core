@@ -1,3 +1,5 @@
+import { Service } from "../interfaces/resources"
+
 export type ForeignCoin =
   | 'BTC'
   | 'LTC'
@@ -31,61 +33,7 @@ export type ForeignCoin =
     qortalAtAddress: string;
   }
 
-  export type Service =
-  | 'AUTO_UPDATE'
-  | 'ARBITRARY_DATA'
-  | 'QCHAT_ATTACHMENT'
-  | 'QCHAT_ATTACHMENT_PRIVATE'
-  | 'ATTACHMENT'
-  | 'ATTACHMENT_PRIVATE'
-  | 'FILE'
-  | 'FILE_PRIVATE'
-  | 'FILES'
-  | 'CHAIN_DATA'
-  | 'WEBSITE'
-  | 'GIT_REPOSITORY'
-  | 'IMAGE'
-  | 'IMAGE_PRIVATE'
-  | 'THUMBNAIL'
-  | 'QCHAT_IMAGE'
-  | 'VIDEO'
-  | 'VIDEO_PRIVATE'
-  | 'AUDIO'
-  | 'AUDIO_PRIVATE'
-  | 'QCHAT_AUDIO'
-  | 'QCHAT_VOICE'
-  | 'VOICE'
-  | 'VOICE_PRIVATE'
-  | 'PODCAST'
-  | 'BLOG'
-  | 'BLOG_POST'
-  | 'BLOG_COMMENT'
-  | 'DOCUMENT'
-  | 'DOCUMENT_PRIVATE'
-  | 'LIST'
-  | 'PLAYLIST'
-  | 'APP'
-  | 'METADATA'
-  | 'JSON'
-  | 'GIF_REPOSITORY'
-  | 'STORE'
-  | 'PRODUCT'
-  | 'OFFER'
-  | 'COUPON'
-  | 'CODE'
-  | 'PLUGIN'
-  | 'EXTENSION'
-  | 'GAME'
-  | 'ITEM'
-  | 'NFT'
-  | 'DATABASE'
-  | 'SNAPSHOT'
-  | 'COMMENT'
-  | 'CHAIN_COMMENT'
-  | 'MAIL'
-  | 'MAIL_PRIVATE'
-  | 'MESSAGE'
-  | 'MESSAGE_PRIVATE'
+
 
 
   export type ResourceToPublish =

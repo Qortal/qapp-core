@@ -62,13 +62,11 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
 
   useEffect(() => {
     if (videoLocation && isPlayerInitialized) {
-      console.log('hellohhhh5')
       try {
         const ref = playerRef as any;
       if (!ref.current) return;
 
       const savedProgress = getProgress(videoLocation);
-      console.log('savedProgress', savedProgress)
       if (typeof savedProgress === "number") {
         playerRef.current?.currentTime(savedProgress);
 

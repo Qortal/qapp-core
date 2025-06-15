@@ -1,3 +1,4 @@
+import { Service } from "../interfaces/resources";
 import {
   Coin,
   ConfirmationStatus,
@@ -8,7 +9,6 @@ import {
   ForeignCoin,
   ResourcePointer,
   ResourceToPublish,
-  Service,
   TxType,
 } from "./types";
 

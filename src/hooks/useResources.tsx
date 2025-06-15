@@ -28,6 +28,7 @@ export const useResources = (retryAttempts: number = 2) => {
   const addTemporaryResource = useCacheStore((s) => s.addTemporaryResource);
   const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
   const setSearchParamsForList = useCacheStore((s) => s.setSearchParamsForList);
+  const addList = useListStore((s) => s.addList);
   
   const deleteList = useListStore(state => state.deleteList)
   const requestControllers = new Map<string, AbortController>();
@@ -204,9 +205,10 @@ export const useResources = (retryAttempts: number = 2) => {
       if (cancelRequests) {
         cancelAllRequests();
       }
-
+      console.log('listName', listName)
       const cacheKey = generateCacheKey(params);
       const searchCache = getSearchCache(listName, cacheKey);
+      console.log('searchCache', searchCache)
       if (searchCache) {
         const copyParams = {...params}
         delete copyParams.after
@@ -219,9 +221,12 @@ export const useResources = (retryAttempts: number = 2) => {
       let responseData: QortalMetadata[] = [];
       let filteredResults: QortalMetadata[] = [];
       let lastCreated = params.before || undefined;
+      console.log('lastCreated', lastCreated)
       const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
+      const isUnlimited = params.limit === 0;
 
-      while (filteredResults.length < targetLimit) {
+      while (isUnlimited || filteredResults.length < targetLimit) {
+        console.log('beforebefore')
         const response = await qortalRequest({
           action: "SEARCH_QDN_RESOURCES",
           mode: "ALL",
@@ -229,27 +234,31 @@ export const useResources = (retryAttempts: number = 2) => {
           limit: targetLimit - filteredResults.length, // Adjust limit dynamically
           before: lastCreated,
         });
-
+        console.log('responseresponse', response)
         if (!response || response.length === 0) {
           break; // No more data available
         }
 
         responseData = response;
         const validResults = responseData.filter((item) => item.size !== 32);
+        console.log('validResults', validResults)
         filteredResults = [...filteredResults, ...validResults];
 
-        if (filteredResults.length >= targetLimit) {
+        if (filteredResults.length >= targetLimit && !isUnlimited) {
           filteredResults = filteredResults.slice(0, targetLimit);
           break;
         }
 
         lastCreated = responseData[responseData.length - 1]?.created;
+        if (isUnlimited) break;
+
         if (!lastCreated) break;
       }
       const copyParams = {...params}
         delete copyParams.after
         delete copyParams.before
         delete copyParams.offset
+        console.log('listName2', listName, filteredResults)
       setSearchCache(listName, cacheKey, filteredResults, cancelRequests ? JSON.stringify(copyParams) : null);
       fetchDataFromResults(filteredResults, returnType);
 
@@ -349,7 +358,6 @@ export const useResources = (retryAttempts: number = 2) => {
     return true;
   }, []);
 
-  
 
   return useMemo(() => ({
     fetchResources,
@@ -357,8 +365,9 @@ export const useResources = (retryAttempts: number = 2) => {
     updateNewResources,
     deleteResource,
     deleteList,
+    addList,
     fetchResourcesResultsOnly
-  }), [fetchResources, addNewResources, updateNewResources, deleteResource, deleteList, fetchResourcesResultsOnly]);
+  }), [fetchResources, addNewResources, updateNewResources, deleteResource, deleteList, fetchResourcesResultsOnly, addList]);
   
 };
 

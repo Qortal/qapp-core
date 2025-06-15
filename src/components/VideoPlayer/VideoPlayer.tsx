@@ -10,9 +10,30 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
 import Player from "video.js/dist/types/player";
-import { SubtitleManager } from "./SubtitleManager";
+import { Subtitle, SubtitleManager, SubtitlePublishedData } from "./SubtitleManager";
+import { base64ToBlobUrl } from "../../utils/base64";
+import convert from 'srt-webvtt';
 
+export async function srtBase64ToVttBlobUrl(base64Srt: string): Promise<string | null> {
+  try {
+    // Step 1: Convert base64 string to a Uint8Array
+    const binary = atob(base64Srt);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
 
+    // Step 2: Create a Blob from the Uint8Array with correct MIME type
+    const srtBlob = new Blob([bytes], { type: 'application/x-subrip' });
+    console.log('srtBlob', srtBlob)
+    // Step 3: Use convert() with the Blob
+    const vttBlobUrl: string = await convert(srtBlob);
+    return vttBlobUrl
+  } catch (error) {
+    console.error('Failed to convert SRT to VTT:', error);
+    return null;
+  }
+}
 type StretchVideoType = "contain" | "fill" | "cover" | "none" | "scale-down";
 
 
@@ -142,6 +163,7 @@ export const VideoPlayer = ({
   const [isLoading, setIsLoading] = useState(true);
   const [showControls, setShowControls] = useState(false)
   const [isOpenSubtitleManage, setIsOpenSubtitleManage] = useState(false)
+  const subtitleBtnRef = useRef(null)
   const {
     reloadVideo,
     togglePlay,
@@ -219,12 +241,10 @@ const closeSubtitleManager = useCallback(()=> {
   useVideoPlayerHotKeys(hotkeyHandlers);
 
   const updateProgress = useCallback(() => {
-    console.log('currentTime2')
   const player = playerRef?.current;
   if (!player || typeof player?.currentTime !== 'function') return;
 
   const currentTime = player.currentTime();
-  console.log('currentTime3', currentTime)
   if (typeof currentTime === 'number' && videoLocation && currentTime > 0.1) {
     setProgress(videoLocation, currentTime);
     setLocalProgress(currentTime);
@@ -251,7 +271,6 @@ const closeSubtitleManager = useCallback(()=> {
     (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
       try {
         const video = e.currentTarget;
-        console.log('onVolumeChangeHandler')
       setVolume(video.volume);
       setIsMuted(video.muted);
       } catch (error) {
@@ -271,7 +290,6 @@ const closeSubtitleManager = useCallback(()=> {
     };
   }, [showControls]);
 
-  console.log('isFullscreen', isFullscreen, showControlsFullScreen)
 
   const videoStylesVideo = useMemo(() => {
     return {
@@ -318,11 +336,9 @@ const closeSubtitleManager = useCallback(()=> {
 
   const enterFullscreen = () => {
     const ref = containerRef?.current as any;
-    console.log('refffff', ref)
     if (!ref) return;
 
     if (ref.requestFullscreen && !isFullscreen) {
-      console.log('requset ')
       ref.requestFullscreen();
     }
 
@@ -399,7 +415,102 @@ useEffect(() => {
   };
 }, []);
 
+const previousSubtitleUrlRef = useRef<string | null>(null);
 
+useEffect(() => {
+  return () => {
+    // Component unmount cleanup
+    if (previousSubtitleUrlRef.current) {
+      URL.revokeObjectURL(previousSubtitleUrlRef.current);
+      previousSubtitleUrlRef.current = null;
+    }
+  };
+}, []);
+
+const onSelectSubtitle = useCallback(async (subtitle: SubtitlePublishedData)=> {
+  console.log('onSelectSubtitle', subtitle)
+  const player = playerRef.current;
+  if (!player || !subtitle.subtitleData || !subtitle.type) return;
+
+  // Cleanup: revoke previous Blob URL
+  if (previousSubtitleUrlRef.current) {
+    URL.revokeObjectURL(previousSubtitleUrlRef.current);
+    previousSubtitleUrlRef.current = null;
+  }
+  let blobUrl
+  if(subtitle?.type === "application/x-subrip"){
+    blobUrl = await srtBase64ToVttBlobUrl(subtitle.subtitleData)
+  } else {
+   blobUrl =  base64ToBlobUrl(subtitle.subtitleData, subtitle.type)
+
+  }
+  
+  previousSubtitleUrlRef.current = blobUrl;
+
+const remoteTracksList = playerRef.current?.remoteTextTracks();
+
+if (remoteTracksList) {
+  const toRemove: TextTrack[] = [];
+
+  // Bypass TS restrictions safely
+  const list = remoteTracksList as unknown as { length: number; [index: number]: TextTrack };
+
+  for (let i = 0; i < list.length; i++) {
+    const track = list[i];
+    if (track) toRemove.push(track);
+  }
+
+  toRemove.forEach((track) => {
+    playerRef.current?.removeRemoteTextTrack(track);
+  });
+}
+     playerRef.current?.addRemoteTextTrack({
+    kind: 'subtitles',
+    src: blobUrl,
+    srclang: 'en',
+    label: 'English',
+    default: true
+  }, true); 
+
+   // Remove all existing remote text tracks
+//  try {
+//    const remoteTracks = playerRef.current?.remoteTextTracks()?.tracks_
+//   if (remoteTracks && remoteTracks?.length) {
+//     const toRemove: TextTrack[] = [];
+//     for (let i = 0; i < remoteTracks.length; i++) {
+//       const track = remoteTracks[i];
+//       toRemove.push(track);
+//     }
+//     toRemove.forEach((track) => {
+//       console.log('removing track')
+//       playerRef.current?.removeRemoteTextTrack(track);
+//     });
+//   }
+//  } catch (error) {
+//   console.log('error2', error)
+//  }
+
+await new Promise((res)=> {
+  setTimeout(() => {
+    res(null)
+  }, 1000);
+})
+const tracksInfo = playerRef.current?.textTracks();
+console.log('tracksInfo', tracksInfo)
+if (!tracksInfo) return;
+
+const tracks = Array.from({ length: (tracksInfo as any).length }, (_, i) => (tracksInfo as any)[i]);
+console.log('tracks', tracks)
+for (const track of tracks) {
+  console.log('track', track)
+
+  if (track.kind === 'subtitles') {
+    track.mode = 'showing'; // force display
+  }
+}
+
+
+},[])
 
   const handleMouseLeave = useCallback(() => {
     setShowControls(false);
@@ -413,7 +524,6 @@ useEffect(() => {
 
 useEffect(() => {
   if (!resourceUrl || !isReady || !videoLocactionStringified || !startPlay) return;
-  console.log("EFFECT TRIGGERED", { isReady, resourceUrl, startPlay, poster, videoLocactionStringified });
 
   const resource = JSON.parse(videoLocactionStringified)
   let canceled = false;
@@ -437,7 +547,6 @@ useEffect(() => {
         },
       ],
     };
-    console.log('options', options)
     const ref = videoRef as any;
     if (!ref.current) return;
 
@@ -448,13 +557,7 @@ useEffect(() => {
         playerRef.current?.playbackRate(playbackRate)
         playerRef.current?.volume(volume);
         
-        playerRef.current?.addRemoteTextTrack({
-    kind: 'subtitles',
-    src: 'http://127.0.0.1:22393/arbitrary/DOCUMENT/a-test/test-identifier',
-    srclang: 'en',
-    label: 'English',
-    default: true
-  }, true); 
+ 
         playerRef.current?.play();
     
       });
@@ -472,7 +575,6 @@ useEffect(() => {
   console.error('useEffect start player', error)
  }
  return () => {
-  console.log('canceled')
   canceled = true;
   const player = playerRef.current;
 
@@ -490,12 +592,10 @@ useEffect(() => {
   useEffect(() => {
     if(!isPlayerInitialized) return
   const player = playerRef?.current;
-  console.log('player rate', player)
   if (!player) return;
 
   const handleRateChange = () => {
     const newRate = player?.playbackRate();
-    console.log('Playback rate changed:', newRate);
     if(newRate){
       setPlaybackRate(newRate); // or any other state/action
     }
@@ -544,11 +644,11 @@ useEffect(() => {
            
           
         {isReady && (
-             <VideoControlsBar  playbackRate={playbackRate}   increaseSpeed={hotkeyHandlers.increaseSpeed}
+             <VideoControlsBar subtitleBtnRef={subtitleBtnRef}  playbackRate={playbackRate}   increaseSpeed={hotkeyHandlers.increaseSpeed}
       decreaseSpeed={hotkeyHandlers.decreaseSpeed} playerRef={playerRef} isFullScreen={isFullscreen} showControlsFullScreen={showControlsFullScreen} showControls={showControls} extractFrames={extractFrames} toggleFullscreen={toggleFullscreen} onVolumeChange={onVolumeChange} volume={volume}  togglePlay={togglePlay} reloadVideo={hotkeyHandlers.reloadVideo} isPlaying={isPlaying} canPlay={true} isScreenSmall={false} controlsHeight={controlsHeight}  duration={duration} progress={localProgress} openSubtitleManager={openSubtitleManager} />
         )}       
   
-          <SubtitleManager close={closeSubtitleManager} open={isOpenSubtitleManage} qortalMetadata={qortalVideoResource} />
+          <SubtitleManager subtitleBtnRef={subtitleBtnRef} close={closeSubtitleManager} open={isOpenSubtitleManage} qortalMetadata={qortalVideoResource} onSelect={onSelectSubtitle} />
     </VideoContainer>
      </>
   );

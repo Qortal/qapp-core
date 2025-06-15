@@ -6,6 +6,7 @@ export { useModal } from './hooks/useModal';
 export { AudioPlayerControls , OnTrackChangeMeta, AudioPlayerProps, AudioPlayerHandle} from './components/AudioPlayer/AudioPlayerControls';
 export { useAudioPlayerHotkeys } from './components/AudioPlayer/useAudioPlayerHotkeys';
 export { VideoPlayer } from './components/VideoPlayer/VideoPlayer';
+export { useListReturn } from './hooks/useListData';
 import './index.css'
 export { executeEvent, subscribeToEvent, unsubscribeFromEvent } from './utils/events';
 export { formatBytes, formatDuration } from './utils/numbers';
