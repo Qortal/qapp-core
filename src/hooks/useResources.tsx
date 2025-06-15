@@ -357,6 +357,7 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
  }, 600000);
  resourcesToDelete.forEach((item)=> {
   markResourceAsDeleted(item);
+   setPublish(item, null);
  })
     return true;
   }, []);
