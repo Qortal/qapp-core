@@ -217,6 +217,17 @@ try {
 }
 }, []);
 
+ const seekTo = useCallback((time: number) => {
+try {
+    const player = playerRef.current;
+  if (!player || typeof player.duration !== 'function' || typeof player.currentTime !== 'function') return;
+
+  player.currentTime(time);
+} catch (error) {
+  console.error('setProgressAbsolute', error)
+}
+}, []);
+
 
   const toggleObjectFit = useCallback(() => {
     setVideoObjectFit(videoObjectFit === "contain" ? "fill" : "contain");
@@ -303,6 +314,6 @@ const togglePlay = useCallback(async () => {
     isReady,
     resourceUrl,
     startPlay,
-    status, percentLoaded, showControlsFullScreen, onSelectPlaybackRate: updatePlaybackRate
+    status, percentLoaded, showControlsFullScreen, onSelectPlaybackRate: updatePlaybackRate, seekTo
   };
 };

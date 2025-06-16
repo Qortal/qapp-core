@@ -1,6 +1,8 @@
 import React, { useCallback, useMemo } from "react";
 import {
   buildIdentifier,
+  buildLooseIdentifier,
+  buildLooseSearchPrefix,
   buildSearchPrefix,
   EnumCollisionStrength,
   hashWord,
@@ -60,6 +62,8 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
       createSingleIdentifier,
       hashQortalName,
       hashString,
+      buildLooseSearchPrefix,
+      buildLooseIdentifier
     }),
     [
       buildIdentifierFunc,

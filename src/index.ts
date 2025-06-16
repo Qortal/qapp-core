@@ -4,6 +4,7 @@ export { useResourceStatus } from './hooks/useResourceStatus';
 export { Spacer } from './common/Spacer';
 export { useModal } from './hooks/useModal';
 export { AudioPlayerControls , OnTrackChangeMeta, AudioPlayerProps, AudioPlayerHandle} from './components/AudioPlayer/AudioPlayerControls';
+export {TimelineAction} from './components/VideoPlayer/VideoPlayer'
 export { useAudioPlayerHotkeys } from './components/AudioPlayer/useAudioPlayerHotkeys';
 export { VideoPlayer } from './components/VideoPlayer/VideoPlayer';
 export { useListReturn } from './hooks/useListData';

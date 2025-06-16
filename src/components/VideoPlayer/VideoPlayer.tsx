@@ -22,10 +22,12 @@ import Player from "video.js/dist/types/player";
 import {
   Subtitle,
   SubtitleManager,
+  SubtitleManagerProps,
   SubtitlePublishedData,
 } from "./SubtitleManager";
 import { base64ToBlobUrl } from "../../utils/base64";
 import convert from "srt-webvtt";
+import { TimelineActionsComponent } from "./TimelineActionsComponent";
 
 export async function srtBase64ToVttBlobUrl(
   base64Srt: string
@@ -51,6 +53,24 @@ export async function srtBase64ToVttBlobUrl(
 }
 type StretchVideoType = "contain" | "fill" | "cover" | "none" | "scale-down";
 
+export type TimelineAction =
+  | {
+      type: 'SEEK';
+      time: number;
+      duration: number;
+      label: string;
+      onClick?: () => void; 
+      seekToTime: number; // ✅ Required for SEEK
+      placement?: 'TOP-RIGHT' | 'TOP-LEFT' | 'BOTTOM-LEFT' | 'BOTTOM-RIGHT';
+    }
+  | {
+      type: 'CUSTOM';
+      time: number;
+      duration: number;
+      label: string;
+      onClick: () => void; // ✅ Required for CUSTOM
+      placement?: 'TOP-RIGHT' | 'TOP-LEFT' | 'BOTTOM-LEFT' | 'BOTTOM-RIGHT';
+    };
 interface VideoPlayerProps {
   qortalVideoResource: QortalGetMetadata;
   videoRef: Ref<HTMLVideoElement>;
@@ -58,7 +78,10 @@ interface VideoPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   onEnded?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
+  timelineActions?: TimelineAction[]
 }
+
+
 
 const videoStyles = {
   videoContainer: {},
@@ -160,6 +183,7 @@ export const VideoPlayer = ({
   poster,
   autoPlay,
   onEnded,
+  timelineActions
 }: VideoPlayerProps) => {
   const containerRef = useRef<RefObject<HTMLDivElement> | null>(null);
   const [videoObjectFit] = useState<StretchVideoType>("contain");
@@ -207,6 +231,7 @@ export const VideoPlayer = ({
     percentLoaded,
     showControlsFullScreen,
     onSelectPlaybackRate,
+    seekTo
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
@@ -324,7 +349,7 @@ export const VideoPlayer = ({
   const videoStylesContainer = useMemo(() => {
     return {
       cursor: showControls ? "auto" : "none",
-      aspectRatio: "16 / 9",
+      // aspectRatio: "16 / 9",
       ...videoStyles?.videoContainer,
     };
   }, [showControls]);
@@ -584,9 +609,9 @@ export const VideoPlayer = ({
           autoplay: true,
           controls: false,
           responsive: true,
-          fluid: true,
+          // fluid: true,
           poster: startPlay ? "" : poster,
-          aspectRatio: "16:9",
+          // aspectRatio: "16:9",
           sources: [
             {
               src: resourceUrl,
@@ -758,7 +783,10 @@ export const VideoPlayer = ({
             toggleMute={toggleMute}
           />
         )}
+  {timelineActions && Array.isArray(timelineActions) && (
+            <TimelineActionsComponent seekTo={seekTo} containerRef={containerRef} progress={localProgress} timelineActions={timelineActions}/>
 
+  )}
         <SubtitleManager
           subtitleBtnRef={subtitleBtnRef}
           close={closeSubtitleManager}

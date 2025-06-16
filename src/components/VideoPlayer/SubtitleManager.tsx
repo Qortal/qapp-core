@@ -58,13 +58,15 @@ import {
   showLoading,
   showSuccess,
 } from "../../utils/toast";
-interface SubtitleManagerProps {
+
+
+export interface SubtitleManagerProps {
   qortalMetadata: QortalGetMetadata;
   close: () => void;
   open: boolean;
   onSelect: (subtitle: SubtitlePublishedData) => void;
   subtitleBtnRef: any;
-  currentSubTrack: null | string;
+  currentSubTrack: null | string
 }
 export interface Subtitle {
   language: string | null;
@@ -123,7 +125,7 @@ const SubtitleManagerComponent = ({
       setIsLoading(true);
       const videoId = `${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`;
       console.log("videoId", videoId);
-      const postIdSearch = await identifierOperations.buildSearchPrefix(
+      const postIdSearch = await identifierOperations.buildLooseSearchPrefix(
         ENTITY_SUBTITLE,
         videoId
       );
@@ -179,16 +181,16 @@ const SubtitleManagerComponent = ({
     try {
       const videoId = `${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`;
 
-      const identifier = await identifierOperations.buildIdentifier(
-        ENTITY_SUBTITLE,
-        videoId
-      );
+     
       const name = auth?.name;
-      console.log("identifier2", identifier);
       if (!name) return;
       const resources: ResourceToPublish[] = [];
       const tempResources: { qortalMetadata: QortalMetadata; data: any }[] = [];
       for (const sub of subtitles) {
+         const identifier = await identifierOperations.buildLooseIdentifier(
+        ENTITY_SUBTITLE,
+        videoId
+      );
         const data = {
           subtitleData: sub.base64,
           language: sub.language,
