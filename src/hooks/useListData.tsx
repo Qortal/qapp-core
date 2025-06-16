@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import { useListStore } from "../state/lists";
 import { useCacheStore } from "../state/cache"; // Assuming you export getResourceCache
-import { QortalGetMetadata } from "../types/interfaces/resources";
+import {  QortalMetadata } from "../types/interfaces/resources";
 
-export function useListReturn(listName: string): QortalGetMetadata[] {
+export function useListReturn(listName: string): QortalMetadata[] {
   const list = useListStore((state) => state.lists[listName]?.items) || [];
     const filterOutDeletedResources = useCacheStore((s) => s.filterOutDeletedResources);
   const deletedResources = useCacheStore((s) => s.deletedResources);

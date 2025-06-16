@@ -276,9 +276,10 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
       let responseData: QortalMetadata[] = [];
       let filteredResults: QortalMetadata[] = [];
       let lastCreated = params.before || undefined;
-      const targetLimit = params.limit ?? 20;
-  
-      while (filteredResults.length < targetLimit) {
+      const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
+      const isUnlimited = params.limit === 0;
+      while (isUnlimited || filteredResults.length < targetLimit) {
+
         const response = await qortalRequest({
           action: "SEARCH_QDN_RESOURCES",
           mode: "ALL",
@@ -293,12 +294,13 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
         const validResults = responseData.filter((item) => item.size !== 32);
         filteredResults = [...filteredResults, ...validResults];
   
-        if (filteredResults.length >= targetLimit) {
+        if (filteredResults.length >= targetLimit && !isUnlimited) {
           filteredResults = filteredResults.slice(0, targetLimit);
           break;
         }
   
         lastCreated = responseData[responseData.length - 1]?.created;
+        if (isUnlimited) break;
         if (!lastCreated) break;
       }
   

@@ -42,6 +42,8 @@ import { useGlobal } from "../../context/GlobalProvider";
 import { ENTITY_SUBTITLE, SERVICE_SUBTITLE } from "./video-player-constants";
 import ISO6391, { LanguageCode } from "iso-639-1";
 import LanguageSelect from "./LanguageSelect";
+import DownloadIcon from '@mui/icons-material/Download';
+import DownloadingIcon from '@mui/icons-material/Downloading';
 import {
   useDropzone,
   DropzoneRootProps,
@@ -58,6 +60,9 @@ import {
   showLoading,
   showSuccess,
 } from "../../utils/toast";
+import { RequestQueueWithPromise } from "../../utils/queue";
+
+export const requestQueueGetStatus = new RequestQueueWithPromise(1);
 
 
 export interface SubtitleManagerProps {
@@ -138,13 +143,12 @@ const SubtitleManagerComponent = ({
         identifier: postIdSearch,
         name,
         limit: 0,
+        includeMetadata: true
       };
-      const res = await lists.fetchResources(
-        searchParams,
-        `subs-${videoId}`,
-        "BASE64"
+      const res = await lists.fetchResourcesResultsOnly(
+        searchParams
       );
-      lists.addList(`subs-${videoId}`, res || []);
+      lists.addList(`subs-${videoId}`, res?.filter((item)=> !!item?.metadata?.title) || []);
       console.log("resres2", res);
     } catch (error) {
       console.error(error);
@@ -215,6 +219,9 @@ const SubtitleManagerComponent = ({
             name,
             size: 100,
             created: Date.now(),
+            metadata: {
+              title: sub.language || undefined,
+            }
           },
           data: data,
         });
@@ -387,7 +394,7 @@ const SubtitleManagerComponent = ({
             disabled={showAll}
             onClick={() => setShowAll(true)}
           >
-            Load all
+            Load community subs
           </Button>
         </Box>
         {/* <Box>
@@ -827,17 +834,75 @@ const PublishSubtitles = ({
 };
 
 interface SubProps {
-  sub: QortalGetMetadata;
+  sub: QortalMetadata;
   onSelect: (subtitle: Subtitle) => void;
   currentSubtrack: null | string;
 }
+  const subtitlesStatus: Record<string, boolean> = {}
+
 const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
-  const { resource, isLoading, error } = usePublish(2, "JSON", sub);
-  console.log("resource", resource);
+  const [selectedToDownload, setSelectedToDownload] = useState<null | QortalGetMetadata>(null)
+  const [isReady, setIsReady] = useState(false)
+  const { resource, isLoading, error, refetch  } = usePublish(2, "JSON", sub, true);
+  console.log("resource", resource, isLoading);
   const isSelected = currentSubtrack === resource?.data?.language;
+  const [isGettingStatus, setIsGettingStatus] = useState(true)
+  // useEffect(()=> {
+  //   if(resource?.data){
+  //     console.log('onselectdone')
+  //      onSelect(resource?.data)
+  //   }
+  // }, [isSelected, resource?.data])
+  console.log('isReady', resource?.data)
+  const getStatus = useCallback(async (service: Service, name: string, identifier: string)=> {
+    try {
+      if(subtitlesStatus[`${service}-${name}-${identifier}`]){
+        setIsReady(true)
+        refetch()
+        return
+      }
+      
+    const response =  await requestQueueGetStatus.enqueue(
+                  (): Promise<string> => {
+                    return  qortalRequest({
+        action: 'GET_QDN_RESOURCE_STATUS',
+        identifier,
+        service,
+        name,
+        build: false
+      })
+                  }
+                );
+      if(response?.status === 'READY'){
+        setIsReady(true)
+       subtitlesStatus[`${service}-${name}-${identifier}`] = true
+       refetch()
+
+      }
+    } catch (error) {
+      
+    } finally {
+      setIsGettingStatus(false)
+    }
+  }, [])
+
+  useEffect(()=> {
+    if(sub?.service && sub?.name && sub?.identifier){
+          getStatus(sub?.service, sub?.name, sub?.identifier)
+    }
+  }, [sub?.identifier, sub?.name, sub?.service])
+console.log('tester', isReady,isLoading,error,resource?.data)
+
   return (
     <ButtonBase
-      onClick={() => onSelect(isSelected ? null : resource?.data)}
+      onClick={() => {
+        if(resource?.data){
+                  onSelect(isSelected ? null : resource?.data)
+
+        } else {
+         refetch()
+        }
+      }}
       sx={{
         px: 2,
         py: 1,
@@ -848,13 +913,14 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
         justifyContent: "space-between",
       }}
     >
-      {isLoading && <Skeleton variant="text" sx={{ fontSize: "1.25rem", width: '100%' }} />}
-      {!isLoading && !error && (
+      {isGettingStatus && <Skeleton variant="text" sx={{ fontSize: "1.25rem", width: '100%' }} />}
+      {!isGettingStatus && (
         <>
-          <Typography>{resource?.data?.language}</Typography>
-          {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
+          <Typography>{sub?.metadata?.title}</Typography>
+          {(!isLoading && !error && !resource?.data) ? <DownloadIcon /> : isLoading ? <DownloadingIcon /> :  isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
         </>
       )}
+
     </ButtonBase>
   );
 };
@@ -865,7 +931,6 @@ interface MySubtitleProps {
 }
 const MySubtitle = ({ sub, onDelete }: MySubtitleProps) => {
   const { resource, isLoading, error } = usePublish(2, "JSON", sub);
-  console.log("resource", resource);
   return (
     <Card
       sx={{

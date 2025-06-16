@@ -22,7 +22,7 @@ interface StoredPublish {
       resource: { qortalMetadata: QortalMetadata; data: any } | null;
       error: string | null;
     }>
-    fetchPublish: (metadataProp: QortalGetMetadata) => Promise<{
+    fetchPublish: (metadataProp: QortalGetMetadata, disableFetch?: boolean) => Promise<{
       hasResource: boolean | null;
       resource: { qortalMetadata: QortalMetadata; data: any } | null;
       error: string | null;
@@ -44,7 +44,8 @@ interface StoredPublish {
   export function usePublish(
     maxFetchTries: number,
     returnType: ReturnType,
-    metadata: QortalGetMetadata
+    metadata: QortalGetMetadata,
+    disableFetch?: boolean
   ): UsePublishWithMetadata;
   
   export function usePublish(
@@ -57,7 +58,8 @@ interface StoredPublish {
   export function usePublish(
     maxFetchTries: number = 3,
     returnType: ReturnType = "JSON",
-    metadata?: QortalGetMetadata | null
+    metadata?: QortalGetMetadata | null,
+    disableFetch?: boolean
   ): UsePublishWithMetadata | UsePublishWithoutMetadata {
   const {auth, appInfo} = useGlobal()
   const username = auth?.name
@@ -92,6 +94,7 @@ interface StoredPublish {
   const fetchPublish = useCallback(
     async (
       metadataProp: QortalGetMetadata,
+      disableFetch?: boolean
     ) => {
       let hasResource = null;
       let resource = null;
@@ -126,6 +129,13 @@ interface StoredPublish {
                 error: null,
                 hasResource: true
             }
+        }
+        if(metadata && disableFetch){
+          return {
+            resource: null,
+            error: null,
+            hasResource: null
+          }
         }
         const url = `/arbitrary/resources/search?mode=ALL&service=${metadataProp?.service}&limit=1&includemetadata=true&reverse=true&excludeblocked=true&name=${encodeURIComponent(metadataProp?.name)}&exactmatchnames=true&offset=0&identifier=${encodeURIComponent(metadataProp?.identifier)}`;
         const responseMetadata = await fetch(url, {
@@ -202,9 +212,9 @@ interface StoredPublish {
   useEffect(() => {
 
     if (metadata?.identifier && metadata?.name && metadata?.service) {
-      fetchPublish(metadata);
+      fetchPublish(metadata, disableFetch);
     }
-  }, [metadata?.identifier, metadata?.service, metadata?.identifier, returnType]);
+  }, [metadata?.identifier, metadata?.service, metadata?.identifier, returnType, disableFetch]);
 
   const refetchData =  useCallback(async ()=> {
     if(!metadata) throw new Error('usePublish is missing metadata')
