@@ -340,6 +340,7 @@ export const PlaybackRate = ({
   increaseSpeed,
   isScreenSmall,
   onSelect,
+  openPlaybackMenu
 }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const btnRef = useRef(null);
@@ -362,130 +363,13 @@ export const PlaybackRate = ({
             fontSize: fontSizeSmall,
             padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
           }}
-          onClick={() => setIsOpen(true)}
+          onClick={() => openPlaybackMenu()}
         >
           <SlowMotionVideoIcon />
         </IconButton>
       </CustomFontTooltip>
 
-      <Popover
-        open={isOpen}
-        anchorEl={btnRef.current}
-        onClose={() => setIsOpen(false)}
-        slots={{
-          transition: Fade,
-        }}
-        slotProps={{
-          transition: {
-            timeout: 200,
-          },
-          paper: {
-            sx: {
-              bgcolor: alpha("#181818", 0.98),
-              color: "white",
-              opacity: 0.9,
-              borderRadius: 2,
-              boxShadow: 5,
-              p: 1,
-              minWidth: 225,
-              height: 300,
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-            },
-          },
-        }}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-      >
-        <Box
-          sx={{
-            padding: "5px 0px 10px 0px",
-            display: "flex",
-            gap: "10px",
-            width: "100%",
-          }}
-        >
-          <ButtonBase onClick={onBack}>
-            <ArrowBackIosIcon
-              sx={{
-                fontSize: "1.15em",
-              }}
-            />
-          </ButtonBase>
-          <ButtonBase>
-            <Typography
-              onClick={onBack}
-              sx={{
-                fontSize: "0.85rem",
-              }}
-            >
-              Playback speed
-            </Typography>
-          </ButtonBase>
-        </Box>
-        <Divider />
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            flexGrow: 1,
-            overflow: "auto",
-            "::-webkit-scrollbar-track": {
-              backgroundColor: "transparent",
-            },
-
-            "::-webkit-scrollbar": {
-              width: "16px",
-              height: "10px",
-            },
-
-            "::-webkit-scrollbar-thumb": {
-              backgroundColor: theme.palette.primary.main,
-              borderRadius: "8px",
-              backgroundClip: "content-box",
-              border: "4px solid transparent",
-              transition: "0.3s background-color",
-            },
-
-            "::-webkit-scrollbar-thumb:hover": {
-              backgroundColor: theme.palette.primary.dark,
-            },
-          }}
-        >
-          {speeds?.map((speed) => {
-            const isSelected = speed === playbackRate;
-            return (
-              <ButtonBase
-                disabled={isSelected}
-                key={speed}
-                onClick={() => {
-                  onSelect(speed)
-                  setIsOpen(false)
-                }}
-                sx={{
-                  px: 2,
-                  py: 1,
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  },
-                  width: "100%",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Typography>{speed}</Typography>
-                {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
-              </ButtonBase>
-            );
-          })}
-        </Box>
-      </Popover>
+   
     </>
   );
 };
@@ -551,3 +435,138 @@ export const FullscreenButton = ({ toggleFullscreen, isScreenSmall }: any) => {
     </CustomFontTooltip>
   );
 };
+
+interface PlayBackMenuProps {
+  close: ()=> void
+  isOpen: boolean
+  onSelect: (speed: number)=> void;
+  playbackRate: number
+}
+export const PlayBackMenu = ({close, onSelect, isOpen, playbackRate}: PlayBackMenuProps)=> {
+  const theme = useTheme()
+  const ref = useRef<any>(null)
+  console.log('isOpen', isOpen)
+
+  useEffect(()=> {
+    if(isOpen){
+      ref?.current?.focus()
+    }
+  }, [isOpen])
+
+  const handleBlur = (e: React.FocusEvent) => {
+  if (!e.currentTarget.contains(e.relatedTarget)) {
+    close();
+  }
+};
+  if(!isOpen) return null
+  return (
+
+   <Box
+   ref={ref}
+   tabIndex={-1}
+   onBlur={handleBlur}
+                    bgcolor={alpha("#181818", 0.98)}
+
+        sx={
+          {
+            position: 'absolute',
+              bottom: 60,
+              right: 5,
+              color: "white",
+              opacity: 0.9,
+              borderRadius: 2,
+              boxShadow: 5,
+              p: 1,
+              minWidth: 225,
+              height: 300,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              zIndex: 10,
+            }
+        }
+      >
+        <Box
+          sx={{
+            padding: "5px 0px 10px 0px",
+            display: "flex",
+            gap: "10px",
+            width: "100%",
+          }}
+        >
+          <ButtonBase onClick={close}>
+            <ArrowBackIosIcon
+              sx={{
+                fontSize: "1.15em",
+              }}
+            />
+          </ButtonBase>
+          <ButtonBase>
+            <Typography
+              onClick={close}
+              sx={{
+                fontSize: "0.85rem",
+              }}
+            >
+              Playback speed
+            </Typography>
+          </ButtonBase>
+        </Box>
+        <Divider />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flexGrow: 1,
+            overflow: "auto",
+            "::-webkit-scrollbar-track": {
+              backgroundColor: "transparent",
+            },
+
+            "::-webkit-scrollbar": {
+              width: "16px",
+              height: "10px",
+            },
+
+            "::-webkit-scrollbar-thumb": {
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: "8px",
+              backgroundClip: "content-box",
+              border: "4px solid transparent",
+              transition: "0.3s background-color",
+            },
+
+            "::-webkit-scrollbar-thumb:hover": {
+              backgroundColor: theme.palette.primary.dark,
+            },
+          }}
+        >
+          {speeds?.map((speed) => {
+            const isSelected = speed === playbackRate;
+            return (
+              <ButtonBase
+                disabled={isSelected}
+                key={speed}
+                onClick={(e) => {
+                  onSelect(speed)
+                  close()
+                }}
+                sx={{
+                  px: 2,
+                  py: 1,
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                  width: "100%",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography>{speed}</Typography>
+                {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
+              </ButtonBase>
+            );
+          })}
+        </Box>
+      </Box>
+  )
+}

@@ -4,6 +4,7 @@ import {
   RefObject,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -28,6 +29,9 @@ import {
 import { base64ToBlobUrl } from "../../utils/base64";
 import convert from "srt-webvtt";
 import { TimelineActionsComponent } from "./TimelineActionsComponent";
+import { PlayBackMenu } from "./VideoControls";
+import { useGlobalPlayerStore } from "../../state/pip";
+import { useLocation } from "react-router-dom";
 
 export async function srtBase64ToVttBlobUrl(
   base64Srt: string
@@ -208,6 +212,9 @@ export const VideoPlayer = ({
   const [isOpenSubtitleManage, setIsOpenSubtitleManage] = useState(false);
   const subtitleBtnRef = useRef(null);
   const [currentSubTrack, setCurrentSubTrack] = useState<null | string>(null)
+  const location = useLocation();
+  const locationRef = useRef<string | null>(null)
+  const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false)
   const {
     reloadVideo,
     togglePlay,
@@ -231,17 +238,27 @@ export const VideoPlayer = ({
     percentLoaded,
     showControlsFullScreen,
     onSelectPlaybackRate,
-    seekTo
+    seekTo,
+    togglePictureInPicture
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
     qortalVideoResource,
     retryAttempts,
     isPlayerInitialized,
-    isMuted
+    isMuted,
+    videoRef
   });
 
+  useEffect(()=> {
+    if(location){
+    locationRef.current = location.pathname
+
+    }
+  },[location])
+
   console.log('isFullscreen', isFullscreen)
+  const { getProgress } = useProgressStore();
 
    const enterFullscreen = useCallback(() => {
     const ref = containerRef?.current as any;
@@ -304,6 +321,10 @@ export const VideoPlayer = ({
     if (!qortalVideoResource) return null;
     return `${qortalVideoResource.service}-${qortalVideoResource.name}-${qortalVideoResource.identifier}`;
   }, [qortalVideoResource]);
+const videoLocationRef = useRef< null | string>(null)
+  useEffect(()=> {
+    videoLocationRef.current = videoLocation
+  }, [videoLocation])
   useVideoPlayerHotKeys(hotkeyHandlers);
 
   const updateProgress = useCallback(() => {
@@ -316,6 +337,15 @@ export const VideoPlayer = ({
       setLocalProgress(currentTime);
     }
   }, [videoLocation]);
+
+  useEffect(()=> {
+    if(videoLocation){
+      const vidId = useGlobalPlayerStore.getState().videoId
+      if(vidId === videoLocation){
+        togglePlay()
+      }
+    }
+  }, [videoLocation])
   // useEffect(() => {
   //   const ref = videoRef as React.RefObject<HTMLVideoElement>;
   //   if (!ref.current) return;
@@ -441,6 +471,13 @@ export const VideoPlayer = ({
   const handleMouseMove = () => {
     resetHideTimer();
   };
+
+  const closePlaybackMenu = useCallback(()=> {
+    setIsOpenPlaybackmenu(false)
+  }, [])
+    const openPlaybackMenu = useCallback(()=> {
+    setIsOpenPlaybackmenu(true)
+  }, [])
 
   useEffect(() => {
     resetHideTimer(); // initial show
@@ -593,6 +630,24 @@ export const VideoPlayer = ({
     return JSON.stringify(qortalVideoResource);
   }, [qortalVideoResource]);
 
+
+  const savedVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(()=> {
+    if(startPlay){
+          useGlobalPlayerStore.getState().reset()
+
+    }
+  }, [startPlay])
+
+useLayoutEffect(() => {
+  // Save the video element while it's still mounted
+  const video = videoRef as any
+  if (video.current) {
+savedVideoRef.current = video.current;
+  }
+}, []);
+
   useEffect(() => {
     if (!resourceUrl || !isReady || !videoLocactionStringified || !startPlay)
       return;
@@ -630,7 +685,14 @@ export const VideoPlayer = ({
             playerRef.current?.poster("");
             playerRef.current?.playbackRate(playbackRate);
             playerRef.current?.volume(volume);
+            if(videoLocationRef.current){
+                     const savedProgress = getProgress(videoLocationRef.current);
+      if (typeof savedProgress === "number") {
+        playerRef.current?.currentTime(savedProgress);
 
+      }
+            }
+      
             playerRef.current?.play();
 
             const tracksInfo = playerRef.current?.textTracks();
@@ -684,8 +746,30 @@ export const VideoPlayer = ({
       console.error("useEffect start player", error);
     }
     return () => {
+                 console.log('hello1002')
+      const video = savedVideoRef as any
+     const videoEl = video?.current!;
+    const player = playerRef.current;
+
+    console.log('videohello', videoEl);
+            const isPlaying = !player?.paused();
+
+    if (videoEl && isPlaying && videoLocationRef.current) {
+      const current = player?.currentTime?.();
+        const currentSource = player?.currentType();
+
+      useGlobalPlayerStore.getState().setVideoState({
+        videoSrc: videoEl.src,
+        currentTime: current ?? 0,
+        isPlaying: true,
+        mode: 'floating',
+        videoId: videoLocationRef.current,
+        location: locationRef.current || "",
+        type: currentSource || 'video/mp4'
+      });
+    }
+     
       canceled = true;
-      const player = playerRef.current;
 
       if (player && typeof player.dispose === "function") {
         try {
@@ -753,6 +837,7 @@ export const VideoPlayer = ({
           onVolumeChange={onVolumeChangeHandler}
           controls={false}
         />
+        <PlayBackMenu close={closePlaybackMenu} isOpen={isOpenPlaybackMenu} onSelect={onSelectPlaybackRate} playbackRate={playbackRate} />
         {/* <canvas ref={canvasRef} style={{ display: "none" }}></canvas> */}
 
         {isReady && (
@@ -781,11 +866,12 @@ export const VideoPlayer = ({
             onSelectPlaybackRate={onSelectPlaybackRate}
             isMuted={isMuted}
             toggleMute={toggleMute}
+            openPlaybackMenu={openPlaybackMenu}
+            togglePictureInPicture={togglePictureInPicture}
           />
         )}
   {timelineActions && Array.isArray(timelineActions) && (
             <TimelineActionsComponent seekTo={seekTo} containerRef={containerRef} progress={localProgress} timelineActions={timelineActions}/>
-
   )}
         <SubtitleManager
           subtitleBtnRef={subtitleBtnRef}

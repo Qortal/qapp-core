@@ -40,9 +40,11 @@ interface VideoControlsBarProps {
   onSelectPlaybackRate: (rate: number)=> void;
   isMuted: boolean
   toggleMute: ()=> void
+  openPlaybackMenu: ()=> void
+  togglePictureInPicture: ()=> void
 }
 
-export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager, onSelectPlaybackRate, isMuted, toggleMute}: VideoControlsBarProps) => {
+export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager, onSelectPlaybackRate, isMuted, toggleMute, openPlaybackMenu, togglePictureInPicture}: VideoControlsBarProps) => {
 
   const showMobileControls = isScreenSmall && canPlay;
 
@@ -100,7 +102,7 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
           </Box>
 
           <Box sx={{...controlGroupSX, marginLeft: 'auto'}}>
-            <PlaybackRate onSelect={onSelectPlaybackRate} playbackRate={playbackRate} increaseSpeed={increaseSpeed} decreaseSpeed={decreaseSpeed} />
+            <PlaybackRate openPlaybackMenu={openPlaybackMenu} onSelect={onSelectPlaybackRate} playbackRate={playbackRate} increaseSpeed={increaseSpeed} decreaseSpeed={decreaseSpeed} />
             {/* <ObjectFitButton /> */}
             <CustomFontTooltip
                     title="Subtitles"
@@ -111,7 +113,7 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
               <SubtitlesIcon />
             </IconButton>
             </CustomFontTooltip>
-            {/* <PictureInPictureButton /> */}
+            <PictureInPictureButton togglePictureInPicture={togglePictureInPicture} />
             <FullscreenButton toggleFullscreen={toggleFullscreen} />
           </Box>
           </Box>

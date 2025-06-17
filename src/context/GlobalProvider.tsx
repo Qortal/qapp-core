@@ -14,6 +14,7 @@ import { usePersistentStore } from "../hooks/usePersistentStore";
 import { IndexManager } from "../components/IndexManager/IndexManager";
 import { useIndexes } from "../hooks/useIndexes";
 import { useProgressStore } from "../state/video";
+import { GlobalPipPlayer } from "../hooks/useGlobalPipPlayer";
 
 // ✅ Define Global Context Type
 interface GlobalContextType {
@@ -80,6 +81,7 @@ export const GlobalProvider = ({
 
   return (
     <GlobalContext.Provider value={contextValue}>
+      <GlobalPipPlayer />
       <Toaster
         position="top-center"
         toastOptions={{

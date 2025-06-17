@@ -173,13 +173,22 @@ const SubtitleManagerComponent = ({
     getPublishedSubtitles,
   ]);
 
-  const handleClose = () => {
+   const ref = useRef<any>(null)
+  console.log('isOpen', open)
+
+  useEffect(()=> {
+    if(open){
+      ref?.current?.focus()
+    }
+  }, [open])
+
+  const handleBlur = (e: React.FocusEvent) => {
+  if (!e.currentTarget.contains(e.relatedTarget) && !isOpenPublish) {
+    console.log('handleBlur')
     close();
-    setMode(1);
-    // setTitle("");
-    // setDescription("");
-    // setHasMetadata(false);
-  };
+    setIsOpenPublish(false)
+  }
+};
 
   const publishHandler = async (subtitles: Subtitle[]) => {
     try {
@@ -250,23 +259,20 @@ const SubtitleManagerComponent = ({
   };
 
   const theme = useTheme();
-
+  if(!open) return
   return (
     <>
-      <Popover
-        open={!!open}
-        anchorEl={subtitleBtnRef.current}
-        onClose={handleClose}
-        slots={{
-          transition: Fade,
-        }}
-        slotProps={{
-          transition: {
-            timeout: 200,
-          },
-          paper: {
-            sx: {
-              bgcolor: alpha("#181818", 0.98),
+      <Box
+   ref={ref}
+   tabIndex={-1}
+   onBlur={handleBlur}
+                    bgcolor={alpha("#181818", 0.98)}
+
+        sx={
+          {
+            position: 'absolute',
+              bottom: 60,
+              right: 5,
               color: "white",
               opacity: 0.9,
               borderRadius: 2,
@@ -277,17 +283,9 @@ const SubtitleManagerComponent = ({
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
-            },
-          },
-        }}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
+              zIndex: 10,
+            }
+        }
       >
         <Box
           sx={{
@@ -421,14 +419,15 @@ const SubtitleManagerComponent = ({
             </Typography>
           ))}
         </Box> */}
-      </Popover>
-
+     
+      </Box>
       <PublishSubtitles
         isOpen={isOpenPublish}
         setIsOpen={setIsOpenPublish}
         publishHandler={publishHandler}
         mySubtitles={mySubtitles}
       />
+   
     </>
     // <Dialog
     //   open={!!open}

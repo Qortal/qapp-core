@@ -12,6 +12,8 @@ import { useProgressStore, useVideoStore } from "../../state/video";
 import { QortalGetMetadata } from "../../types/interfaces/resources";
 import { useResourceStatus } from "../../hooks/useResourceStatus";
 import useIdleTimeout from "../../common/useIdleTimeout";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useGlobalPlayerStore } from "../../state/pip";
 
 const controlsHeight = "42px";
 const minSpeed = 0.25;
@@ -25,10 +27,11 @@ interface UseVideoControls {
   retryAttempts?: number;
   isPlayerInitialized: boolean
   isMuted: boolean
+  videoRef: any
 }
 
 export const useVideoPlayerController = (props: UseVideoControls) => {
-  const { autoPlay,   playerRef, qortalVideoResource, retryAttempts, isPlayerInitialized, isMuted } = props;
+  const { autoPlay, videoRef ,  playerRef, qortalVideoResource, retryAttempts, isPlayerInitialized, isMuted } = props;
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControlsFullScreen, setShowControlsFullScreen] = useState(false)
@@ -39,7 +42,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
   const [startPlay, setStartPlay] = useState(false);
   const [startedFetch, setStartedFetch] = useState(false);
   const startedFetchRef = useRef(false);
-
+  const navigate = useNavigate()
   const { playbackSettings, setPlaybackRate, setVolume } = useVideoStore();
   const { getProgress } = useProgressStore();
 
@@ -61,22 +64,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     return `${qortalVideoResource.service}-${qortalVideoResource.name}-${qortalVideoResource.identifier}`;
   }, [qortalVideoResource]);
 
-  useEffect(() => {
-    if (videoLocation && isPlayerInitialized) {
-      try {
-        const ref = playerRef as any;
-      if (!ref.current) return;
 
-      const savedProgress = getProgress(videoLocation);
-      if (typeof savedProgress === "number") {
-        playerRef.current?.currentTime(savedProgress);
-
-      }
-      } catch (error) {
-        console.error('line 74', error)
-      }
-    }
-  }, [videoLocation, getProgress, isPlayerInitialized]);
 
   const [playbackRate, _setLocalPlaybackRate] = useState(
     playbackSettings.playbackRate
@@ -294,6 +282,33 @@ const togglePlay = useCallback(async () => {
     }
   }, [togglePlay, isReady]);
 
+//   videoRef?.current?.addEventListener("enterpictureinpicture", () => {
+//     setPipVideoPath(window.location.pathname);
+
+// });
+
+// // when PiP ends (and you're on the wrong page), go back
+// videoRef?.current?.addEventListener("leavepictureinpicture", () => {
+//   const { pipVideoPath } = usePipStore.getState();
+//   if (pipVideoPath && window.location.pathname !== pipVideoPath) {
+//     navigate(pipVideoPath);
+//   }
+// });
+
+ const togglePictureInPicture = async () => {
+    if (!videoRef.current) return;
+     const player = playerRef.current;
+  if (!player || typeof player.currentTime !== 'function' || typeof player.duration !== 'function') return;
+
+  const current = player.currentTime();
+     useGlobalPlayerStore.getState().setVideoState({
+    videoSrc: videoRef.current.src,
+    currentTime: current,
+    isPlaying: true,
+    mode: 'floating', // or 'floating'
+  });
+  };
+
 
   return {
     reloadVideo,
@@ -314,6 +329,6 @@ const togglePlay = useCallback(async () => {
     isReady,
     resourceUrl,
     startPlay,
-    status, percentLoaded, showControlsFullScreen, onSelectPlaybackRate: updatePlaybackRate, seekTo
+    status, percentLoaded, showControlsFullScreen, onSelectPlaybackRate: updatePlaybackRate, seekTo, togglePictureInPicture
   };
 };
