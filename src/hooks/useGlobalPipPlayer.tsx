@@ -134,10 +134,10 @@ const margin = 50;
   useEffect(() => {
     
        rndRef.current.updatePosition({
-                x: window.innerWidth - 400 - margin,
-    y: window.innerHeight - 300 - margin,
-    width: 400,
-    height: 300
+                x: window.innerWidth - (width || 400) - margin,
+    y: window.innerHeight - (height || 300) - margin,
+    width: width || 400,
+    height: height || 300
             });
   }, [videoSrc]);
 

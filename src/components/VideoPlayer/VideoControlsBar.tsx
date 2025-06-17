@@ -113,7 +113,7 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
               <SubtitlesIcon />
             </IconButton>
             </CustomFontTooltip>
-            <PictureInPictureButton togglePictureInPicture={togglePictureInPicture} />
+            {/* <PictureInPictureButton togglePictureInPicture={togglePictureInPicture} /> */}
             <FullscreenButton toggleFullscreen={toggleFullscreen} />
           </Box>
           </Box>
