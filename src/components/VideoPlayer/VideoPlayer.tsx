@@ -3,6 +3,7 @@ import {
   Ref,
   RefObject,
   useCallback,
+  useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -31,7 +32,7 @@ import convert from "srt-webvtt";
 import { TimelineActionsComponent } from "./TimelineActionsComponent";
 import { PlayBackMenu } from "./VideoControls";
 import { useGlobalPlayerStore } from "../../state/pip";
-import { useLocation } from "react-router-dom";
+import { LocationContext } from "../../context/GlobalProvider";
 
 export async function srtBase64ToVttBlobUrl(
   base64Srt: string
@@ -212,7 +213,8 @@ export const VideoPlayer = ({
   const [isOpenSubtitleManage, setIsOpenSubtitleManage] = useState(false);
   const subtitleBtnRef = useRef(null);
   const [currentSubTrack, setCurrentSubTrack] = useState<null | string>(null)
-  const location = useLocation();
+    const location = useContext(LocationContext)
+  
   const locationRef = useRef<string | null>(null)
   const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false)
   const {

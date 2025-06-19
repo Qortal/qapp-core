@@ -259,7 +259,7 @@ const SubtitleManagerComponent = ({
   };
 
   const theme = useTheme();
-  if(!open) return
+  if(!open) return null
   return (
     <>
       <Box

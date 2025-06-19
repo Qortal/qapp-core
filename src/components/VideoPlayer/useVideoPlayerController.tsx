@@ -12,7 +12,6 @@ import { useProgressStore, useVideoStore } from "../../state/video";
 import { QortalGetMetadata } from "../../types/interfaces/resources";
 import { useResourceStatus } from "../../hooks/useResourceStatus";
 import useIdleTimeout from "../../common/useIdleTimeout";
-import { useLocation, useNavigate } from "react-router-dom";
 import { useGlobalPlayerStore } from "../../state/pip";
 
 const controlsHeight = "42px";
@@ -42,7 +41,6 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
   const [startPlay, setStartPlay] = useState(false);
   const [startedFetch, setStartedFetch] = useState(false);
   const startedFetchRef = useRef(false);
-  const navigate = useNavigate()
   const { playbackSettings, setPlaybackRate, setVolume } = useVideoStore();
   const { getProgress } = useProgressStore();
 

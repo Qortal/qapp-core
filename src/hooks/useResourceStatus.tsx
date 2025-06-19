@@ -8,7 +8,7 @@ interface PropsUseResourceStatus {
 }
 export const useResourceStatus = ({
   resource,
-  retryAttempts = 50,
+  retryAttempts = 200,
 }: PropsUseResourceStatus) => {
   const resourceId = !resource ? null : `${resource.service}-${resource.name}-${resource.identifier}`;
   const status = usePublishStore((state)=> state.getResourceStatus(resourceId)) || null

@@ -5,6 +5,8 @@ import { base64ToObject, retryTransaction } from "../utils/publish";
 import { useGlobal } from "../context/GlobalProvider";
 import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
 import { useCacheStore } from "../state/cache";
+import { useMultiplePublishStore } from "../state/multiplePublish";
+import { ResourceToPublish } from "../types/qortalRequests/types";
 
 interface StoredPublish {
     qortalMetadata: QortalMetadata;
@@ -29,6 +31,7 @@ interface StoredPublish {
     }>;
     updatePublish: (publish: QortalGetMetadata, data: any) => Promise<void>;
     deletePublish: (publish: QortalGetMetadata) => Promise<boolean | undefined>;
+    publishMultipleResources: (resources: ResourceToPublish[])=> void
   };
   
   type UsePublishWithoutMetadata = {
@@ -39,6 +42,8 @@ interface StoredPublish {
     }>;
     updatePublish: (publish: QortalGetMetadata, data: any) => Promise<void>;
     deletePublish: (publish: QortalGetMetadata) => Promise<boolean | undefined>;
+    publishMultipleResources: (resources: ResourceToPublish[])=> void
+    
   };
 
   export function usePublish(
@@ -73,6 +78,8 @@ interface StoredPublish {
   const setResourceCache = useCacheStore((s) => s.setResourceCache);
   const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
 
+   const setPublishResources = useMultiplePublishStore((state) => state.setPublishResources);
+      const resetPublishResources = useMultiplePublishStore((state) => state.reset);
   const [hasResource, setHasResource] = useState<boolean | null>(null);
   const fetchRawData = useCallback(async (item: QortalGetMetadata) => {
     const url = `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`;
@@ -264,11 +271,26 @@ interface StoredPublish {
     
   }, [getStorageKey, setPublish]);
 
+   const publishMultipleResources = useCallback(async (resources: ResourceToPublish[]) => {
+      try {
+        setPublishResources(resources)
+        const lengthOfResources = resources?.length;
+    const lengthOfTimeout = lengthOfResources * 1200000;  // Time out in QR, Seconds = 20 Minutes
+    return await qortalRequestWithTimeout({
+      action: "PUBLISH_MULTIPLE_QDN_RESOURCES",
+      resources
+    }, lengthOfTimeout);
+      } catch (error) {
+        
+      }
+  }, [getStorageKey, setPublish]);
+
   if (!metadata)
     return {
       fetchPublish,
       updatePublish,
       deletePublish: deleteResource,
+      publishMultipleResources
     };
 
     return useMemo(() => ({
@@ -280,6 +302,7 @@ interface StoredPublish {
       fetchPublish,
       updatePublish,
       deletePublish: deleteResource,
+      publishMultipleResources
     }), [
       isLoading,
       error,
@@ -289,6 +312,7 @@ interface StoredPublish {
       fetchPublish,
       updatePublish,
       deleteResource,
+      publishMultipleResources
     ]);
     
 };

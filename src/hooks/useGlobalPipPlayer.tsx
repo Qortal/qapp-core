@@ -1,7 +1,7 @@
 // GlobalVideoPlayer.tsx
 import videojs from 'video.js';
 import { useGlobalPlayerStore } from '../state/pip';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Box, IconButton } from '@mui/material';
 import { VideoContainer } from '../components/VideoPlayer/VideoPlayer-styles';
 import { Rnd } from "react-rnd";
@@ -10,13 +10,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
-import { useNavigate } from 'react-router-dom';
+import { GlobalContext } from '../context/GlobalProvider';
 export const GlobalPipPlayer = () => {
   const { videoSrc, reset, isPlaying, location, type, currentTime, mode, videoId } = useGlobalPlayerStore();
   const [playing , setPlaying] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
   const playerRef = useRef<any>(null);
-  const navigate = useNavigate()
+  const {navigate} = useContext(GlobalContext)
+ 
   const videoNode = useRef<HTMLVideoElement>(null);
     const { setProgress } = useProgressStore();
 
@@ -279,7 +280,11 @@ const margin = 50;
                                     zIndex: 2,
                                     opacity: 1,
                                      
-                                }} onClick={()=> navigate(location)}><OpenInFullIcon /></IconButton>
+                                }} onClick={()=> {
+                                    if(navigate){
+                                        navigate(location)
+                                    }
+                                }}><OpenInFullIcon /></IconButton>
                                 )}
                                 {playing && (
                                      <IconButton sx={{
