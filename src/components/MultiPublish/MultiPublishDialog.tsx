@@ -200,7 +200,26 @@ export const MultiPublishDialogComponent = () => {
           </Stack>
         )}
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{
+        flexDirection: 'column',
+        gap: '15px'
+      }}>
+        {failedResources?.length > 0 && (
+          <Box sx={{
+          display: 'flex',
+          gap: '10px'
+        }}>
+          <ErrorIcon color="error" />
+              <Typography variant="body2">Publish failed</Typography>
+        </Box>
+        )}
+        
+        <Box sx={{
+          display: 'flex',
+          gap: '10px',
+          width: '100%',
+          justifyContent: 'flex-end'
+        }}>
         <Button disabled={isLoading} color="error" variant="contained" onClick={() => {
           reject(new Error('Canceled Publish'));
           reset();
@@ -217,7 +236,9 @@ export const MultiPublishDialogComponent = () => {
             Retry
           </Button>
         )}
+           </Box>
       </DialogActions>
+   
     </Dialog>
   );
 };
