@@ -140,7 +140,6 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
 
   const toggleMute = useCallback(() => {
     try {
-      console.log('toggleMute')
        const ref = playerRef as any;
     if (!ref.current) return;
             

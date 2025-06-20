@@ -5,8 +5,9 @@ import { base64ToObject, retryTransaction } from "../utils/publish";
 import { useGlobal } from "../context/GlobalProvider";
 import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
 import { useCacheStore } from "../state/cache";
-import { useMultiplePublishStore } from "../state/multiplePublish";
+import { useMultiplePublishStore, usePublishStatusStore } from "../state/multiplePublish";
 import { ResourceToPublish } from "../types/qortalRequests/types";
+import { MultiplePublishError } from "../components/MultiPublish/MultiPublishDialog";
 
 interface StoredPublish {
     qortalMetadata: QortalMetadata;
@@ -31,7 +32,7 @@ interface StoredPublish {
     }>;
     updatePublish: (publish: QortalGetMetadata, data: any) => Promise<void>;
     deletePublish: (publish: QortalGetMetadata) => Promise<boolean | undefined>;
-    publishMultipleResources: (resources: ResourceToPublish[])=> void
+    publishMultipleResources: (resources: ResourceToPublish[])=> Promise<Error | QortalGetMetadata[]>
   };
   
   type UsePublishWithoutMetadata = {
@@ -42,7 +43,7 @@ interface StoredPublish {
     }>;
     updatePublish: (publish: QortalGetMetadata, data: any) => Promise<void>;
     deletePublish: (publish: QortalGetMetadata) => Promise<boolean | undefined>;
-    publishMultipleResources: (resources: ResourceToPublish[])=> void
+    publishMultipleResources: (resources: ResourceToPublish[])=> Promise<Error | QortalGetMetadata[]>
     
   };
 
@@ -77,7 +78,7 @@ interface StoredPublish {
   const getPublish = usePublishStore(state=> state.getPublish)
   const setResourceCache = useCacheStore((s) => s.setResourceCache);
   const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
-
+  const setPublishStatusByKey = usePublishStatusStore((s)=> s.setPublishStatusByKey)
    const setPublishResources = useMultiplePublishStore((state) => state.setPublishResources);
       const resetPublishResources = useMultiplePublishStore((state) => state.reset);
   const [hasResource, setHasResource] = useState<boolean | null>(null);
@@ -271,19 +272,55 @@ interface StoredPublish {
     
   }, [getStorageKey, setPublish]);
 
-   const publishMultipleResources = useCallback(async (resources: ResourceToPublish[]) => {
-      try {
-        setPublishResources(resources)
-        const lengthOfResources = resources?.length;
-    const lengthOfTimeout = lengthOfResources * 1200000;  // Time out in QR, Seconds = 20 Minutes
-    return await qortalRequestWithTimeout({
+const publishMultipleResources = useCallback(async (resources: ResourceToPublish[]): Promise<Error | QortalGetMetadata[]> => {
+   return new Promise(async (resolve, reject) => {
+    const store = useMultiplePublishStore.getState();
+    store.setPublishResources(resources);
+    store.setIsPublishing(true);
+    store.setCompletionResolver(resolve);
+    store.setRejectionResolver(reject);
+  try {
+    store.setIsLoading(true);
+    setPublishResources(resources);
+    store.setError(null)
+    store.setFailedPublishResources([])
+    const lengthOfResources = resources?.length;
+    const lengthOfTimeout = lengthOfResources * 1200000; // 20 minutes per resource
+
+    const result = await qortalRequestWithTimeout({
       action: "PUBLISH_MULTIPLE_QDN_RESOURCES",
       resources
     }, lengthOfTimeout);
-      } catch (error) {
-        
-      }
-  }, [getStorageKey, setPublish]);
+     store.complete(result);
+  } catch (error: any) {
+    const unPublished = error?.error?.unsuccessfulPublishes;
+    const failedPublishes: QortalGetMetadata[] = []
+    if (unPublished && Array.isArray(unPublished)) {
+      unPublished.forEach((item) => {
+        const key = `${item?.service}-${item?.name}-${item?.identifier}`;
+
+        setPublishStatusByKey(key, {
+          error: {
+            reason: item.reason
+          }
+        });
+         failedPublishes.push({
+        name: item?.name,
+        service: item?.service,
+        identifier: item?.identifier
+      })
+      });
+     store.setFailedPublishResources(failedPublishes)
+    } else  {
+       store.setError(error?.message || 'Error during publish')
+    }
+
+  } finally {
+    store.setIsLoading(false);
+  }
+})
+}, [setPublishResources]);
+
 
   if (!metadata)
     return {

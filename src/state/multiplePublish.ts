@@ -1,23 +1,75 @@
 import { create } from 'zustand';
 import { ResourceToPublish } from '../types/qortalRequests/types';
-import { Service } from '../types/interfaces/resources';
+import { QortalGetMetadata, Service } from '../types/interfaces/resources';
 
 
 interface MultiplePublishState {
   resources: ResourceToPublish[];
-  setPublishResources: (resources: ResourceToPublish[])=> void
-  reset: ()=> void
-  isPublishing: boolean
-}
-  const initialState = {
-    resources: [],
-    isPublishing: false
-  };
-export const useMultiplePublishStore = create<MultiplePublishState>((set) => ({
-  ...initialState,
-  setPublishResources: (resources: ResourceToPublish[]) => set(() => ({ resources, isPublishing: true })),
-  reset: () => set(initialState),
+  failedResources: QortalGetMetadata[];
+  isPublishing: boolean;
+  resolveCallback?: (result: QortalGetMetadata[]) => void;
+  rejectCallback?: (error: Error) => void;
 
+  setPublishResources: (resources: ResourceToPublish[]) => void;
+  setFailedPublishResources: (resources: QortalGetMetadata[]) => void;
+  setIsPublishing: (value: boolean) => void;
+  setCompletionResolver: (resolver: (result: QortalGetMetadata[]) => void) => void;
+  setRejectionResolver: (resolver: (reject: Error) => void) => void;
+  complete: (result: any) => void;
+  reject: (Error: Error) => void;
+  reset: () => void;
+  setError: (message: string | null)=> void
+  error: string | null
+  isLoading: boolean
+  setIsLoading: (val: boolean)=> void
+}
+
+const initialState = {
+  resources: [],
+  failedResources: [],
+  isPublishing: false,
+  resolveCallback: undefined,
+  rejectCallback: undefined,
+  error: "",
+  isLoading: false
+};
+
+export const useMultiplePublishStore = create<MultiplePublishState>((set, get) => ({
+  ...initialState,
+
+  setPublishResources: (resources) => {
+    set({ resources, isPublishing: true });
+  },
+ setFailedPublishResources: (resources) => {
+    set({ failedResources: resources });
+  },
+  setIsPublishing: (value) => {
+    set({ isPublishing: value });
+  },
+  setIsLoading: (value) => {
+    set({ isLoading: value });
+  },
+  setCompletionResolver: (resolver) => {
+    set({ resolveCallback: resolver });
+  },
+setRejectionResolver: (reject) => {
+    set({ rejectCallback: reject });
+  },
+  complete: (result) => {
+    const resolver = get().resolveCallback;
+    if (resolver) resolver(result);
+    set({ resolveCallback: undefined, isPublishing: false });
+  },
+    reject: (result) => {
+    const resolver = get().rejectCallback;
+    if (resolver) resolver(result);
+    set({ resolveCallback: undefined, isPublishing: false });
+  },
+  setError: (message) => {
+    set({ error: message });
+  },
+
+  reset: () => set(initialState),
 }));
 
 export type PublishLocation = {
@@ -31,6 +83,11 @@ export type PublishStatus = {
   chunks: number;
   totalChunks: number;
   processed: boolean;
+  error?: {
+    reason: string
+  }
+  retry: boolean
+  filename: string
 };
 
 type PublishStatusStore = {
@@ -58,6 +115,7 @@ export const usePublishStatusStore = create<PublishStatusStore>((set, get) => ({
       chunks: 0,
       totalChunks: 0,
       processed: false,
+      retry: false
     };
 
     const newStatus: PublishStatus = {

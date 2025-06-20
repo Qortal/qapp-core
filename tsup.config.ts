@@ -9,7 +9,6 @@ export default defineConfig({
     '@mui/material',
     '@mui/system',
     '@emotion/react',
-    '@emotion/styled',
-    'mediainfo.js'
+    '@emotion/styled'
   ],
 });

@@ -47,7 +47,6 @@ export async function srtBase64ToVttBlobUrl(
 
     // Step 2: Create a Blob from the Uint8Array with correct MIME type
     const srtBlob = new Blob([bytes], { type: "application/x-subrip" });
-    console.log("srtBlob", srtBlob);
     // Step 3: Use convert() with the Blob
     const vttBlobUrl: string = await convert(srtBlob);
     return vttBlobUrl;
@@ -93,14 +92,7 @@ const videoStyles = {
   video: {},
 };
 
-async function loadMediaInfo(wasmPath = "/MediaInfoModule.wasm") {
-  const mediaInfoModule = await import("mediainfo.js");
-  return await mediaInfoModule.default({
-    format: "JSON",
-    full: true,
-    locateFile: () => wasmPath,
-  });
-}
+
 
 async function getVideoMimeTypeFromUrl(
   qortalVideoResource: any
@@ -114,71 +106,6 @@ async function getVideoMimeTypeFromUrl(
   } catch (error) {
     return null;
   }
-  // const mediaInfo = await loadMediaInfo();
-  // const chunkCache = new Map<string, Uint8Array>();
-
-  // let fileSize = 0;
-  // try {
-  //   const headResp = await fetch(videoUrl, { method: 'HEAD' });
-  //   const lengthHeader = headResp.headers.get('Content-Length');
-  //   if (!lengthHeader) throw new Error('Missing content length');
-  //   fileSize = parseInt(lengthHeader, 10);
-  // } catch (err) {
-  //   console.error('Error fetching content length:', err);
-  //   return null;
-  // }
-
-  // try {
-  //   const rawResult = await mediaInfo.analyzeData(
-  //     () => fileSize,
-  //     async (chunkSize: number, offset: number): Promise<Uint8Array> => {
-  //       const key = `${offset}:${chunkSize}`;
-  //       if (chunkCache.has(key)) return chunkCache.get(key)!;
-
-  //       const end = Math.min(fileSize - 1, offset + chunkSize - 1);
-  //       const resp = await fetch(videoUrl, {
-  //         headers: { Range: `bytes=${offset}-${end}` },
-  //       });
-
-  //       if (!resp.ok || (resp.status !== 206 && fileSize > chunkSize)) {
-  //         console.warn(`Range request failed: ${resp.status}`);
-  //         return new Uint8Array();
-  //       }
-
-  //       const blob = await resp.blob();
-  //       const buffer = new Uint8Array(await blob.arrayBuffer());
-  //       chunkCache.set(key, buffer);
-  //       return buffer;
-  //     }
-  //   );
-
-  //   const result = JSON.parse(rawResult);
-  //   const tracks = result?.media?.track;
-
-  //   const videoTrack = tracks?.find((t: any) => t['@type'] === 'Video');
-  //   const format = videoTrack?.Format?.toLowerCase();
-
-  //   switch (format) {
-  //     case 'avc':
-  //     case 'h264':
-  //     case 'mpeg-4':
-  //     case 'mp4':
-  //       return 'video/mp4';
-  //     case 'vp8':
-  //     case 'vp9':
-  //       return 'video/webm';
-  //     case 'hevc':
-  //     case 'h265':
-  //       return 'video/mp4'; // still usually wrapped in MP4
-  //     case 'matroska':
-  //       return 'video/webm';
-  //     default:
-  //       return 'video/mp4'; // fallback
-  //   }
-  // } catch (err) {
-  //   console.error('Error analyzing media info:', err);
-  //   return null;
-  // }
 }
 
 export const VideoPlayer = ({
@@ -259,7 +186,6 @@ export const VideoPlayer = ({
     }
   },[location])
 
-  console.log('isFullscreen', isFullscreen)
   const { getProgress } = useProgressStore();
 
    const enterFullscreen = useCallback(() => {
@@ -276,7 +202,6 @@ export const VideoPlayer = ({
   }, [isFullscreen]);
 
   const toggleFullscreen = useCallback(() => {
-    console.log('togglefull', isFullscreen)
     isFullscreen ? exitFullscreen() : enterFullscreen();
   }, [isFullscreen]);
 
@@ -531,7 +456,6 @@ const videoLocationRef = useRef< null | string>(null)
 
         return
       }
-      console.log("onSelectSubtitle", subtitle);
       const player = playerRef.current;
       if (!player || !subtitle.subtitleData || !subtitle.type) return;
 
@@ -604,16 +528,13 @@ const videoLocationRef = useRef< null | string>(null)
         }, 1000);
       });
       const tracksInfo = playerRef.current?.textTracks();
-      console.log("tracksInfo", tracksInfo);
       if (!tracksInfo) return;
 
       const tracks = Array.from(
         { length: (tracksInfo as any).length },
         (_, i) => (tracksInfo as any)[i]
       );
-      console.log("tracks", tracks);
       for (const track of tracks) {
-        console.log("track", track);
 
         if (track.kind === "subtitles") {
           track.mode = "showing"; // force display
@@ -706,7 +627,6 @@ savedVideoRef.current = video.current;
                 { length: (tracksInfo as any).length },
                 (_, i) => (tracksInfo as any)[i]
               );
-              console.log("tracks", tracks);
               for (const track of tracks) {
 
       if (track.kind === 'subtitles' || track.kind === 'captions') {
@@ -718,10 +638,7 @@ savedVideoRef.current = video.current;
               }
 
               if (activeTrack) {
-                console.log("Subtitle active:", {
-                  label: activeTrack.label,
-                  srclang: activeTrack.language || activeTrack.srclang, // srclang for native, language for VTT
-                });
+               
                 setCurrentSubTrack(activeTrack.language || activeTrack.srclang)
               } else {
                 setCurrentSubTrack(null)
@@ -748,12 +665,10 @@ savedVideoRef.current = video.current;
       console.error("useEffect start player", error);
     }
     return () => {
-                 console.log('hello1002')
       const video = savedVideoRef as any
      const videoEl = video?.current!;
     const player = playerRef.current;
 
-    console.log('videohello', videoEl);
             const isPlaying = !player?.paused();
 
     if (videoEl && isPlaying && videoLocationRef.current) {

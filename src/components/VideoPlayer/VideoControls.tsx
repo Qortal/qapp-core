@@ -92,7 +92,6 @@ export const ProgressSlider = ({ progress, duration, playerRef }: any) => {
     const x = e.clientX - rect.left;
     const percent = x / rect.width;
     const time = Math.min(Math.max(0, percent * duration), duration);
-    console.log("hello100");
     setHoverX(e.clientX);
 
     setShowDuration(time);
@@ -129,7 +128,6 @@ export const ProgressSlider = ({ progress, duration, playerRef }: any) => {
     console.log("thumbnailUrl", thumbnailUrl, hoverX);
   }
 
-  console.log("duration", duration);
 
   return (
     <Box
@@ -445,7 +443,6 @@ interface PlayBackMenuProps {
 export const PlayBackMenu = ({close, onSelect, isOpen, playbackRate}: PlayBackMenuProps)=> {
   const theme = useTheme()
   const ref = useRef<any>(null)
-  console.log('isOpen', isOpen)
 
   useEffect(()=> {
     if(isOpen){

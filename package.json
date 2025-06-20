@@ -1,6 +1,6 @@
 {
   "name": "qapp-core",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "description": "Qortal's core React library with global state, UI components, and utilities",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -49,7 +49,6 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.0.1",
     "@mui/material": "^7.0.1",
-    "mediainfo.js": "^0.3.5",
     "react": "^19.0.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2"

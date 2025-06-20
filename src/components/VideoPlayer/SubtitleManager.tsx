@@ -119,17 +119,14 @@ const SubtitleManagerComponent = ({
   const subtitles = useListReturn(
     `subs-${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`
   );
-  console.log("subtitles222", subtitles);
   const mySubtitles = useMemo(() => {
     if (!auth?.name) return [];
     return subtitles?.filter((sub) => sub.name === auth?.name);
   }, [subtitles, auth?.name]);
-  console.log("subtitles222", subtitles);
   const getPublishedSubtitles = useCallback(async () => {
     try {
       setIsLoading(true);
       const videoId = `${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`;
-      console.log("videoId", videoId);
       const postIdSearch = await identifierOperations.buildLooseSearchPrefix(
         ENTITY_SUBTITLE,
         videoId
@@ -149,7 +146,6 @@ const SubtitleManagerComponent = ({
         searchParams
       );
       lists.addList(`subs-${videoId}`, res?.filter((item)=> !!item?.metadata?.title) || []);
-      console.log("resres2", res);
     } catch (error) {
       console.error(error);
     } finally {
@@ -174,7 +170,6 @@ const SubtitleManagerComponent = ({
   ]);
 
    const ref = useRef<any>(null)
-  console.log('isOpen', open)
 
   useEffect(()=> {
     if(open){
@@ -184,7 +179,6 @@ const SubtitleManagerComponent = ({
 
   const handleBlur = (e: React.FocusEvent) => {
   if (!e.currentTarget.contains(e.relatedTarget) && !isOpenPublish) {
-    console.log('handleBlur')
     close();
     setIsOpenPublish(false)
   }
@@ -235,7 +229,6 @@ const SubtitleManagerComponent = ({
           data: data,
         });
       }
-      console.log("resources", resources);
 
       await qortalRequest({
         action: "PUBLISH_MULTIPLE_QDN_RESOURCES",
@@ -253,7 +246,6 @@ const SubtitleManagerComponent = ({
   };
 
   const onSelectHandler = (sub: SubtitlePublishedData) => {
-    console.log("onSelectHandler");
     onSelect(sub);
     close();
   };
@@ -608,7 +600,6 @@ const PublishSubtitles = ({
       return copyPrev;
     });
   };
-  console.log("subtitles", subtitles);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -843,7 +834,6 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
   const [selectedToDownload, setSelectedToDownload] = useState<null | QortalGetMetadata>(null)
   const [isReady, setIsReady] = useState(false)
   const { resource, isLoading, error, refetch  } = usePublish(2, "JSON", sub, true);
-  console.log("resource", resource, isLoading);
   const isSelected = currentSubtrack === resource?.data?.language;
   const [isGettingStatus, setIsGettingStatus] = useState(true)
   // useEffect(()=> {
@@ -852,7 +842,6 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
   //      onSelect(resource?.data)
   //   }
   // }, [isSelected, resource?.data])
-  console.log('isReady', resource?.data)
   const getStatus = useCallback(async (service: Service, name: string, identifier: string)=> {
     try {
       if(subtitlesStatus[`${service}-${name}-${identifier}`]){
@@ -890,7 +879,6 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
           getStatus(sub?.service, sub?.name, sub?.identifier)
     }
   }, [sub?.identifier, sub?.name, sub?.service])
-console.log('tester', isReady,isLoading,error,resource?.data)
 
   return (
     <ButtonBase

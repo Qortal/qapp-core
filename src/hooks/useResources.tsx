@@ -207,10 +207,8 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
       if (cancelRequests) {
         cancelAllRequests();
       }
-      console.log('listName', listName)
       const cacheKey = generateCacheKey(params);
       const searchCache = getSearchCache(listName, cacheKey);
-      console.log('searchCache', searchCache)
       if (searchCache) {
         const copyParams = {...params}
         delete copyParams.after
@@ -223,12 +221,10 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
       let responseData: QortalMetadata[] = [];
       let filteredResults: QortalMetadata[] = [];
       let lastCreated = params.before || undefined;
-      console.log('lastCreated', lastCreated)
       const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
       const isUnlimited = params.limit === 0;
 
       while (isUnlimited || filteredResults.length < targetLimit) {
-        console.log('beforebefore')
         const response = await qortalRequest({
           action: "SEARCH_QDN_RESOURCES",
           mode: "ALL",
@@ -236,14 +232,12 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
           limit: targetLimit - filteredResults.length, // Adjust limit dynamically
           before: lastCreated,
         });
-        console.log('responseresponse', response)
         if (!response || response.length === 0) {
           break; // No more data available
         }
 
         responseData = response;
         const validResults = responseData.filter((item) => item.size !== 32 && item.size < maxSize);
-        console.log('validResults', validResults)
         filteredResults = [...filteredResults, ...validResults];
 
         if (filteredResults.length >= targetLimit && !isUnlimited) {
@@ -312,7 +306,6 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
 
   const addNewResources = useCallback(
     (listName: string, resources: Resource[]) => {
-      console.log('resources1212', resources)
       addTemporaryResource(
         listName,
         resources.map((item) => item.qortalMetadata)

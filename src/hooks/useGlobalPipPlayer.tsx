@@ -16,8 +16,8 @@ export const GlobalPipPlayer = () => {
   const [playing , setPlaying] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
   const playerRef = useRef<any>(null);
-  const {navigate} = useContext(GlobalContext)
- 
+  const context = useContext(GlobalContext)
+  const navigate = context?.navigate
   const videoNode = useRef<HTMLVideoElement>(null);
     const { setProgress } = useProgressStore();
 
@@ -26,7 +26,6 @@ export const GlobalPipPlayer = () => {
         if (!player || typeof player?.currentTime !== "function") return;
     
         const currentTime = player.currentTime();
-        console.log('videoId', videoId)
         if (typeof currentTime === "number" && videoId && currentTime > 0.1) {
           setProgress(videoId, currentTime);
         }

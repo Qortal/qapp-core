@@ -121,7 +121,6 @@ export function base64ToObject(base64: string){
 }
 
 export const base64ToBlobUrl = (base64: string, mimeType = 'text/vtt'): string => {
-	console.log('base64ToBlobUrl', base64, mimeType)
   const cleanedBase64 = base64.length % 4 === 0 ? base64 : base64 + '='.repeat(4 - base64.length % 4);
 
   try {
