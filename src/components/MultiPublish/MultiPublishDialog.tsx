@@ -173,6 +173,9 @@ export const MultiPublishDialogComponent = () => {
       maxWidth="sm"
       sx={{ zIndex: 999990 }}
       slotProps={{ paper: { elevation: 0 } }}
+       disableEnforceFocus
+  disableAutoFocus
+  disableRestoreFocus
     >
       <DialogTitle>Publishing Status</DialogTitle>
       <DialogContent>
@@ -275,12 +278,15 @@ const IndividualResourceComponent = ({ publish, publishKey, publishStatus }: Ind
   }, [chunkDone, processingStart]);
 
   // Keep time ticking for progress simulation
-  useEffect(() => {
-    if (!chunkDone) return;
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, [chunkDone]);
+useEffect(() => {
+  if (!chunkDone) return;
 
+  const interval = setInterval(() => {
+    setNow(Date.now());
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [chunkDone]);
   const processingPercent = useMemo(() => {
     if (publishStatus?.error || !chunkDone || !processingStart || !publishStatus?.totalChunks || !now) return 0;
 
@@ -307,9 +313,9 @@ const IndividualResourceComponent = ({ publish, publishKey, publishStatus }: Ind
 
       <Box mt={2}>
         <Typography variant="body2" gutterBottom>
-          File Processing ({processingStart ? processingPercent.toFixed(0) : '0'}%)
+          File Processing ({publishStatus?.processed ? 100 : processingStart ? processingPercent.toFixed(0) : '0'}%)
         </Typography>
-        <LinearProgress variant="determinate" value={processingPercent} />
+        <LinearProgress variant="determinate" value={publishStatus?.processed ? 100 : processingPercent} />
       </Box>
 
       {publishStatus?.processed && (

@@ -288,7 +288,7 @@ const publishMultipleResources = useCallback(async (resources: ResourceToPublish
     store.setFailedPublishResources([])
     const lengthOfResources = resources?.length;
     const lengthOfTimeout = lengthOfResources * 1200000; // 20 minutes per resource
-
+    console.log('lengthOfTimeout', lengthOfTimeout)
     const result = await qortalRequestWithTimeout({
       action: "PUBLISH_MULTIPLE_QDN_RESOURCES",
       resources
@@ -298,6 +298,7 @@ const publishMultipleResources = useCallback(async (resources: ResourceToPublish
       store.reset()
      storeStatus.reset()
   } catch (error: any) {
+    console.log('timeout555')
     const unPublished = error?.error?.unsuccessfulPublishes;
     const failedPublishes: QortalGetMetadata[] = []
     if (unPublished && Array.isArray(unPublished)) {

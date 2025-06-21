@@ -17,6 +17,7 @@ import { useProgressStore } from "../state/video";
 import { GlobalPipPlayer } from "../hooks/useGlobalPipPlayer";
 import { Location, NavigateFunction } from "react-router-dom";
 import { MultiPublishDialog } from "../components/MultiPublish/MultiPublishDialog";
+import { useMultiplePublishStore } from "../state/multiplePublish";
 
 // ✅ Define Global Context Type
 interface GlobalContextType {
@@ -60,6 +61,7 @@ export const GlobalProvider = ({
 }: GlobalProviderProps) => {
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
+  const isPublishing = useMultiplePublishStore((s)=> s.isPublishing);
 
   const appInfo = useAppInfo(config.appName, config?.publicSalt);
   const lists = useResources();
@@ -96,7 +98,9 @@ export const GlobalProvider = ({
 
     <GlobalContext.Provider value={contextValue}>
       <GlobalPipPlayer />
-      <MultiPublishDialog />
+      {isPublishing && (
+         <MultiPublishDialog />
+      )}
       <Toaster
         position="top-center"
         toastOptions={{
