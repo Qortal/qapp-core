@@ -275,6 +275,8 @@ interface StoredPublish {
 const publishMultipleResources = useCallback(async (resources: ResourceToPublish[]): Promise<Error | QortalGetMetadata[]> => {
    return new Promise(async (resolve, reject) => {
     const store = useMultiplePublishStore.getState();
+    const storeStatus = usePublishStatusStore.getState();
+
     store.setPublishResources(resources);
     store.setIsPublishing(true);
     store.setCompletionResolver(resolve);
@@ -291,7 +293,10 @@ const publishMultipleResources = useCallback(async (resources: ResourceToPublish
       action: "PUBLISH_MULTIPLE_QDN_RESOURCES",
       resources
     }, lengthOfTimeout);
+   
      store.complete(result);
+      store.reset()
+     storeStatus.reset()
   } catch (error: any) {
     const unPublished = error?.error?.unsuccessfulPublishes;
     const failedPublishes: QortalGetMetadata[] = []

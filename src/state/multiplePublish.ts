@@ -94,8 +94,8 @@ type PublishStatusStore = {
   publishStatus: Record<string, PublishStatus>;
   getPublishStatusByKey: (key: string) => PublishStatus | undefined;
   setPublishStatusByKey: (key: string, update: Partial<PublishStatus>) => void;
+  reset: () => void;
 };
-
 
 export const usePublishStatusStore = create<PublishStatusStore>((set, get) => ({
   publishStatus: {},
@@ -134,4 +134,6 @@ export const usePublishStatusStore = create<PublishStatusStore>((set, get) => ({
       },
     });
   },
+
+  reset: () => set({ publishStatus: {} })
 }));

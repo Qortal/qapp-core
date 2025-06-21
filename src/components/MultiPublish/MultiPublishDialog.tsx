@@ -57,7 +57,7 @@ export const MultiPublishDialogComponent = () => {
     complete: state.complete
   }));
 
-  const { publishStatus, setPublishStatusByKey } = usePublishStatusStore();
+  const { publishStatus, setPublishStatusByKey, reset: resetStatusStore } = usePublishStatusStore();
 
   const resourcesToPublish = useMemo(() => {
     return resources.filter((item) =>
@@ -88,8 +88,10 @@ export const MultiPublishDialogComponent = () => {
         { action: 'PUBLISH_MULTIPLE_QDN_RESOURCES', resources: resourcesToPublish },
         timeout
       );
-
+       
       complete(result);
+      reset();
+      resetStatusStore()
     } catch (error: any) {
       const unPublished = error?.error?.unsuccessfulPublishes;
       const failedPublishes: QortalGetMetadata[] = [];
