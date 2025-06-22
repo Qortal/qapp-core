@@ -144,6 +144,8 @@ export const GlobalPipPlayer = () => {
 
   const [height, setHeight] = useState(300);
   const [width, setWidth] = useState(400);
+const savedHeightRef = useRef<null | number>(null)
+const savedWidthRef = useRef<null | number>(null)
 
 useEffect(() => {
   if (!videoSrc) return;
@@ -155,12 +157,12 @@ useEffect(() => {
   const maxWidthByScreen = screenWidth * 0.75;
   const maxWidthByHeight = (screenHeight * 0.2) / aspectRatio;
 
-  const maxWidth = Math.min(maxWidthByScreen, maxWidthByHeight);
-  const maxHeight = maxWidth * aspectRatio;
+  const maxWidth = savedWidthRef.current || Math.min(maxWidthByScreen, maxWidthByHeight);
+  const maxHeight = savedHeightRef.current || maxWidth * aspectRatio;
 
   setWidth(maxWidth);
   setHeight(maxHeight);
-
+  
   rndRef.current.updatePosition({
     x: screenWidth - maxWidth - margin,
     y: screenHeight - maxHeight - margin,
@@ -271,6 +273,8 @@ useEffect(() => {
       onResize={(e, direction, ref, delta, position) => {
         setWidth(ref.offsetWidth);
         setHeight(ref.offsetHeight);
+        savedHeightRef.current = ref.offsetHeight
+        savedWidthRef.current = ref.offsetWidth
       }}
       //  default={{
       //     x: 500,
