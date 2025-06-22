@@ -33,6 +33,8 @@ import { TimelineActionsComponent } from "./TimelineActionsComponent";
 import { PlayBackMenu } from "./VideoControls";
 import { useGlobalPlayerStore } from "../../state/pip";
 import { LocationContext } from "../../context/GlobalProvider";
+import { alpha, Box, Drawer, List, ListItem } from "@mui/material";
+import { MobileControls } from "./MobileControls";
 
 export async function srtBase64ToVttBlobUrl(
   base64Srt: string
@@ -107,6 +109,8 @@ async function getVideoMimeTypeFromUrl(
     return null;
   }
 }
+export const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
 
 export const VideoPlayer = ({
   videoRef,
@@ -117,9 +121,19 @@ export const VideoPlayer = ({
   onEnded,
   timelineActions
 }: VideoPlayerProps) => {
-  const containerRef = useRef<RefObject<HTMLDivElement> | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [videoObjectFit] = useState<StretchVideoType>("contain");
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const [width, setWidth] = useState(0);
+console.log('width',width)
+useEffect(() => {
+  const observer = new ResizeObserver(([entry]) => {
+    setWidth(entry.contentRect.width);
+  });
+  if (containerRef.current) observer.observe(containerRef.current);
+  return () => observer.disconnect();
+}, []);
   const { volume, setVolume, setPlaybackRate, playbackRate } = useVideoStore(
     (state) => ({
       volume: state.playbackSettings.volume,
@@ -129,6 +143,9 @@ export const VideoPlayer = ({
     })
   );
   const playerRef = useRef<Player | null>(null);
+  const [drawerOpenSubtitles, setDrawerOpenSubtitles] = useState(false)
+  const [drawerOpenPlayback, setDrawerOpenPlayback] = useState(false)
+  const [showControlsMobile, setShowControlsMobile] = useState(false)
   const [isPlayerInitialized, setIsPlayerInitialized] = useState(false);
   const [videoCodec, setVideoCodec] = useState<null | false | string>(null);
   const [isMuted, setIsMuted] = useState(false);
@@ -144,6 +161,7 @@ export const VideoPlayer = ({
   
   const locationRef = useRef<string | null>(null)
   const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false)
+  const isVideoPlayerSmall = width < 600
   const {
     reloadVideo,
     togglePlay,
@@ -188,18 +206,71 @@ export const VideoPlayer = ({
 
   const { getProgress } = useProgressStore();
 
-   const enterFullscreen = useCallback(() => {
-    const ref = containerRef?.current as any;
-    if (!ref) return;
+const enterFullscreen = useCallback(async () => {
+  const ref = containerRef?.current as HTMLElement | null;
+  if (!ref || document.fullscreenElement) return;
 
-    if (ref.requestFullscreen && !isFullscreen) {
-      ref.requestFullscreen();
+  try {
+    // Wait for fullscreen to activate
+    if (ref.requestFullscreen) {
+      await ref.requestFullscreen();
+    } else if ((ref as any).webkitRequestFullscreen) {
+      await (ref as any).webkitRequestFullscreen(); // Safari fallback
     }
-  }, []);
 
-  const exitFullscreen = useCallback(() => {
-   document?.exitFullscreen();
-  }, [isFullscreen]);
+ 
+     if (
+      typeof screen.orientation !== 'undefined' &&
+      'lock' in screen.orientation &&
+      typeof screen.orientation.lock === 'function'
+    ) {
+      try {
+        await (screen.orientation as any).lock('landscape');
+      } catch (err) {
+        console.warn('Orientation lock failed:', err);
+      }
+    }
+       await qortalRequest({
+      action: 'SCREEN_ORIENTATION',
+      mode: 'landscape'
+    })
+  } catch (err) {
+    console.error('Failed to enter fullscreen or lock orientation:', err);
+  }
+}, []);
+
+
+  // const exitFullscreen = useCallback(() => {
+  //  document?.exitFullscreen();
+  // }, [isFullscreen]);
+
+  const exitFullscreen = useCallback(async () => {
+  try {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    }
+
+   
+   if (
+  typeof screen.orientation !== 'undefined' &&
+  'lock' in screen.orientation &&
+  typeof screen.orientation.lock === 'function'
+) {
+  try {
+    // Attempt to reset by locking to 'portrait' or 'any' (if supported)
+    await screen.orientation.lock('portrait'); // or 'any' if supported
+  } catch (err) {
+    console.warn('Orientation lock failed:', err);
+  }
+}
+ await qortalRequest({
+      action: 'SCREEN_ORIENTATION',
+      mode: 'portrait'
+    })
+  } catch (err) {
+    console.warn('Error exiting fullscreen or unlocking orientation:', err);
+  }
+}, [isFullscreen]);
 
   const toggleFullscreen = useCallback(() => {
     isFullscreen ? exitFullscreen() : enterFullscreen();
@@ -239,10 +310,14 @@ export const VideoPlayer = ({
 
   const closeSubtitleManager = useCallback(() => {
     setIsOpenSubtitleManage(false);
+    setDrawerOpenSubtitles(false)
   }, []);
   const openSubtitleManager = useCallback(() => {
+    if(isVideoPlayerSmall){
+          setDrawerOpenSubtitles(true)
+    }
     setIsOpenSubtitleManage(true);
-  }, []);
+  }, [isVideoPlayerSmall]);
 
   const videoLocation = useMemo(() => {
     if (!qortalVideoResource) return null;
@@ -388,6 +463,7 @@ const videoLocationRef = useRef< null | string>(null)
   const hideTimeout = useRef<any>(null);
 
   const resetHideTimer = () => {
+    if(isTouchDevice) return
     setShowControls(true);
     if (hideTimeout.current) clearTimeout(hideTimeout.current);
     hideTimeout.current = setTimeout(() => {
@@ -396,17 +472,24 @@ const videoLocationRef = useRef< null | string>(null)
   };
 
   const handleMouseMove = () => {
+    if(isTouchDevice) return
     resetHideTimer();
   };
 
   const closePlaybackMenu = useCallback(()=> {
     setIsOpenPlaybackmenu(false)
+setDrawerOpenPlayback(false)
   }, [])
     const openPlaybackMenu = useCallback(()=> {
+      if(isVideoPlayerSmall){
+        setDrawerOpenPlayback(true)
+        return
+      }
     setIsOpenPlaybackmenu(true)
-  }, [])
+  }, [isVideoPlayerSmall])
 
   useEffect(() => {
+    if(isTouchDevice) return
     resetHideTimer(); // initial show
     return () => {
       if (hideTimeout.current) clearTimeout(hideTimeout.current);
@@ -717,6 +800,33 @@ savedVideoRef.current = video.current;
       player.off("ratechange", handleRateChange);
     };
   }, [isPlayerInitialized]);
+    const hideTimeoutRef = useRef<number | null>(null);
+
+
+   const resetHideTimeout = () => {
+    setShowControlsMobile(true);
+    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+    hideTimeoutRef.current = setTimeout(() => {
+      setShowControlsMobile(false);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    const handleInteraction = () => resetHideTimeout();
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('touchstart', handleInteraction);
+    // container.addEventListener('mousemove', handleInteraction);
+
+    return () => {
+      container.removeEventListener('touchstart', handleInteraction);
+      // container.removeEventListener('mousemove', handleInteraction);
+    };
+  }, []);
+
+  console.log('showControlsMobile', showControlsMobile)
 
   return (
     <>
@@ -728,6 +838,7 @@ savedVideoRef.current = video.current;
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         ref={containerRef}
+        isVideoPlayerSmall={isVideoPlayerSmall}
       >
         <LoadingVideo
           togglePlay={togglePlay}
@@ -754,11 +865,11 @@ savedVideoRef.current = video.current;
           onVolumeChange={onVolumeChangeHandler}
           controls={false}
         />
-        <PlayBackMenu close={closePlaybackMenu} isOpen={isOpenPlaybackMenu} onSelect={onSelectPlaybackRate} playbackRate={playbackRate} />
-        {/* <canvas ref={canvasRef} style={{ display: "none" }}></canvas> */}
+        <PlayBackMenu isFromDrawer={false} close={closePlaybackMenu} isOpen={isOpenPlaybackMenu} onSelect={onSelectPlaybackRate} playbackRate={playbackRate} />
 
-        {isReady && (
+        {isReady && !showControlsMobile && (
           <VideoControlsBar
+          isVideoPlayerSmall={isVideoPlayerSmall}
             subtitleBtnRef={subtitleBtnRef}
             playbackRate={playbackRate}
             increaseSpeed={hotkeyHandlers.increaseSpeed}
@@ -790,15 +901,73 @@ savedVideoRef.current = video.current;
   {timelineActions && Array.isArray(timelineActions) && (
             <TimelineActionsComponent seekTo={seekTo} containerRef={containerRef} progress={localProgress} timelineActions={timelineActions}/>
   )}
-        <SubtitleManager
+  {showControlsMobile && (
+          <MobileControls  setProgressRelative={setProgressRelative} toggleFullscreen={toggleFullscreen} openPlaybackMenu={openPlaybackMenu} openSubtitleManager={openSubtitleManager} togglePlay={togglePlay} isPlaying={isPlaying} setShowControlsMobile={setShowControlsMobile}  duration={duration}
+            progress={localProgress} playerRef={playerRef} showControlsMobile={showControlsMobile} />
+  )}
+
+
+  {!isVideoPlayerSmall && (
+     <SubtitleManager
           subtitleBtnRef={subtitleBtnRef}
           close={closeSubtitleManager}
           open={isOpenSubtitleManage}
           qortalMetadata={qortalVideoResource}
           onSelect={onSelectSubtitle}
           currentSubTrack={currentSubTrack}
+          setDrawerOpenSubtitles={setDrawerOpenSubtitles}
+          isFromDrawer={false}
         />
+  )}
+       
       </VideoContainer>
+      <Drawer anchor="bottom" open={drawerOpenSubtitles} onClose={() => setDrawerOpenSubtitles(false)} sx={{
+        
+      }} slotProps={{
+    paper: {
+      sx: {
+        backgroundColor: alpha("#181818", 0.98),
+       borderRadius: 2,
+        width: '90%',
+        margin: '0 auto',
+        p: 1,
+        backgroundImage: 'none',
+        mb: 1
+      },
+    }
+  }}>
+
+         <SubtitleManager
+          subtitleBtnRef={subtitleBtnRef}
+          close={closeSubtitleManager}
+          open={true}
+          qortalMetadata={qortalVideoResource}
+          onSelect={onSelectSubtitle}
+          currentSubTrack={currentSubTrack}
+          setDrawerOpenSubtitles={setDrawerOpenSubtitles}
+          isFromDrawer={true}
+        />
+
+</Drawer>
+ <Drawer anchor="bottom" open={drawerOpenPlayback} onClose={() => setDrawerOpenPlayback(false)} sx={{
+        
+      }} slotProps={{
+    paper: {
+      sx: {
+        backgroundColor: alpha("#181818", 0.98),
+       borderRadius: 2,
+        width: '90%',
+        margin: '0 auto',
+        p: 1,
+        backgroundImage: 'none',
+        mb: 1
+      },
+    }
+  }}>
+
+         <PlayBackMenu isFromDrawer close={closePlaybackMenu} isOpen={true} onSelect={onSelectPlaybackRate} playbackRate={playbackRate} />
+
+</Drawer>
     </>
   );
 };

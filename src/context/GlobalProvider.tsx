@@ -18,6 +18,7 @@ import { GlobalPipPlayer } from "../hooks/useGlobalPipPlayer";
 import { Location, NavigateFunction } from "react-router-dom";
 import { MultiPublishDialog } from "../components/MultiPublish/MultiPublishDialog";
 import { useMultiplePublishStore } from "../state/multiplePublish";
+import { useGlobalPlayerStore } from "../state/pip";
 
 // ✅ Define Global Context Type
 interface GlobalContextType {
@@ -62,7 +63,7 @@ export const GlobalProvider = ({
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
   const isPublishing = useMultiplePublishStore((s)=> s.isPublishing);
-
+  const videoSrc = useGlobalPlayerStore((s)=> s.videoSrc);
   const appInfo = useAppInfo(config.appName, config?.publicSalt);
   const lists = useResources();
   const identifierOperations = useIdentifiers(
@@ -97,7 +98,8 @@ export const GlobalProvider = ({
         <LocationContext.Provider value={location}>
 
     <GlobalContext.Provider value={contextValue}>
-      <GlobalPipPlayer />
+           <GlobalPipPlayer />
+     
       {isPublishing && (
          <MultiPublishDialog />
       )}

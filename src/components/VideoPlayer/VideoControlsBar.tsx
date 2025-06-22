@@ -42,9 +42,10 @@ interface VideoControlsBarProps {
   toggleMute: ()=> void
   openPlaybackMenu: ()=> void
   togglePictureInPicture: ()=> void
+  isVideoPlayerSmall: boolean
 }
 
-export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager, onSelectPlaybackRate, isMuted, toggleMute, openPlaybackMenu, togglePictureInPicture}: VideoControlsBarProps) => {
+export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, increaseSpeed,decreaseSpeed, isFullScreen, showControlsFullScreen, reloadVideo, onVolumeChange, volume, isPlaying, canPlay, isScreenSmall, controlsHeight, playerRef, duration, progress, togglePlay, toggleFullscreen, extractFrames, openSubtitleManager, onSelectPlaybackRate, isMuted, toggleMute, openPlaybackMenu, togglePictureInPicture, isVideoPlayerSmall}: VideoControlsBarProps) => {
 
   const showMobileControls = isScreenSmall && canPlay;
 
@@ -87,7 +88,8 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
         }}>
          
         <ProgressSlider  playerRef={playerRef} progress={progress} duration={duration} />
-        <Box sx={{
+        {!isVideoPlayerSmall && (
+             <Box sx={{
           width: '100%',
           display: 'flex'
         }}>
@@ -117,6 +119,8 @@ export const VideoControlsBar = ({subtitleBtnRef, showControls, playbackRate, in
             <FullscreenButton toggleFullscreen={toggleFullscreen} />
           </Box>
           </Box>
+        )}
+     
         </Box>
       ) : null}
     </ControlsContainer>

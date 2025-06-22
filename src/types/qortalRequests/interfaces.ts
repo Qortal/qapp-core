@@ -615,10 +615,27 @@ export interface ShowActionsQortalRequest extends BaseRequest {
   action: 'SHOW_ACTIONS'
 }
 
+export interface ScreenOrientation extends BaseRequest {
+  action: 'SCREEN_ORIENTATION',
+  mode: | "portrait"
+  | "landscape"
+  | "portrait-primary"
+  | "portrait-secondary"
+  | "landscape-primary"
+  | "landscape-secondary" | "unlock";
+}
+
 export interface SignTransactionQortalRequest extends BaseRequest {
   action: 'SIGN_TRANSACTION'
   unsignedBytes: string
   process?: boolean
+}
+
+export interface GetNodeStatusQortalRequest extends BaseRequest {
+  action: 'GET_NODE_STATUS'
+}
+export interface GetNodeInfoQortalRequest extends BaseRequest {
+  action: 'GET_NODE_INFO'
 }
 
 export interface CreateAndCopyEmbedLinkQortalRequest extends BaseRequest {

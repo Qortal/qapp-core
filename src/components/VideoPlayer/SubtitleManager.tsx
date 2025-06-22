@@ -72,6 +72,8 @@ export interface SubtitleManagerProps {
   onSelect: (subtitle: SubtitlePublishedData) => void;
   subtitleBtnRef: any;
   currentSubTrack: null | string
+  setDrawerOpenSubtitles: (val: boolean)=> void
+  isFromDrawer: boolean
 }
 export interface Subtitle {
   language: string | null;
@@ -108,6 +110,8 @@ const SubtitleManagerComponent = ({
   onSelect,
   subtitleBtnRef,
   currentSubTrack,
+  setDrawerOpenSubtitles,
+  isFromDrawer = false
 }: SubtitleManagerProps) => {
   const [mode, setMode] = useState(1);
   const [isOpenPublish, setIsOpenPublish] = useState(false);
@@ -177,8 +181,11 @@ const SubtitleManagerComponent = ({
     }
   }, [open])
 
+  console.log('isFromDrawer', )
+
   const handleBlur = (e: React.FocusEvent) => {
-  if (!e.currentTarget.contains(e.relatedTarget) && !isOpenPublish) {
+  if (!e.currentTarget.contains(e.relatedTarget) && !isOpenPublish && !isFromDrawer && open) {
+    console.log('hello close')
     close();
     setIsOpenPublish(false)
   }
@@ -262,13 +269,13 @@ const SubtitleManagerComponent = ({
 
         sx={
           {
-            position: 'absolute',
-              bottom: 60,
-              right: 5,
+            position: isFromDrawer ? 'relative' : 'absolute',
+              bottom: isFromDrawer ? 'unset' : 60,
+              right: isFromDrawer ? 'unset' : 5,
               color: "white",
               opacity: 0.9,
               borderRadius: 2,
-              boxShadow: 5,
+              boxShadow: isFromDrawer ? 'unset' : 5,
               p: 1,
               minWidth: 225,
               height: 300,
@@ -387,30 +394,7 @@ const SubtitleManagerComponent = ({
             Load community subs
           </Button>
         </Box>
-        {/* <Box>
-          {[
-            'Ambient mode',
-            'Annotations',
-            'Subtitles/CC',
-            'Sleep timer',
-            'Playback speed',
-            'Quality',
-          ].map((label) => (
-            <Typography
-              key={label}
-              sx={{
-                px: 2,
-                py: 1,
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  cursor: 'pointer',
-                },
-              }}
-            >
-              {label}
-            </Typography>
-          ))}
-        </Box> */}
+        
      
       </Box>
       <PublishSubtitles
@@ -421,69 +405,9 @@ const SubtitleManagerComponent = ({
       />
    
     </>
-    // <Dialog
-    //   open={!!open}
-    //   fullWidth={true}
-    //   maxWidth={"md"}
-    //   sx={{
-    //     zIndex: 999990,
-    //   }}
-    //   slotProps={{
-    //     paper: {
-    //       elevation: 0,
-    //     },
-    //   }}
-    // >
-    //   <DialogTitle>Subtitles</DialogTitle>
-    //   <IconButton
-    //     aria-label="close"
-    //     onClick={handleClose}
-    //     sx={(theme) => ({
-    //       position: "absolute",
-    //       right: 8,
-    //       top: 8,
-    //     })}
-    //   >
-    //     <CloseIcon />
-    //   </IconButton>
-    //   <Button onClick={() => setMode(5)}>New subtitles</Button>
-    //   {mode === 1 && (
-    //     <PublisherSubtitles
-    //       subtitles={subtitles}
-    //       publisherName={qortalMetadata.name}
-    //       setMode={setMode}
-    //       onSelect={onSelect}
-    //     />
-    //   )}
-    //   {mode === 5 && <PublishSubtitles publishHandler={publishHandler} />}
-    //   {/* {mode === 2 && (
-    //     <CommunitySubtitles
-    //       link={open?.link}
-    //       name={open?.name}
-    //       mode={mode}
-    //       setMode={setMode}
-    //       username={username}
-    //       category={open?.category}
-    //       rootName={open?.rootName}
-    //     />
-    //   )}
-
-    //   {mode === 4 && (
-    //     <MySubtitles
-    //       link={open?.link}
-    //       name={open?.name}
-    //       mode={mode}
-    //       setMode={setMode}
-    //       username={username}
-    //       title={title}
-    //       description={description}
-    //       setDescription={setDescription}
-    //       setTitle={setTitle}
-    //     />
-    //   )} */}
-    // </Dialog>
   );
 };
+
 
 interface PublisherSubtitlesProps {
   publisherName: string;

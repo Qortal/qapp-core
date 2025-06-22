@@ -71,7 +71,7 @@ export const ProgressSlider = ({ progress, duration, playerRef }: any) => {
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [showDuration, setShowDuration] = useState(0);
-  const onProgressChange = (_: any, value: number | number[]) => {
+  const onProgressChange = (e: any, value: number | number[]) => {
     if (!playerRef.current) return;
 
     playerRef.current?.currentTime(value as number);
@@ -128,6 +128,11 @@ export const ProgressSlider = ({ progress, duration, playerRef }: any) => {
     console.log("thumbnailUrl", thumbnailUrl, hoverX);
   }
 
+ const handleClickCapture = (e: React.MouseEvent) => {
+    
+      e.stopPropagation();
+    
+  };
 
   return (
     <Box
@@ -152,6 +157,7 @@ export const ProgressSlider = ({ progress, duration, playerRef }: any) => {
         ref={sliderRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onClickCapture={handleClickCapture}
         value={progress}
         onChange={onProgressChange}
         min={0}
@@ -439,8 +445,9 @@ interface PlayBackMenuProps {
   isOpen: boolean
   onSelect: (speed: number)=> void;
   playbackRate: number
+  isFromDrawer: boolean
 }
-export const PlayBackMenu = ({close, onSelect, isOpen, playbackRate}: PlayBackMenuProps)=> {
+export const PlayBackMenu = ({close, onSelect, isOpen, playbackRate, isFromDrawer}: PlayBackMenuProps)=> {
   const theme = useTheme()
   const ref = useRef<any>(null)
 
@@ -451,7 +458,7 @@ export const PlayBackMenu = ({close, onSelect, isOpen, playbackRate}: PlayBackMe
   }, [isOpen])
 
   const handleBlur = (e: React.FocusEvent) => {
-  if (!e.currentTarget.contains(e.relatedTarget)) {
+  if (!e.currentTarget.contains(e.relatedTarget) && !isFromDrawer) {
     close();
   }
 };
@@ -466,13 +473,13 @@ export const PlayBackMenu = ({close, onSelect, isOpen, playbackRate}: PlayBackMe
 
         sx={
           {
-            position: 'absolute',
-              bottom: 60,
-              right: 5,
+            position: isFromDrawer ? 'relative' : 'absolute',
+              bottom: isFromDrawer ? 'relative' : 60,
+              right:isFromDrawer ? 'relative' : 5,
               color: "white",
               opacity: 0.9,
               borderRadius: 2,
-              boxShadow: 5,
+              boxShadow: isFromDrawer ? 'relative' : 5,
               p: 1,
               minWidth: 225,
               height: 300,

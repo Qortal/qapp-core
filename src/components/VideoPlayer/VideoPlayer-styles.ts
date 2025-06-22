@@ -1,7 +1,9 @@
-import { styled } from "@mui/system";
+import { styled, Theme } from "@mui/system";
 import { Box } from "@mui/material";
 
-export const VideoContainer = styled(Box)(({ theme }) => ({
+export const VideoContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isVideoPlayerSmall',
+})<{ isVideoPlayerSmall?: boolean }>(({ theme, isVideoPlayerSmall }) => ({
   position: "relative",
   display: "flex",
   flexDirection: "column",
@@ -11,7 +13,7 @@ export const VideoContainer = styled(Box)(({ theme }) => ({
   height: "100%",
   margin: 0,
   padding: 0,
-  borderRadius: '12px',
+  borderRadius: isVideoPlayerSmall ? '0px' : '12px',
   overflow: 'hidden',
   "&:focus": { outline: "none" },
 }));
