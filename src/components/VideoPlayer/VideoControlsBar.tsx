@@ -113,7 +113,9 @@ export const VideoControlsBar = ({subtitleBtnRef, setLocalProgress, showControls
                     arrow
                   >
             <IconButton ref={subtitleBtnRef} onClick={openSubtitleManager}>
-              <SubtitlesIcon />
+              <SubtitlesIcon sx={{
+                color: "white",
+              }} />
             </IconButton>
             </CustomFontTooltip>
             {/* <PictureInPictureButton togglePictureInPicture={togglePictureInPicture} /> */}

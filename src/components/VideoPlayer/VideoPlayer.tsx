@@ -272,6 +272,8 @@ export const VideoPlayer = ({
   }, [isFullscreen]);
 
   const toggleFullscreen = useCallback(() => {
+    setShowControls(false)
+    setShowControlsMobile(false)
     isFullscreen ? exitFullscreen() : enterFullscreen();
   }, [isFullscreen]);
 
@@ -313,6 +315,7 @@ export const VideoPlayer = ({
   const openSubtitleManager = useCallback(() => {
     if (isVideoPlayerSmall) {
       setDrawerOpenSubtitles(true);
+      return
     }
     setIsOpenSubtitleManage(true);
   }, [isVideoPlayerSmall]);
@@ -378,11 +381,11 @@ export const VideoPlayer = ({
 
   const videoStylesContainer = useMemo(() => {
     return {
-      cursor: showControls ? "auto" : "none",
+      cursor: "auto",
       // aspectRatio: "16 / 9",
       ...videoStyles?.videoContainer,
     };
-  }, [showControls]);
+  }, [showControls, isVideoPlayerSmall]);
 
   const videoStylesVideo = useMemo(() => {
     return {
@@ -460,7 +463,7 @@ export const VideoPlayer = ({
   const hideTimeout = useRef<any>(null);
 
   const resetHideTimer = () => {
-    if (isTouchDevice) return;
+    if (isVideoPlayerSmall) return;
     setShowControls(true);
     if (hideTimeout.current) clearTimeout(hideTimeout.current);
     hideTimeout.current = setTimeout(() => {
@@ -469,7 +472,8 @@ export const VideoPlayer = ({
   };
 
   const handleMouseMove = () => {
-    if (isTouchDevice) return;
+    if (isVideoPlayerSmall) return;
+    console.log('going 222')
     resetHideTimer();
   };
 
@@ -486,12 +490,12 @@ export const VideoPlayer = ({
   }, [isVideoPlayerSmall]);
 
   useEffect(() => {
-    if (isTouchDevice) return;
+    if (isVideoPlayerSmall) return;
     resetHideTimer(); // initial show
     return () => {
       if (hideTimeout.current) clearTimeout(hideTimeout.current);
     };
-  }, []);
+  }, [isVideoPlayerSmall]);
 
   const previousSubtitleUrlRef = useRef<string | null>(null);
 
@@ -816,7 +820,16 @@ export const VideoPlayer = ({
     };
   }, []);
 
-  console.log("showControlsMobile", showControlsMobile);
+  const handleClickVideoElement = useCallback(()=> {
+    if(isVideoPlayerSmall){
+      resetHideTimeout()
+      return
+    }
+    console.log('sup')
+    togglePlay()
+  }, [isVideoPlayerSmall, togglePlay])
+
+  console.log("showControlsMobile", isVideoPlayerSmall);
 
   return (
     <>
@@ -845,7 +858,7 @@ export const VideoPlayer = ({
           poster={startPlay ? "" : poster}
           onTimeUpdate={updateProgress}
           autoPlay={autoPlay}
-          onClick={togglePlay}
+          onClick={handleClickVideoElement}
           onEnded={handleEnded}
           onCanPlay={handleCanPlay}
           preload="metadata"
@@ -855,15 +868,18 @@ export const VideoPlayer = ({
           onVolumeChange={onVolumeChangeHandler}
           controls={false}
         />
-        <PlayBackMenu
+        {!isVideoPlayerSmall && (
+          <PlayBackMenu
           isFromDrawer={false}
           close={closePlaybackMenu}
           isOpen={isOpenPlaybackMenu}
           onSelect={onSelectPlaybackRate}
           playbackRate={playbackRate}
         />
+        )}
+        
 
-        {isReady && !showControlsMobile && (
+        {isReady && showControls && (
           <VideoControlsBar
             isVideoPlayerSmall={isVideoPlayerSmall}
             subtitleBtnRef={subtitleBtnRef}
@@ -903,7 +919,7 @@ export const VideoPlayer = ({
             timelineActions={timelineActions}
           />
         )}
-        {showControlsMobile && (
+        {showControlsMobile && isReady && (
           <MobileControls
             setLocalProgress={setLocalProgress}
             setProgressRelative={setProgressRelative}
@@ -913,6 +929,7 @@ export const VideoPlayer = ({
             togglePlay={togglePlay}
             isPlaying={isPlaying}
             setShowControlsMobile={setShowControlsMobile}
+            resetHideTimeout={resetHideTimeout}
             duration={duration}
             progress={localProgress}
             playerRef={playerRef}
@@ -930,13 +947,14 @@ export const VideoPlayer = ({
             currentSubTrack={currentSubTrack}
             setDrawerOpenSubtitles={setDrawerOpenSubtitles}
             isFromDrawer={false}
+            exitFullscreen={exitFullscreen}
           />
         )}
  <ClickAwayListener onClickAway={() => setDrawerOpenSubtitles(false)}>
         <Drawer
         variant="persistent"
           anchor="bottom"
-          open={drawerOpenSubtitles}
+          open={drawerOpenSubtitles && isVideoPlayerSmall}
           sx={{}}
           slotProps={{
             paper: {
@@ -962,6 +980,7 @@ export const VideoPlayer = ({
             currentSubTrack={currentSubTrack}
             setDrawerOpenSubtitles={setDrawerOpenSubtitles}
             isFromDrawer={true}
+            exitFullscreen={exitFullscreen}
           />
         </Drawer>
          </ClickAwayListener>
@@ -969,7 +988,7 @@ export const VideoPlayer = ({
           <Drawer
             variant="persistent"
             anchor="bottom"
-            open={drawerOpenPlayback}
+            open={drawerOpenPlayback && isVideoPlayerSmall}
             sx={{}}
             slotProps={{
               paper: {

@@ -65,14 +65,37 @@ export const ReloadButton = ({ reloadVideo, isScreenSmall }: any) => {
   );
 };
 
-export const ProgressSlider = ({ progress, setLocalProgress, duration, playerRef }: any) => {
+export const ProgressSlider = ({ progress, setLocalProgress, duration, playerRef, resetHideTimeout, isVideoPlayerSmall }: any) => {
   const sliderRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 const [sliderValue, setSliderValue] = useState(0); // local slider value
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [showDuration, setShowDuration] = useState(0);
+
+const showTimeFunc = (val: number, clientX: number) => {
+  const slider = sliderRef.current;
+  if (!slider) return;
+  console.log('time',val, duration)
+  const percent = val / duration;
+  const time = Math.min(Math.max(0, percent * duration), duration);
+
+  setHoverX(clientX);
+  setShowDuration(time);
+
+  resetHideTimeout()
+  // Optionally debounce processing thumbnails
+  // debounceTimeoutRef.current = setTimeout(() => {
+  //   debouncedExtract(time, clientX);
+  // }, THUMBNAIL_DEBOUNCE);
+};
   const onProgressChange = (e: any, value: number | number[]) => {
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+if(clientX && resetHideTimeout){
+      showTimeFunc(value as number, clientX);
+
+
+}
     setIsDragging(true);
     setSliderValue(value as number);
   };
@@ -82,7 +105,7 @@ const onChangeCommitted = (e: any, value: number | number[]) => {
     playerRef.current?.currentTime(value as number);
             setIsDragging(false);
             setLocalProgress(value)
-
+handleMouseLeave()
   };
 
 
@@ -148,7 +171,7 @@ const onChangeCommitted = (e: any, value: number | number[]) => {
       position="relative"
       sx={{
         width: "100%",
-        padding: "0px 10px",
+        padding: isVideoPlayerSmall ? "0px" : "0px 10px",
       }}
     >
       <Box

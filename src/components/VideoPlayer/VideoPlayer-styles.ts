@@ -32,10 +32,7 @@ export const VideoElement = styled("video")(({ theme }) => ({
   },
   "&::-webkit-media-controls": {
     display: "none !important",
-  },
-  "&:fullscreen": {
-    paddingBottom: '50px',
-  },
+  }
 }));
 
 //1075 x 604

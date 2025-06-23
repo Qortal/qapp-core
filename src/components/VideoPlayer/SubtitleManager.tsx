@@ -74,6 +74,7 @@ export interface SubtitleManagerProps {
   currentSubTrack: null | string
   setDrawerOpenSubtitles: (val: boolean)=> void
   isFromDrawer: boolean
+  exitFullscreen: ()=> void
 }
 export interface Subtitle {
   language: string | null;
@@ -111,7 +112,8 @@ const SubtitleManagerComponent = ({
   subtitleBtnRef,
   currentSubTrack,
   setDrawerOpenSubtitles,
-  isFromDrawer = false
+  isFromDrawer = false,
+  exitFullscreen
 }: SubtitleManagerProps) => {
   const [mode, setMode] = useState(1);
   const [isOpenPublish, setIsOpenPublish] = useState(false);
@@ -315,7 +317,10 @@ const SubtitleManagerComponent = ({
             sx={{
               marginLeft: "auto",
             }}
-            onClick={() => setIsOpenPublish(true)}
+            onClick={() => {
+                            setIsOpenPublish(true)
+
+            }}
           >
             <ModeEditIcon
               sx={{
@@ -575,6 +580,7 @@ const PublishSubtitles = ({
       open={isOpen}
       fullWidth={true}
       maxWidth={"md"}
+      disablePortal={true}
       sx={{
         zIndex: 999990,
       }}

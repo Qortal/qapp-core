@@ -22,6 +22,7 @@ interface MobileControlsProps {
   toggleFullscreen: () => void;
   setProgressRelative: (val: number) => void;
   setLocalProgress: (val: number)=> void;
+  resetHideTimeout: ()=> void
 }
 export const MobileControls = ({
   showControlsMobile,
@@ -35,7 +36,8 @@ export const MobileControls = ({
   openPlaybackMenu,
   toggleFullscreen,
   setProgressRelative,
-  setLocalProgress
+  setLocalProgress,
+  resetHideTimeout
 }: MobileControlsProps) => {
   return (
     <Box
@@ -67,23 +69,34 @@ export const MobileControls = ({
             e.stopPropagation();
             openSubtitleManager();
           }}
+          sx={{
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '7px'
+          }}
         >
           <SubtitlesIcon
             sx={{
               fontSize: "24px",
+              color: 'white'
             }}
           />
         </IconButton>
         <IconButton
-          sx={{
-            fontSize: "24px",
+         sx={{
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '7px'
           }}
           onClick={(e) => {
             e.stopPropagation();
             openPlaybackMenu();
           }}
         >
-          <SlowMotionVideoIcon />
+          <SlowMotionVideoIcon sx={{
+              fontSize: "24px",
+              color: 'white'
+            }}/>
         </IconButton>
       </Box>
       <Box
@@ -101,6 +114,9 @@ export const MobileControls = ({
           sx={{
             opacity: 1,
             zIndex: 2,
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '10px'
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -110,6 +126,7 @@ export const MobileControls = ({
           <Replay10Icon
             sx={{
               fontSize: "36px",
+              color: 'white'
             }}
           />
         </IconButton>
@@ -118,6 +135,9 @@ export const MobileControls = ({
             sx={{
               opacity: 1,
               zIndex: 2,
+              background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '10px'
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -127,6 +147,7 @@ export const MobileControls = ({
             <PauseIcon
               sx={{
                 fontSize: "36px",
+                color: 'white'
               }}
             />
           </IconButton>
@@ -136,6 +157,9 @@ export const MobileControls = ({
             sx={{
               opacity: 1,
               zIndex: 2,
+              background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '10px'
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -145,6 +169,7 @@ export const MobileControls = ({
             <PlayArrowIcon
               sx={{
                 fontSize: "36px",
+                color: 'white'
               }}
             />
           </IconButton>
@@ -153,6 +178,9 @@ export const MobileControls = ({
           sx={{
             opacity: 1,
             zIndex: 2,
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '10px'
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -162,6 +190,7 @@ export const MobileControls = ({
           <Forward10Icon
             sx={{
               fontSize: "36px",
+              color: 'white'
             }}
           />
         </IconButton>
@@ -177,13 +206,19 @@ export const MobileControls = ({
         <IconButton
           sx={{
             fontSize: "24px",
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '7px'
           }}
           onClick={(e) => {
             e.stopPropagation();
             toggleFullscreen();
           }}
         >
-          <Fullscreen />
+          <Fullscreen sx={{
+            color: 'white',
+            fontSize: "24px",
+          }} />
         </IconButton>
       </Box>
       <Box
@@ -198,6 +233,8 @@ export const MobileControls = ({
           progress={progress}
           duration={duration}
           setLocalProgress={setLocalProgress}
+          setShowControlsMobile={setShowControlsMobile}
+          resetHideTimeout={resetHideTimeout}
         />
       </Box>
     </Box>

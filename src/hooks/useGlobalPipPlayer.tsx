@@ -342,24 +342,32 @@ useEffect(() => {
             <IconButton
               sx={{
                 position: "absolute",
-                top: 10,
+                top: 5,
                 opacity: 1,
-                right: 10,
+                right: 5,
                 zIndex: 2,
+                 background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '5px'
               }}
               onClick={reset}
               onTouchStart={reset}
             >
-              <CloseIcon />
+              <CloseIcon sx={{
+            color: 'white',
+          }} />
             </IconButton>
             {location && (
               <IconButton
                 sx={{
                   position: "absolute",
-                  top: 10,
-                  left: 10,
+                  top: 5,
+                  left: 5,
                   zIndex: 2,
                   opacity: 1,
+                 background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '5px'
                 }}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -374,7 +382,9 @@ useEffect(() => {
                   }
                 }}
               >
-                <OpenInFullIcon />
+                <OpenInFullIcon sx={{
+            color: 'white',
+          }} />
               </IconButton>
             )}
             {playing && (
@@ -386,11 +396,16 @@ useEffect(() => {
                   transform: "translate(-50%, -50%)",
                   opacity: 1,
                   zIndex: 2,
+                  background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '5px'
                 }}
                 onClick={stopPlay}
                 onTouchStart={stopPlay}
               >
-                <PauseIcon />
+                <PauseIcon sx={{
+            color: 'white',
+          }} />
               </IconButton>
             )}
             {!playing && (
@@ -402,11 +417,16 @@ useEffect(() => {
                   left: "50%",
                   transform: "translate(-50%, -50%)",
                   zIndex: 2,
+                  background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '5px'
                 }}
                 onClick={startPlay}
                 onTouchStart={startPlay}
               >
-                <PlayArrowIcon />
+                <PlayArrowIcon sx={{
+            color: 'white',
+          }} />
               </IconButton>
             )}
 
