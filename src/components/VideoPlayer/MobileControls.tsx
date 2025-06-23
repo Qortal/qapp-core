@@ -21,6 +21,7 @@ interface MobileControlsProps {
   openPlaybackMenu: () => void;
   toggleFullscreen: () => void;
   setProgressRelative: (val: number) => void;
+  setLocalProgress: (val: number)=> void;
 }
 export const MobileControls = ({
   showControlsMobile,
@@ -34,6 +35,7 @@ export const MobileControls = ({
   openPlaybackMenu,
   toggleFullscreen,
   setProgressRelative,
+  setLocalProgress
 }: MobileControlsProps) => {
   return (
     <Box
@@ -195,6 +197,7 @@ export const MobileControls = ({
           playerRef={playerRef}
           progress={progress}
           duration={duration}
+          setLocalProgress={setLocalProgress}
         />
       </Box>
     </Box>

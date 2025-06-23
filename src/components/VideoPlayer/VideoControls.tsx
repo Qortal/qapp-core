@@ -65,17 +65,26 @@ export const ReloadButton = ({ reloadVideo, isScreenSmall }: any) => {
   );
 };
 
-export const ProgressSlider = ({ progress, duration, playerRef }: any) => {
+export const ProgressSlider = ({ progress, setLocalProgress, duration, playerRef }: any) => {
   const sliderRef = useRef(null);
-
+  const [isDragging, setIsDragging] = useState(false);
+const [sliderValue, setSliderValue] = useState(0); // local slider value
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [showDuration, setShowDuration] = useState(0);
   const onProgressChange = (e: any, value: number | number[]) => {
-    if (!playerRef.current) return;
-
-    playerRef.current?.currentTime(value as number);
+    setIsDragging(true);
+    setSliderValue(value as number);
   };
+const onChangeCommitted = (e: any, value: number | number[]) => {
+    if (!playerRef.current) return;
+ setSliderValue(value as number);
+    playerRef.current?.currentTime(value as number);
+            setIsDragging(false);
+            setLocalProgress(value)
+
+  };
+
 
   const THUMBNAIL_DEBOUNCE = 500;
   const THUMBNAIL_MIN_DIFF = 10;
@@ -158,8 +167,10 @@ export const ProgressSlider = ({ progress, duration, playerRef }: any) => {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClickCapture={handleClickCapture}
-        value={progress}
+         value={isDragging ? sliderValue : progress} // use local state if dragging
+
         onChange={onProgressChange}
+        onChangeCommitted={onChangeCommitted}
         min={0}
         max={duration || 100}
         step={0.1}

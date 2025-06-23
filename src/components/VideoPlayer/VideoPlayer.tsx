@@ -33,7 +33,14 @@ import { TimelineActionsComponent } from "./TimelineActionsComponent";
 import { PlayBackMenu } from "./VideoControls";
 import { useGlobalPlayerStore } from "../../state/pip";
 import { LocationContext } from "../../context/GlobalProvider";
-import { alpha, Box, Drawer, List, ListItem } from "@mui/material";
+import {
+  alpha,
+  Box,
+  ClickAwayListener,
+  Drawer,
+  List,
+  ListItem,
+} from "@mui/material";
 import { MobileControls } from "./MobileControls";
 
 export async function srtBase64ToVttBlobUrl(
@@ -61,21 +68,21 @@ type StretchVideoType = "contain" | "fill" | "cover" | "none" | "scale-down";
 
 export type TimelineAction =
   | {
-      type: 'SEEK';
+      type: "SEEK";
       time: number;
       duration: number;
       label: string;
-      onClick?: () => void; 
+      onClick?: () => void;
       seekToTime: number; // ✅ Required for SEEK
-      placement?: 'TOP-RIGHT' | 'TOP-LEFT' | 'BOTTOM-LEFT' | 'BOTTOM-RIGHT';
+      placement?: "TOP-RIGHT" | "TOP-LEFT" | "BOTTOM-LEFT" | "BOTTOM-RIGHT";
     }
   | {
-      type: 'CUSTOM';
+      type: "CUSTOM";
       time: number;
       duration: number;
       label: string;
       onClick: () => void; // ✅ Required for CUSTOM
-      placement?: 'TOP-RIGHT' | 'TOP-LEFT' | 'BOTTOM-LEFT' | 'BOTTOM-RIGHT';
+      placement?: "TOP-RIGHT" | "TOP-LEFT" | "BOTTOM-LEFT" | "BOTTOM-RIGHT";
     };
 interface VideoPlayerProps {
   qortalVideoResource: QortalGetMetadata;
@@ -84,17 +91,13 @@ interface VideoPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   onEnded?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
-  timelineActions?: TimelineAction[]
+  timelineActions?: TimelineAction[];
 }
-
-
 
 const videoStyles = {
   videoContainer: {},
   video: {},
 };
-
-
 
 async function getVideoMimeTypeFromUrl(
   qortalVideoResource: any
@@ -109,8 +112,8 @@ async function getVideoMimeTypeFromUrl(
     return null;
   }
 }
-export const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
+export const isTouchDevice =
+  "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
 export const VideoPlayer = ({
   videoRef,
@@ -119,21 +122,21 @@ export const VideoPlayer = ({
   poster,
   autoPlay,
   onEnded,
-  timelineActions
+  timelineActions,
 }: VideoPlayerProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [videoObjectFit] = useState<StretchVideoType>("contain");
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [width, setWidth] = useState(0);
-console.log('width',width)
-useEffect(() => {
-  const observer = new ResizeObserver(([entry]) => {
-    setWidth(entry.contentRect.width);
-  });
-  if (containerRef.current) observer.observe(containerRef.current);
-  return () => observer.disconnect();
-}, []);
+  console.log("width", width);
+  useEffect(() => {
+    const observer = new ResizeObserver(([entry]) => {
+      setWidth(entry.contentRect.width);
+    });
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
   const { volume, setVolume, setPlaybackRate, playbackRate } = useVideoStore(
     (state) => ({
       volume: state.playbackSettings.volume,
@@ -143,9 +146,9 @@ useEffect(() => {
     })
   );
   const playerRef = useRef<Player | null>(null);
-  const [drawerOpenSubtitles, setDrawerOpenSubtitles] = useState(false)
-  const [drawerOpenPlayback, setDrawerOpenPlayback] = useState(false)
-  const [showControlsMobile, setShowControlsMobile] = useState(false)
+  const [drawerOpenSubtitles, setDrawerOpenSubtitles] = useState(false);
+  const [drawerOpenPlayback, setDrawerOpenPlayback] = useState(false);
+  const [showControlsMobile, setShowControlsMobile] = useState(false);
   const [isPlayerInitialized, setIsPlayerInitialized] = useState(false);
   const [videoCodec, setVideoCodec] = useState<null | false | string>(null);
   const [isMuted, setIsMuted] = useState(false);
@@ -156,12 +159,12 @@ useEffect(() => {
   const [showControls, setShowControls] = useState(false);
   const [isOpenSubtitleManage, setIsOpenSubtitleManage] = useState(false);
   const subtitleBtnRef = useRef(null);
-  const [currentSubTrack, setCurrentSubTrack] = useState<null | string>(null)
-    const location = useContext(LocationContext)
-  
-  const locationRef = useRef<string | null>(null)
-  const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false)
-  const isVideoPlayerSmall = width < 600
+  const [currentSubTrack, setCurrentSubTrack] = useState<null | string>(null);
+  const location = useContext(LocationContext);
+
+  const locationRef = useRef<string | null>(null);
+  const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false);
+  const isVideoPlayerSmall = width < 600 || isTouchDevice;
   const {
     reloadVideo,
     togglePlay,
@@ -186,7 +189,7 @@ useEffect(() => {
     showControlsFullScreen,
     onSelectPlaybackRate,
     seekTo,
-    togglePictureInPicture
+    togglePictureInPicture,
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
@@ -194,88 +197,83 @@ useEffect(() => {
     retryAttempts,
     isPlayerInitialized,
     isMuted,
-    videoRef
+    videoRef,
   });
 
-  useEffect(()=> {
-    if(location){
-    locationRef.current = location.pathname
-
+  useEffect(() => {
+    if (location) {
+      locationRef.current = location.pathname;
     }
-  },[location])
+  }, [location]);
 
   const { getProgress } = useProgressStore();
 
-const enterFullscreen = useCallback(async () => {
-  const ref = containerRef?.current as HTMLElement | null;
-  if (!ref || document.fullscreenElement) return;
+  const enterFullscreen = useCallback(async () => {
+    const ref = containerRef?.current as HTMLElement | null;
+    if (!ref || document.fullscreenElement) return;
 
-  try {
-    // Wait for fullscreen to activate
-    if (ref.requestFullscreen) {
-      await ref.requestFullscreen();
-    } else if ((ref as any).webkitRequestFullscreen) {
-      await (ref as any).webkitRequestFullscreen(); // Safari fallback
-    }
-
- 
-     if (
-      typeof screen.orientation !== 'undefined' &&
-      'lock' in screen.orientation &&
-      typeof screen.orientation.lock === 'function'
-    ) {
-      try {
-        await (screen.orientation as any).lock('landscape');
-      } catch (err) {
-        console.warn('Orientation lock failed:', err);
+    try {
+      // Wait for fullscreen to activate
+      if (ref.requestFullscreen) {
+        await ref.requestFullscreen();
+      } else if ((ref as any).webkitRequestFullscreen) {
+        await (ref as any).webkitRequestFullscreen(); // Safari fallback
       }
-    }
-       await qortalRequest({
-      action: 'SCREEN_ORIENTATION',
-      mode: 'landscape'
-    })
-  } catch (err) {
-    console.error('Failed to enter fullscreen or lock orientation:', err);
-  }
-}, []);
 
+      if (
+        typeof screen.orientation !== "undefined" &&
+        "lock" in screen.orientation &&
+        typeof screen.orientation.lock === "function"
+      ) {
+        try {
+          await (screen.orientation as any).lock("landscape");
+        } catch (err) {
+          console.warn("Orientation lock failed:", err);
+        }
+      }
+      await qortalRequest({
+        action: "SCREEN_ORIENTATION",
+        mode: "landscape",
+      });
+    } catch (err) {
+      console.error("Failed to enter fullscreen or lock orientation:", err);
+    }
+  }, []);
 
   // const exitFullscreen = useCallback(() => {
   //  document?.exitFullscreen();
   // }, [isFullscreen]);
 
   const exitFullscreen = useCallback(async () => {
-  try {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
-    }
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
 
-   
-   if (
-  typeof screen.orientation !== 'undefined' &&
-  'lock' in screen.orientation &&
-  typeof screen.orientation.lock === 'function'
-) {
-  try {
-    // Attempt to reset by locking to 'portrait' or 'any' (if supported)
-    await screen.orientation.lock('portrait'); // or 'any' if supported
-  } catch (err) {
-    console.warn('Orientation lock failed:', err);
-  }
-}
- await qortalRequest({
-      action: 'SCREEN_ORIENTATION',
-      mode: 'portrait'
-    })
-  } catch (err) {
-    console.warn('Error exiting fullscreen or unlocking orientation:', err);
-  }
-}, [isFullscreen]);
+      if (
+        typeof screen.orientation !== "undefined" &&
+        "lock" in screen.orientation &&
+        typeof screen.orientation.lock === "function"
+      ) {
+        try {
+          // Attempt to reset by locking to 'portrait' or 'any' (if supported)
+          await screen.orientation.lock("portrait"); // or 'any' if supported
+        } catch (err) {
+          console.warn("Orientation lock failed:", err);
+        }
+      }
+      await qortalRequest({
+        action: "SCREEN_ORIENTATION",
+        mode: "portrait",
+      });
+    } catch (err) {
+      console.warn("Error exiting fullscreen or unlocking orientation:", err);
+    }
+  }, [isFullscreen]);
 
   const toggleFullscreen = useCallback(() => {
     isFullscreen ? exitFullscreen() : enterFullscreen();
   }, [isFullscreen]);
-
 
   const hotkeyHandlers = useMemo(
     () => ({
@@ -290,7 +288,7 @@ const enterFullscreen = useCallback(async () => {
       toggleMute,
       setProgressAbsolute,
       setAlwaysShowControls,
-      toggleFullscreen
+      toggleFullscreen,
     }),
     [
       reloadVideo,
@@ -304,17 +302,17 @@ const enterFullscreen = useCallback(async () => {
       toggleMute,
       setProgressAbsolute,
       setAlwaysShowControls,
-      toggleFullscreen
+      toggleFullscreen,
     ]
   );
 
   const closeSubtitleManager = useCallback(() => {
     setIsOpenSubtitleManage(false);
-    setDrawerOpenSubtitles(false)
+    setDrawerOpenSubtitles(false);
   }, []);
   const openSubtitleManager = useCallback(() => {
-    if(isVideoPlayerSmall){
-          setDrawerOpenSubtitles(true)
+    if (isVideoPlayerSmall) {
+      setDrawerOpenSubtitles(true);
     }
     setIsOpenSubtitleManage(true);
   }, [isVideoPlayerSmall]);
@@ -323,10 +321,10 @@ const enterFullscreen = useCallback(async () => {
     if (!qortalVideoResource) return null;
     return `${qortalVideoResource.service}-${qortalVideoResource.name}-${qortalVideoResource.identifier}`;
   }, [qortalVideoResource]);
-const videoLocationRef = useRef< null | string>(null)
-  useEffect(()=> {
-    videoLocationRef.current = videoLocation
-  }, [videoLocation])
+  const videoLocationRef = useRef<null | string>(null);
+  useEffect(() => {
+    videoLocationRef.current = videoLocation;
+  }, [videoLocation]);
   useVideoPlayerHotKeys(hotkeyHandlers);
 
   const updateProgress = useCallback(() => {
@@ -340,14 +338,14 @@ const videoLocationRef = useRef< null | string>(null)
     }
   }, [videoLocation]);
 
-  useEffect(()=> {
-    if(videoLocation){
-      const vidId = useGlobalPlayerStore.getState().videoId
-      if(vidId === videoLocation){
-        togglePlay()
+  useEffect(() => {
+    if (videoLocation) {
+      const vidId = useGlobalPlayerStore.getState().videoId;
+      if (vidId === videoLocation) {
+        togglePlay();
       }
     }
-  }, [videoLocation])
+  }, [videoLocation]);
   // useEffect(() => {
   //   const ref = videoRef as React.RefObject<HTMLVideoElement>;
   //   if (!ref.current) return;
@@ -428,7 +426,6 @@ const videoLocationRef = useRef< null | string>(null)
     };
   }, [isPlayerInitialized]);
 
- 
   const canvasRef = useRef(null);
   const videoRefForCanvas = useRef<any>(null);
   const extractFrames = useCallback((time: number): void => {
@@ -463,7 +460,7 @@ const videoLocationRef = useRef< null | string>(null)
   const hideTimeout = useRef<any>(null);
 
   const resetHideTimer = () => {
-    if(isTouchDevice) return
+    if (isTouchDevice) return;
     setShowControls(true);
     if (hideTimeout.current) clearTimeout(hideTimeout.current);
     hideTimeout.current = setTimeout(() => {
@@ -472,24 +469,24 @@ const videoLocationRef = useRef< null | string>(null)
   };
 
   const handleMouseMove = () => {
-    if(isTouchDevice) return
+    if (isTouchDevice) return;
     resetHideTimer();
   };
 
-  const closePlaybackMenu = useCallback(()=> {
-    setIsOpenPlaybackmenu(false)
-setDrawerOpenPlayback(false)
-  }, [])
-    const openPlaybackMenu = useCallback(()=> {
-      if(isVideoPlayerSmall){
-        setDrawerOpenPlayback(true)
-        return
-      }
-    setIsOpenPlaybackmenu(true)
-  }, [isVideoPlayerSmall])
+  const closePlaybackMenu = useCallback(() => {
+    setIsOpenPlaybackmenu(false);
+    setDrawerOpenPlayback(false);
+  }, []);
+  const openPlaybackMenu = useCallback(() => {
+    if (isVideoPlayerSmall) {
+      setDrawerOpenPlayback(true);
+      return;
+    }
+    setIsOpenPlaybackmenu(true);
+  }, [isVideoPlayerSmall]);
 
   useEffect(() => {
-    if(isTouchDevice) return
+    if (isTouchDevice) return;
     resetHideTimer(); // initial show
     return () => {
       if (hideTimeout.current) clearTimeout(hideTimeout.current);
@@ -510,34 +507,34 @@ setDrawerOpenPlayback(false)
 
   const onSelectSubtitle = useCallback(
     async (subtitle: SubtitlePublishedData) => {
-      if(subtitle === null){
-        setCurrentSubTrack(null)
+      if (subtitle === null) {
+        setCurrentSubTrack(null);
         if (previousSubtitleUrlRef.current) {
-        URL.revokeObjectURL(previousSubtitleUrlRef.current);
-        previousSubtitleUrlRef.current = null;
-      }
-       const remoteTracksList = playerRef.current?.remoteTextTracks();
+          URL.revokeObjectURL(previousSubtitleUrlRef.current);
+          previousSubtitleUrlRef.current = null;
+        }
+        const remoteTracksList = playerRef.current?.remoteTextTracks();
 
-      if (remoteTracksList) {
-        const toRemove: TextTrack[] = [];
+        if (remoteTracksList) {
+          const toRemove: TextTrack[] = [];
 
-        // Bypass TS restrictions safely
-        const list = remoteTracksList as unknown as {
-          length: number;
-          [index: number]: TextTrack;
-        };
+          // Bypass TS restrictions safely
+          const list = remoteTracksList as unknown as {
+            length: number;
+            [index: number]: TextTrack;
+          };
 
-        for (let i = 0; i < list.length; i++) {
-          const track = list[i];
-          if (track) toRemove.push(track);
+          for (let i = 0; i < list.length; i++) {
+            const track = list[i];
+            if (track) toRemove.push(track);
+          }
+
+          toRemove.forEach((track) => {
+            playerRef.current?.removeRemoteTextTrack(track);
+          });
         }
 
-        toRemove.forEach((track) => {
-          playerRef.current?.removeRemoteTextTrack(track);
-        });
-      }
-
-        return
+        return;
       }
       const player = playerRef.current;
       if (!player || !subtitle.subtitleData || !subtitle.type) return;
@@ -618,7 +615,6 @@ setDrawerOpenPlayback(false)
         (_, i) => (tracksInfo as any)[i]
       );
       for (const track of tracks) {
-
         if (track.kind === "subtitles") {
           track.mode = "showing"; // force display
         }
@@ -636,23 +632,21 @@ setDrawerOpenPlayback(false)
     return JSON.stringify(qortalVideoResource);
   }, [qortalVideoResource]);
 
-
   const savedVideoRef = useRef<HTMLVideoElement | null>(null);
 
-  useEffect(()=> {
-    if(startPlay){
-          useGlobalPlayerStore.getState().reset()
-
+  useEffect(() => {
+    if (startPlay) {
+      useGlobalPlayerStore.getState().reset();
     }
-  }, [startPlay])
+  }, [startPlay]);
 
-useLayoutEffect(() => {
-  // Save the video element while it's still mounted
-  const video = videoRef as any
-  if (video.current) {
-savedVideoRef.current = video.current;
-  }
-}, []);
+  useLayoutEffect(() => {
+    // Save the video element while it's still mounted
+    const video = videoRef as any;
+    if (video.current) {
+      savedVideoRef.current = video.current;
+    }
+  }, []);
 
   useEffect(() => {
     if (!resourceUrl || !isReady || !videoLocactionStringified || !startPlay)
@@ -687,18 +681,17 @@ savedVideoRef.current = video.current;
           playerRef.current = videojs(ref.current, options, () => {
             setIsPlayerInitialized(true);
             ref.current.tabIndex = -1; // Prevents focus entirely
-    ref.current.style.outline = 'none'; // Backup
+            ref.current.style.outline = "none"; // Backup
             playerRef.current?.poster("");
             playerRef.current?.playbackRate(playbackRate);
             playerRef.current?.volume(volume);
-            if(videoLocationRef.current){
-                     const savedProgress = getProgress(videoLocationRef.current);
-      if (typeof savedProgress === "number") {
-        playerRef.current?.currentTime(savedProgress);
-
-      }
+            if (videoLocationRef.current) {
+              const savedProgress = getProgress(videoLocationRef.current);
+              if (typeof savedProgress === "number") {
+                playerRef.current?.currentTime(savedProgress);
+              }
             }
-      
+
             playerRef.current?.play();
 
             const tracksInfo = playerRef.current?.textTracks();
@@ -711,20 +704,18 @@ savedVideoRef.current = video.current;
                 (_, i) => (tracksInfo as any)[i]
               );
               for (const track of tracks) {
-
-      if (track.kind === 'subtitles' || track.kind === 'captions') {
-        if (track.mode === 'showing') {
-          activeTrack = track;
-          break;
-        }
-      }
+                if (track.kind === "subtitles" || track.kind === "captions") {
+                  if (track.mode === "showing") {
+                    activeTrack = track;
+                    break;
+                  }
+                }
               }
 
               if (activeTrack) {
-               
-                setCurrentSubTrack(activeTrack.language || activeTrack.srclang)
+                setCurrentSubTrack(activeTrack.language || activeTrack.srclang);
               } else {
-                setCurrentSubTrack(null)
+                setCurrentSubTrack(null);
                 console.log("No subtitle is currently showing");
               }
             };
@@ -748,27 +739,27 @@ savedVideoRef.current = video.current;
       console.error("useEffect start player", error);
     }
     return () => {
-      const video = savedVideoRef as any
-     const videoEl = video?.current!;
-    const player = playerRef.current;
+      const video = savedVideoRef as any;
+      const videoEl = video?.current!;
+      const player = playerRef.current;
 
-            const isPlaying = !player?.paused();
+      const isPlaying = !player?.paused();
 
-    if (videoEl && isPlaying && videoLocationRef.current) {
-      const current = player?.currentTime?.();
+      if (videoEl && isPlaying && videoLocationRef.current) {
+        const current = player?.currentTime?.();
         const currentSource = player?.currentType();
 
-      useGlobalPlayerStore.getState().setVideoState({
-        videoSrc: videoEl.src,
-        currentTime: current ?? 0,
-        isPlaying: true,
-        mode: 'floating',
-        videoId: videoLocationRef.current,
-        location: locationRef.current || "",
-        type: currentSource || 'video/mp4'
-      });
-    }
-     
+        useGlobalPlayerStore.getState().setVideoState({
+          videoSrc: videoEl.src,
+          currentTime: current ?? 0,
+          isPlaying: true,
+          mode: "floating",
+          videoId: videoLocationRef.current,
+          location: locationRef.current || "",
+          type: currentSource || "video/mp4",
+        });
+      }
+
       canceled = true;
 
       if (player && typeof player.dispose === "function") {
@@ -800,10 +791,9 @@ savedVideoRef.current = video.current;
       player.off("ratechange", handleRateChange);
     };
   }, [isPlayerInitialized]);
-    const hideTimeoutRef = useRef<number | null>(null);
+  const hideTimeoutRef = useRef<number | null>(null);
 
-
-   const resetHideTimeout = () => {
+  const resetHideTimeout = () => {
     setShowControlsMobile(true);
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     hideTimeoutRef.current = setTimeout(() => {
@@ -817,16 +807,16 @@ savedVideoRef.current = video.current;
     const container = containerRef.current;
     if (!container) return;
 
-    container.addEventListener('touchstart', handleInteraction);
+    container.addEventListener("touchstart", handleInteraction);
     // container.addEventListener('mousemove', handleInteraction);
 
     return () => {
-      container.removeEventListener('touchstart', handleInteraction);
+      container.removeEventListener("touchstart", handleInteraction);
       // container.removeEventListener('mousemove', handleInteraction);
     };
   }, []);
 
-  console.log('showControlsMobile', showControlsMobile)
+  console.log("showControlsMobile", showControlsMobile);
 
   return (
     <>
@@ -865,11 +855,17 @@ savedVideoRef.current = video.current;
           onVolumeChange={onVolumeChangeHandler}
           controls={false}
         />
-        <PlayBackMenu isFromDrawer={false} close={closePlaybackMenu} isOpen={isOpenPlaybackMenu} onSelect={onSelectPlaybackRate} playbackRate={playbackRate} />
+        <PlayBackMenu
+          isFromDrawer={false}
+          close={closePlaybackMenu}
+          isOpen={isOpenPlaybackMenu}
+          onSelect={onSelectPlaybackRate}
+          playbackRate={playbackRate}
+        />
 
         {isReady && !showControlsMobile && (
           <VideoControlsBar
-          isVideoPlayerSmall={isVideoPlayerSmall}
+            isVideoPlayerSmall={isVideoPlayerSmall}
             subtitleBtnRef={subtitleBtnRef}
             playbackRate={playbackRate}
             increaseSpeed={hotkeyHandlers.increaseSpeed}
@@ -896,78 +892,110 @@ savedVideoRef.current = video.current;
             toggleMute={toggleMute}
             openPlaybackMenu={openPlaybackMenu}
             togglePictureInPicture={togglePictureInPicture}
+            setLocalProgress={setLocalProgress}
           />
         )}
-  {timelineActions && Array.isArray(timelineActions) && (
-            <TimelineActionsComponent seekTo={seekTo} containerRef={containerRef} progress={localProgress} timelineActions={timelineActions}/>
-  )}
-  {showControlsMobile && (
-          <MobileControls  setProgressRelative={setProgressRelative} toggleFullscreen={toggleFullscreen} openPlaybackMenu={openPlaybackMenu} openSubtitleManager={openSubtitleManager} togglePlay={togglePlay} isPlaying={isPlaying} setShowControlsMobile={setShowControlsMobile}  duration={duration}
-            progress={localProgress} playerRef={playerRef} showControlsMobile={showControlsMobile} />
-  )}
+        {timelineActions && Array.isArray(timelineActions) && (
+          <TimelineActionsComponent
+            seekTo={seekTo}
+            containerRef={containerRef}
+            progress={localProgress}
+            timelineActions={timelineActions}
+          />
+        )}
+        {showControlsMobile && (
+          <MobileControls
+            setLocalProgress={setLocalProgress}
+            setProgressRelative={setProgressRelative}
+            toggleFullscreen={toggleFullscreen}
+            openPlaybackMenu={openPlaybackMenu}
+            openSubtitleManager={openSubtitleManager}
+            togglePlay={togglePlay}
+            isPlaying={isPlaying}
+            setShowControlsMobile={setShowControlsMobile}
+            duration={duration}
+            progress={localProgress}
+            playerRef={playerRef}
+            showControlsMobile={showControlsMobile}
+          />
+        )}
 
-
-  {!isVideoPlayerSmall && (
-     <SubtitleManager
-          subtitleBtnRef={subtitleBtnRef}
-          close={closeSubtitleManager}
-          open={isOpenSubtitleManage}
-          qortalMetadata={qortalVideoResource}
-          onSelect={onSelectSubtitle}
-          currentSubTrack={currentSubTrack}
-          setDrawerOpenSubtitles={setDrawerOpenSubtitles}
-          isFromDrawer={false}
-        />
-  )}
-       
+        {!isVideoPlayerSmall && (
+          <SubtitleManager
+            subtitleBtnRef={subtitleBtnRef}
+            close={closeSubtitleManager}
+            open={isOpenSubtitleManage}
+            qortalMetadata={qortalVideoResource}
+            onSelect={onSelectSubtitle}
+            currentSubTrack={currentSubTrack}
+            setDrawerOpenSubtitles={setDrawerOpenSubtitles}
+            isFromDrawer={false}
+          />
+        )}
+ <ClickAwayListener onClickAway={() => setDrawerOpenSubtitles(false)}>
+        <Drawer
+        variant="persistent"
+          anchor="bottom"
+          open={drawerOpenSubtitles}
+          sx={{}}
+          slotProps={{
+            paper: {
+              sx: {
+                backgroundColor: alpha("#181818", 0.98),
+                borderRadius: 2,
+                width: "90%",
+                margin: "0 auto",
+                p: 1,
+                backgroundImage: "none",
+                mb: 1,
+                position: "absolute",
+              },
+            },
+          }}
+        >
+          <SubtitleManager
+            subtitleBtnRef={subtitleBtnRef}
+            close={closeSubtitleManager}
+            open={true}
+            qortalMetadata={qortalVideoResource}
+            onSelect={onSelectSubtitle}
+            currentSubTrack={currentSubTrack}
+            setDrawerOpenSubtitles={setDrawerOpenSubtitles}
+            isFromDrawer={true}
+          />
+        </Drawer>
+         </ClickAwayListener>
+        <ClickAwayListener onClickAway={() => setDrawerOpenPlayback(false)}>
+          <Drawer
+            variant="persistent"
+            anchor="bottom"
+            open={drawerOpenPlayback}
+            sx={{}}
+            slotProps={{
+              paper: {
+                sx: {
+                  backgroundColor: alpha("#181818", 0.98),
+                  borderRadius: 2,
+                  width: "90%",
+                  margin: "0 auto",
+                  p: 1,
+                  backgroundImage: "none",
+                  mb: 1,
+                  position: "absolute",
+                },
+              },
+            }}
+          >
+            <PlayBackMenu
+              isFromDrawer
+              close={closePlaybackMenu}
+              isOpen={true}
+              onSelect={onSelectPlaybackRate}
+              playbackRate={playbackRate}
+            />
+          </Drawer>
+        </ClickAwayListener>
       </VideoContainer>
-      <Drawer anchor="bottom" open={drawerOpenSubtitles} onClose={() => setDrawerOpenSubtitles(false)} sx={{
-        
-      }} slotProps={{
-    paper: {
-      sx: {
-        backgroundColor: alpha("#181818", 0.98),
-       borderRadius: 2,
-        width: '90%',
-        margin: '0 auto',
-        p: 1,
-        backgroundImage: 'none',
-        mb: 1
-      },
-    }
-  }}>
-
-         <SubtitleManager
-          subtitleBtnRef={subtitleBtnRef}
-          close={closeSubtitleManager}
-          open={true}
-          qortalMetadata={qortalVideoResource}
-          onSelect={onSelectSubtitle}
-          currentSubTrack={currentSubTrack}
-          setDrawerOpenSubtitles={setDrawerOpenSubtitles}
-          isFromDrawer={true}
-        />
-
-</Drawer>
- <Drawer anchor="bottom" open={drawerOpenPlayback} onClose={() => setDrawerOpenPlayback(false)} sx={{
-        
-      }} slotProps={{
-    paper: {
-      sx: {
-        backgroundColor: alpha("#181818", 0.98),
-       borderRadius: 2,
-        width: '90%',
-        margin: '0 auto',
-        p: 1,
-        backgroundImage: 'none',
-        mb: 1
-      },
-    }
-  }}>
-
-         <PlayBackMenu isFromDrawer close={closePlaybackMenu} isOpen={true} onSelect={onSelectPlaybackRate} playbackRate={playbackRate} />
-
-</Drawer>
     </>
   );
 };

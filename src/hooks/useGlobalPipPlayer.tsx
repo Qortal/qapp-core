@@ -155,7 +155,7 @@ useEffect(() => {
   const aspectRatio = 0.75; // 300 / 400 = 3:4
 
   const maxWidthByScreen = screenWidth * 0.75;
-  const maxWidthByHeight = (screenHeight * 0.2) / aspectRatio;
+  const maxWidthByHeight = (screenHeight * 0.3) / aspectRatio;
 
   const maxWidth = savedWidthRef.current || Math.min(maxWidthByScreen, maxWidthByHeight);
   const maxHeight = savedHeightRef.current || maxWidth * aspectRatio;
