@@ -21,8 +21,9 @@ export const useResourceStatus = ({
     statusRef.current = status
   }, [status])
   const downloadResource = useCallback(
-    ({ service, name, identifier }: QortalGetMetadata, build?: boolean) => {
+    ({ service, name, identifier }: QortalGetMetadata, build?: boolean, isRecalling?: boolean) => {
       try {
+        console.log('started2')
         if(statusRef.current && statusRef.current?.status === 'READY'){
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -30,9 +31,12 @@ export const useResourceStatus = ({
           if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
           }
+           intervalRef.current = null;
+            timeoutRef.current = null;
           return
         }
-        setResourceStatus(
+        if(!isRecalling){
+            setResourceStatus(
             { service, name, identifier },
             {
              "status": "SEARCHING",
@@ -41,6 +45,7 @@ export const useResourceStatus = ({
             "percentLoaded": 0
             }
           );
+        }
         let isCalling = false;
         let percentLoaded = 0;
         let timer = 24;
@@ -73,6 +78,8 @@ export const useResourceStatus = ({
               if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
               }
+              intervalRef.current = null;
+              timeoutRef.current = null;
               setResourceStatus(
                 { service, name, identifier },
                 {
@@ -80,7 +87,7 @@ export const useResourceStatus = ({
                   status: "FAILED_TO_DOWNLOAD",
                 }
               );
-
+            
               return;
             }
             tries = tries + 1;
@@ -124,7 +131,7 @@ export const useResourceStatus = ({
 
                 timeoutRef.current = setTimeout(() => {
                   isCalling = false;
-                  downloadResource({ name, service, identifier }, true);
+                  downloadResource({ name, service, identifier }, true, true);
                 }, 25000);
 
                 return;
@@ -140,18 +147,25 @@ export const useResourceStatus = ({
               }
             );
           }
-
+          console.log('res?.status', res?.status)
           // Check if progress is 100% and clear interval if true
           if (res?.status === "READY") {
+          
             if (intervalRef.current) {
+              console.log('clearing 11')
               clearInterval(intervalRef.current);
             }
             if (timeoutRef.current) {
+              console.log('clearing 22')
               clearTimeout(timeoutRef.current);
             }
+            intervalRef.current = null;
+            timeoutRef.current = null;
             setResourceStatus({service, name, identifier}, {
                 ...res,
             })
+              console.log('returned')
+            return
           }
           if (res?.status === "DOWNLOADED") {
             const url = `/arbitrary/resource/status/${service}/${name}/${identifier}?build=true`;
@@ -164,18 +178,30 @@ export const useResourceStatus = ({
             res = await resCall.json();
           }
         };
-        callFunction();
-        intervalRef.current = setInterval(async () => {
-          callFunction();
-        }, 5000);
+       callFunction();
+
+      if (!intervalRef.current) {
+        intervalRef.current = setInterval(callFunction, 5000);
+      }
       } catch (error) {
         console.error("Error during resource fetch:", error);
+      }
+      return ()=> {
+           if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+              intervalRef.current = null
+            }
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+              timeoutRef.current = null
+            }
       }
     },
     [retryAttempts]
   );
   useEffect(() => {
     if (resource?.identifier && resource?.name && resource?.service) {
+      statusRef.current = null
       downloadResource({
         service: resource?.service,
         name: resource?.name,
@@ -185,9 +211,11 @@ export const useResourceStatus = ({
     return ()=> {
         if(intervalRef.current){
             clearInterval(intervalRef.current)
+            intervalRef.current = null
         }
         if(timeoutRef.current){
             clearTimeout(timeoutRef.current)
+            timeoutRef.current = null
         }
     }
   }, [
@@ -196,6 +224,29 @@ export const useResourceStatus = ({
     resource?.service,
     downloadResource,
   ]);
+
+  const handledownloadResource = useCallback(()=> {
+if (resource?.identifier && resource?.name && resource?.service) {
+  if(intervalRef.current){
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
+        }
+        if(timeoutRef.current){
+            clearTimeout(timeoutRef.current)
+            timeoutRef.current = null
+        }
+
+      downloadResource({
+        service: resource?.service,
+        name: resource?.name,
+        identifier: resource?.identifier,
+      });
+    }
+  
+  }, [resource?.identifier,
+    resource?.name,
+    resource?.service,
+    downloadResource])
 
   const resourceUrl = resource ? `/arbitrary/${resource.service}/${resource.name}/${resource.identifier}` : null;
 
@@ -206,6 +257,7 @@ export const useResourceStatus = ({
     percentLoaded: status?.percentLoaded || 0,
     isReady: status?.status === 'READY',
     resourceUrl,
-  }), [status?.status, status?.localChunkCount, status?.totalChunkCount, status?.percentLoaded, resourceUrl]);
+    downloadResource: handledownloadResource
+  }), [status?.status, status?.localChunkCount, status?.totalChunkCount, status?.percentLoaded, resourceUrl, downloadResource]);
    
 };

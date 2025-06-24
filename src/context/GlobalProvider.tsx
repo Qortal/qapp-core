@@ -28,7 +28,6 @@ interface GlobalContextType {
   identifierOperations: ReturnType<typeof useIdentifiers>;
   persistentOperations: ReturnType<typeof usePersistentStore>;
   indexOperations: ReturnType<typeof useIndexes>;
-  navigate: NavigateFunction
 }
 
 // ✅ Define Config Type for Hook Options
@@ -40,15 +39,13 @@ interface GlobalProviderProps {
     appName: string;
     publicSalt: string;
   };
-  navigate: NavigateFunction
-  location: Location
+
   toastStyle?: CSSProperties;
 }
 
 // ✅ Create Context with Proper Type
 export const GlobalContext = createContext<GlobalContextType | null>(null);
 
-export const LocationContext = createContext<Location | null>(null);
 
 
 
@@ -57,8 +54,6 @@ export const GlobalProvider = ({
   children,
   config,
   toastStyle = {},
-  navigate,
-  location
 }: GlobalProviderProps) => {
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
@@ -84,9 +79,8 @@ export const GlobalProvider = ({
       identifierOperations,
       persistentOperations,
       indexOperations,
-      navigate
     }),
-    [auth, lists, appInfo, identifierOperations, persistentOperations, navigate]
+    [auth, lists, appInfo, identifierOperations, persistentOperations]
   );
   const { clearOldProgress } = useProgressStore();
   
@@ -95,7 +89,6 @@ export const GlobalProvider = ({
   }, []);
 
   return (
-        <LocationContext.Provider value={location}>
 
     <GlobalContext.Provider value={contextValue}>
            <GlobalPipPlayer />
@@ -115,7 +108,6 @@ export const GlobalProvider = ({
 
       {children}
     </GlobalContext.Provider>
-        </LocationContext.Provider>
 
   );
 };

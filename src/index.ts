@@ -16,7 +16,7 @@ export { IndexCategory } from './state/indexes';
 export { hashWordWithoutPublicSalt } from './utils/encryption';
 export { createAvatarLink } from './utils/qortal';
 export { objectToBase64 } from './utils/base64';
-export { generateBloomFilterBase64, isInsideBloom } from './utils/bloomFilter';
+
 export { addAndEncryptSymmetricKeys, decryptWithSymmetricKeys, encryptWithSymmetricKeys } from './utils/encryption';
 export { base64ToObject } from './utils/publish';
 export { formatTimestamp } from './utils/time';

@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.2",
-    "bloom-filters": "^3.0.4",
     "buffer": "^6.0.3",
     "compressorjs": "^1.2.1",
     "crypto-js": "^4.2.0",

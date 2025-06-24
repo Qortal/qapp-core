@@ -12,6 +12,7 @@ import PauseIcon from "@mui/icons-material/Pause";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import { GlobalContext } from "../context/GlobalProvider";
 import { isTouchDevice } from "../components/VideoPlayer/VideoPlayer";
+import { useNavigate } from "react-router-dom";
 export const GlobalPipPlayer = () => {
   const {
     videoSrc,
@@ -29,7 +30,7 @@ export const GlobalPipPlayer = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const context = useContext(GlobalContext);
-  const navigate = context?.navigate;
+  const navigate = useNavigate()
   const videoNode = useRef<HTMLVideoElement>(null);
   const hideTimeoutRef = useRef<number | null>(null);
   const { setProgress } = useProgressStore();

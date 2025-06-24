@@ -32,7 +32,6 @@ import convert from "srt-webvtt";
 import { TimelineActionsComponent } from "./TimelineActionsComponent";
 import { PlayBackMenu } from "./VideoControls";
 import { useGlobalPlayerStore } from "../../state/pip";
-import { LocationContext } from "../../context/GlobalProvider";
 import {
   alpha,
   Box,
@@ -42,6 +41,7 @@ import {
   ListItem,
 } from "@mui/material";
 import { MobileControls } from "./MobileControls";
+import { useLocation } from "react-router-dom";
 
 export async function srtBase64ToVttBlobUrl(
   base64Srt: string
@@ -160,7 +160,7 @@ export const VideoPlayer = ({
   const [isOpenSubtitleManage, setIsOpenSubtitleManage] = useState(false);
   const subtitleBtnRef = useRef(null);
   const [currentSubTrack, setCurrentSubTrack] = useState<null | string>(null);
-  const location = useContext(LocationContext);
+  const location = useLocation()
 
   const locationRef = useRef<string | null>(null);
   const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false);
@@ -190,6 +190,7 @@ export const VideoPlayer = ({
     onSelectPlaybackRate,
     seekTo,
     togglePictureInPicture,
+    downloadResource
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
@@ -849,13 +850,15 @@ export const VideoPlayer = ({
           status={status}
           percentLoaded={percentLoaded}
           isLoading={isLoading}
+        startPlay={startPlay}
+        downloadResource={downloadResource}
         />
         <VideoElement
           ref={videoRef}
           tabIndex={-1}
           className="video-js"
           src={isReady && startPlay ? resourceUrl || undefined : undefined}
-          poster={startPlay ? "" : poster}
+          poster={poster}
           onTimeUpdate={updateProgress}
           autoPlay={autoPlay}
           onClick={handleClickVideoElement}

@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { alpha, Box, Button, CircularProgress, IconButton, Typography } from "@mui/material";
 
 import { PlayArrow } from "@mui/icons-material";
 import { Status } from "../../state/publishes";
@@ -10,9 +10,11 @@ interface LoadingVideoProps {
   isReady: boolean
   isLoading: boolean
   togglePlay: ()=> void
+  startPlay: boolean,
+  downloadResource: ()=> void
 }
 export const LoadingVideo = ({
-  status, percentLoaded, isReady, isLoading, togglePlay
+  status, percentLoaded, isReady, isLoading, togglePlay, startPlay, downloadResource
 }: LoadingVideoProps) => {
 
   const getDownloadProgress = (percentLoaded: number) => {
@@ -29,12 +31,12 @@ export const LoadingVideo = ({
           top={0}
           left={0}
           right={0}
-          bottom={status === "READY" ? "55px " : 0}
+          bottom={0}
           display="flex"
           justifyContent="center"
           alignItems="center"
-          zIndex={25}
-          bgcolor="rgba(0, 0, 0, 0.6)"
+          zIndex={500}
+          bgcolor={alpha('#000000', !startPlay ? 0 : 0.95)}
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -42,18 +44,21 @@ export const LoadingVideo = ({
             height: "100%",
           }}
         >
-          {status !== "NOT_PUBLISHED" && (
-                      <CircularProgress color="secondary" />
+          {status !== "NOT_PUBLISHED" && status !== "FAILED_TO_DOWNLOAD" && (
+                      <CircularProgress sx={{
+                        color: 'white'
+                      }} />
 
           )}
           {status && (
             <Typography
-              variant="subtitle2"
+              
               component="div"
               sx={{
                 color: "white",
                 fontSize: "15px",
                 textAlign: "center",
+                fontFamily: "sans-serif"
               }}
             >
              
@@ -71,38 +76,44 @@ export const LoadingVideo = ({
                 </>
               ) : status === "DOWNLOADED" ? (
                 <>Download Completed: building video...</>
-              ) : status !== "READY" ? (
+              ) :  status === "FAILED_TO_DOWNLOAD" ? (
+                <>Unable to fetch video chunks from peers</>
+              ) : (
                 <>
                   {getDownloadProgress(
                     percentLoaded
                   )}
                 </>
-              ) : (
-                <>Fetching video...</>
               )}
             </Typography>
+          )}
+          {status === 'FAILED_TO_DOWNLOAD' && (
+            <Button variant="outlined" onClick={downloadResource} sx={{
+              color: 'white'
+            }}>Try again</Button>
           )}
         </Box>
       )}
 
       {(status === 'INITIAL') && (
         <>
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            zIndex={500}
-            bgcolor="rgba(0, 0, 0, 0.6)"
+          <IconButton
+            
+            
             onClick={() => {
               togglePlay();
             }}
+            
             sx={{
               cursor: "pointer",
+              borderRadius: "10px",
+              position:"absolute",
+            top:0,
+            left:0,
+            right:0,
+            bottom:0,
+            zIndex: 501,
+            background: 'rgba(0,0,0,0.3)',
             }}
           >
             <PlayArrow
@@ -112,7 +123,7 @@ export const LoadingVideo = ({
                 color: "white",
               }}
             />
-          </Box>
+          </IconButton>
         </>
       )}
     </>

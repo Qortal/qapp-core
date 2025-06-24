@@ -44,7 +44,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
   const { playbackSettings, setPlaybackRate, setVolume } = useVideoStore();
   const { getProgress } = useProgressStore();
 
-  const { isReady, resourceUrl, status, percentLoaded } = useResourceStatus({
+  const { isReady, resourceUrl, status, percentLoaded, downloadResource } = useResourceStatus({
     resource: !startedFetch ? null : qortalVideoResource,
     retryAttempts,
   });
@@ -326,6 +326,6 @@ const togglePlay = useCallback(async () => {
     isReady,
     resourceUrl,
     startPlay,
-    status, percentLoaded, showControlsFullScreen, onSelectPlaybackRate: updatePlaybackRate, seekTo, togglePictureInPicture
+    status, percentLoaded, showControlsFullScreen, onSelectPlaybackRate: updatePlaybackRate, seekTo, togglePictureInPicture, downloadResource
   };
 };
