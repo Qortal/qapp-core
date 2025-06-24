@@ -1,6 +1,6 @@
 import { alpha, Box, IconButton } from "@mui/material";
 import React from "react";
-import { ProgressSlider } from "./VideoControls";
+import { ProgressSlider, VideoTime } from "./VideoControls";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import SubtitlesIcon from "@mui/icons-material/Subtitles";
@@ -226,8 +226,15 @@ export const MobileControls = ({
           width: "100%",
           position: "absolute",
           bottom: 0,
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
+        <Box sx={{
+          padding: '0px 10px'
+        }}>
+        <VideoTime isScreenSmall  progress={progress} duration={duration}/>
+        </Box>
         <ProgressSlider
           playerRef={playerRef}
           progress={progress}

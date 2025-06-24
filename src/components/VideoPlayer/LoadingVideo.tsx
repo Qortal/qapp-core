@@ -106,7 +106,6 @@ export const LoadingVideo = ({
             
             sx={{
               cursor: "pointer",
-              borderRadius: "10px",
               position:"absolute",
             top:0,
             left:0,
@@ -114,6 +113,9 @@ export const LoadingVideo = ({
             bottom:0,
             zIndex: 501,
             background: 'rgba(0,0,0,0.3)',
+            padding: '0px',
+            borderRadius: "0px",
+     
             }}
           >
             <PlayArrow

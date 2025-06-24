@@ -148,7 +148,7 @@ export const VideoPlayer = ({
   const playerRef = useRef<Player | null>(null);
   const [drawerOpenSubtitles, setDrawerOpenSubtitles] = useState(false);
   const [drawerOpenPlayback, setDrawerOpenPlayback] = useState(false);
-  const [showControlsMobile, setShowControlsMobile] = useState(false);
+  const [showControlsMobile2, setShowControlsMobile] = useState(false);
   const [isPlayerInitialized, setIsPlayerInitialized] = useState(false);
   const [videoCodec, setVideoCodec] = useState<null | false | string>(null);
   const [isMuted, setIsMuted] = useState(false);
@@ -200,6 +200,8 @@ export const VideoPlayer = ({
     isMuted,
     videoRef,
   });
+
+  const showControlsMobile = (showControlsMobile2 || !isPlaying) && isVideoPlayerSmall
 
   useEffect(() => {
     if (location) {
@@ -920,6 +922,7 @@ export const VideoPlayer = ({
             containerRef={containerRef}
             progress={localProgress}
             timelineActions={timelineActions}
+            isVideoPlayerSmall={isVideoPlayerSmall}
           />
         )}
         {showControlsMobile && isReady && (

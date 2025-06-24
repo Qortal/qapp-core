@@ -7,6 +7,7 @@ timelineActions: TimelineAction[]
 progress: number
 containerRef: any
 seekTo: (time: number)=> void
+isVideoPlayerSmall: boolean
 
 }
 
@@ -17,7 +18,7 @@ const placementStyles: Record<NonNullable<TimelineAction['placement']>, React.CS
   'BOTTOM-RIGHT': { bottom: 60, right: 16 },
 };
 
-export const TimelineActionsComponent = ({timelineActions, progress, containerRef, seekTo}: TimelineActionsComponentProps) => {
+export const TimelineActionsComponent = ({timelineActions, progress, containerRef, seekTo, isVideoPlayerSmall}: TimelineActionsComponentProps) => {
     const [isOpen, setIsOpen] = useState(true)
 
     const handleClick = useCallback((action: TimelineAction)=> {
@@ -60,7 +61,9 @@ export const TimelineActionsComponent = ({timelineActions, progress, containerRe
       }}
     >
       
-        <Typography key={index} variant="body2" onClick={()=> handleClick(action)}>
+        <Typography key={index}  sx={{
+          fontSize: isVideoPlayerSmall ? '16px' : '18px'
+        }} onClick={()=> handleClick(action)}>
           {action.label}
         </Typography>
       

@@ -1,6 +1,5 @@
 import { Box, IconButton } from "@mui/material";
 import { ControlsContainer } from "./VideoPlayer-styles";
-// import { MobileControlsBar } from "./MobileControlsBar";
 import {
   FullscreenButton,
   ObjectFitButton,
@@ -80,7 +79,6 @@ export const VideoControlsBar = ({subtitleBtnRef, setLocalProgress, showControls
     >
       {showMobileControls ? (
         null
-        // <MobileControlsBar />
       ) : canPlay ? (
         <Box sx={{
           display: 'flex',

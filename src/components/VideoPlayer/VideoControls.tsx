@@ -289,6 +289,9 @@ export const VideoTime = ({ progress, isScreenSmall, duration }: any) => {
       title="Seek video in 10% increments (0-9)"
       placement="bottom"
       arrow
+      disableHoverListener={isScreenSmall}
+  disableFocusListener={isScreenSmall}
+  disableTouchListener={isScreenSmall}
     >
       <Typography
         sx={{
@@ -296,7 +299,7 @@ export const VideoTime = ({ progress, isScreenSmall, duration }: any) => {
           color: "white",
           visibility: typeof duration !== "number" ? "hidden" : "visible",
           whiteSpace: "nowrap",
-          fontFamily: "sans-serif"
+          fontFamily: "sans-serif",
         }}
       >
         {typeof duration === "number" ? formatTime(progress) : ""}
