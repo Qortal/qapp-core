@@ -183,8 +183,6 @@ const SubtitleManagerComponent = ({
     }
   }, [open]);
 
-  console.log("isFromDrawer");
-
   const handleBlur = (e: React.FocusEvent) => {
     if (
       !e.currentTarget.contains(e.relatedTarget) &&
@@ -192,7 +190,6 @@ const SubtitleManagerComponent = ({
       !isFromDrawer &&
       open
     ) {
-      console.log("hello close");
       close();
       setIsOpenPublish(false);
     }

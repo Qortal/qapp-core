@@ -23,7 +23,6 @@ export const useResourceStatus = ({
   const downloadResource = useCallback(
     ({ service, name, identifier }: QortalGetMetadata, build?: boolean, isRecalling?: boolean) => {
       try {
-        console.log('started2')
         if(statusRef.current && statusRef.current?.status === 'READY'){
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -147,16 +146,13 @@ export const useResourceStatus = ({
               }
             );
           }
-          console.log('res?.status', res?.status)
           // Check if progress is 100% and clear interval if true
           if (res?.status === "READY") {
           
             if (intervalRef.current) {
-              console.log('clearing 11')
               clearInterval(intervalRef.current);
             }
             if (timeoutRef.current) {
-              console.log('clearing 22')
               clearTimeout(timeoutRef.current);
             }
             intervalRef.current = null;
@@ -164,7 +160,6 @@ export const useResourceStatus = ({
             setResourceStatus({service, name, identifier}, {
                 ...res,
             })
-              console.log('returned')
             return
           }
           if (res?.status === "DOWNLOADED") {

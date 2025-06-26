@@ -153,7 +153,6 @@ export const ProgressSlider = ({
 
   const hoverAnchorRef = useRef<HTMLDivElement | null>(null);
   if (hoverX) {
-    console.log("thumbnailUrl", thumbnailUrl, hoverX);
   }
 
   const handleClickCapture = (e: React.MouseEvent) => {

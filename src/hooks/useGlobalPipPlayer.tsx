@@ -230,7 +230,6 @@ useEffect(() => {
     if (!videoSrc || !container) return;
 
     const handleInteraction = () => {
-      console.log("Touchstart detected!");
       resetHideTimeout();
     };
 
@@ -246,7 +245,6 @@ useEffect(() => {
     };
   }, [videoSrc]);
 
-  console.log("showControls", showControls);
 
   return (
     <Rnd
