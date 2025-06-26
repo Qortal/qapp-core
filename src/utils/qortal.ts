@@ -4,14 +4,19 @@ export const createAvatarLink = (qortalName: string)=> {
 
 const removeTrailingSlash = (str: string) => str.replace(/\/$/, '');
 
-export const createQortalLink = (type: 'APP' | 'WEBSITE', appName: string,  path: string) => {
+export const createQortalLink = (
+  type: 'APP' | 'WEBSITE',
+  appName: string,
+  path: string
+) => {
+  const encodedAppName = encodeURIComponent(appName);
+  let link = `qortal://${type}/${encodedAppName}`;
 
-      let link = 'qortal://' + type + '/' + appName 
-      if(path && path.startsWith('/')){
-        link = link +  removeTrailingSlash(path)
-      }
-      if(path && !path.startsWith('/')){
-        link = link + '/' +  removeTrailingSlash(path)
-      }
-    return link
-  };
+  if (path) {
+    link += path.startsWith('/')
+      ? removeTrailingSlash(path)
+      : '/' + removeTrailingSlash(path);
+  }
+
+  return link;
+};

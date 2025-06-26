@@ -58,7 +58,6 @@ export const GlobalProvider = ({
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
   const isPublishing = useMultiplePublishStore((s)=> s.isPublishing);
-  const videoSrc = useGlobalPlayerStore((s)=> s.videoSrc);
   const appInfo = useAppInfo(config.appName, config?.publicSalt);
   const lists = useResources();
   const identifierOperations = useIdentifiers(
@@ -83,7 +82,7 @@ export const GlobalProvider = ({
     [auth, lists, appInfo, identifierOperations, persistentOperations]
   );
   const { clearOldProgress } = useProgressStore();
-  
+
   useEffect(() => {
     clearOldProgress();
   }, []);
@@ -91,7 +90,10 @@ export const GlobalProvider = ({
   return (
 
     <GlobalContext.Provider value={contextValue}>
-           <GlobalPipPlayer />
+  
+         <GlobalPipPlayer />
+    
+        
      
       {isPublishing && (
          <MultiPublishDialog />

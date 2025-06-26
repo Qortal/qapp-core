@@ -3,10 +3,8 @@ import { useEffect, useCallback } from 'react';
 interface UseVideoControls {
   reloadVideo: () => void;
   togglePlay: () => void;
-  setAlwaysShowControls: React.Dispatch<React.SetStateAction<boolean>>;
   setProgressRelative: (seconds: number) => void;
   toggleObjectFit: () => void;
-  toggleAlwaysShowControls: () => void;
   increaseSpeed: (wrapOverflow?: boolean) => void;
   decreaseSpeed: () => void;
   changeVolume: (delta: number) => void;
@@ -21,7 +19,6 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
     togglePlay,
     setProgressRelative,
     toggleObjectFit,
-    toggleAlwaysShowControls,
     increaseSpeed,
     decreaseSpeed,
     changeVolume,
@@ -50,9 +47,6 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
         break;
        case "f":
         toggleFullscreen();
-        break;
-      case "c":
-        toggleAlwaysShowControls();
         break;
       case "+":
       case ">":
@@ -126,7 +120,7 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
     togglePlay,
     setProgressRelative,
     toggleObjectFit,
-    toggleAlwaysShowControls,
+    
     increaseSpeed,
     decreaseSpeed,
     changeVolume,

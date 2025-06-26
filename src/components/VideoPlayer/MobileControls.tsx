@@ -21,8 +21,8 @@ interface MobileControlsProps {
   openPlaybackMenu: () => void;
   toggleFullscreen: () => void;
   setProgressRelative: (val: number) => void;
-  setLocalProgress: (val: number)=> void;
-  resetHideTimeout: ()=> void
+  setLocalProgress: (val: number) => void;
+  resetHideTimeout: () => void;
 }
 export const MobileControls = ({
   showControlsMobile,
@@ -37,7 +37,7 @@ export const MobileControls = ({
   toggleFullscreen,
   setProgressRelative,
   setLocalProgress,
-  resetHideTimeout
+  resetHideTimeout,
 }: MobileControlsProps) => {
   return (
     <Box
@@ -70,33 +70,35 @@ export const MobileControls = ({
             openSubtitleManager();
           }}
           sx={{
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '7px'
+            background: "rgba(0,0,0,0.3)",
+            borderRadius: "50%",
+            padding: "7px",
           }}
         >
           <SubtitlesIcon
             sx={{
               fontSize: "24px",
-              color: 'white'
+              color: "white",
             }}
           />
         </IconButton>
         <IconButton
-         sx={{
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '7px'
+          sx={{
+            background: "rgba(0,0,0,0.3)",
+            borderRadius: "50%",
+            padding: "7px",
           }}
           onClick={(e) => {
             e.stopPropagation();
             openPlaybackMenu();
           }}
         >
-          <SlowMotionVideoIcon sx={{
+          <SlowMotionVideoIcon
+            sx={{
               fontSize: "24px",
-              color: 'white'
-            }}/>
+              color: "white",
+            }}
+          />
         </IconButton>
       </Box>
       <Box
@@ -106,17 +108,17 @@ export const MobileControls = ({
           left: "50%",
           transform: "translate(-50%, -50%)",
           gap: "50px",
-          display: 'flex',
-          alignItems: 'center'
+          display: "flex",
+          alignItems: "center",
         }}
       >
         <IconButton
           sx={{
             opacity: 1,
             zIndex: 2,
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '10px'
+            background: "rgba(0,0,0,0.3)",
+            borderRadius: "50%",
+            padding: "10px",
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -126,7 +128,7 @@ export const MobileControls = ({
           <Replay10Icon
             sx={{
               fontSize: "36px",
-              color: 'white'
+              color: "white",
             }}
           />
         </IconButton>
@@ -135,9 +137,9 @@ export const MobileControls = ({
             sx={{
               opacity: 1,
               zIndex: 2,
-              background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '10px'
+              background: "rgba(0,0,0,0.3)",
+              borderRadius: "50%",
+              padding: "10px",
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -147,7 +149,7 @@ export const MobileControls = ({
             <PauseIcon
               sx={{
                 fontSize: "36px",
-                color: 'white'
+                color: "white",
               }}
             />
           </IconButton>
@@ -157,9 +159,9 @@ export const MobileControls = ({
             sx={{
               opacity: 1,
               zIndex: 2,
-              background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '10px'
+              background: "rgba(0,0,0,0.3)",
+              borderRadius: "50%",
+              padding: "10px",
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -169,7 +171,7 @@ export const MobileControls = ({
             <PlayArrowIcon
               sx={{
                 fontSize: "36px",
-                color: 'white'
+                color: "white",
               }}
             />
           </IconButton>
@@ -178,9 +180,9 @@ export const MobileControls = ({
           sx={{
             opacity: 1,
             zIndex: 2,
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '10px'
+            background: "rgba(0,0,0,0.3)",
+            borderRadius: "50%",
+            padding: "10px",
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -190,7 +192,7 @@ export const MobileControls = ({
           <Forward10Icon
             sx={{
               fontSize: "36px",
-              color: 'white'
+              color: "white",
             }}
           />
         </IconButton>
@@ -206,19 +208,21 @@ export const MobileControls = ({
         <IconButton
           sx={{
             fontSize: "24px",
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '7px'
+            background: "rgba(0,0,0,0.3)",
+            borderRadius: "50%",
+            padding: "7px",
           }}
           onClick={(e) => {
             e.stopPropagation();
             toggleFullscreen();
           }}
         >
-          <Fullscreen sx={{
-            color: 'white',
-            fontSize: "24px",
-          }} />
+          <Fullscreen
+            sx={{
+              color: "white",
+              fontSize: "24px",
+            }}
+          />
         </IconButton>
       </Box>
       <Box
@@ -226,14 +230,16 @@ export const MobileControls = ({
           width: "100%",
           position: "absolute",
           bottom: 0,
-          display: 'flex',
-          flexDirection: 'column'
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <Box sx={{
-          padding: '0px 10px'
-        }}>
-        <VideoTime isScreenSmall  progress={progress} duration={duration}/>
+        <Box
+          sx={{
+            padding: "0px 10px",
+          }}
+        >
+          <VideoTime isScreenSmall progress={progress} duration={duration} />
         </Box>
         <ProgressSlider
           playerRef={playerRef}

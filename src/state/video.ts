@@ -118,3 +118,14 @@ export const useProgressStore = create<ProgressStore>()(
     }
   )
 );
+
+
+interface IsPlayingState {
+  isPlaying: boolean;
+  setIsPlaying: (value: boolean) => void;
+}
+
+export const useIsPlaying = create<IsPlayingState>((set) => ({
+  isPlaying: false,
+  setIsPlaying: (value) => set({ isPlaying: value }),
+}));

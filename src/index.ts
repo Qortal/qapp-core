@@ -6,7 +6,7 @@ export { useModal } from './hooks/useModal';
 export { AudioPlayerControls , OnTrackChangeMeta, AudioPlayerProps, AudioPlayerHandle} from './components/AudioPlayer/AudioPlayerControls';
 export {TimelineAction} from './components/VideoPlayer/VideoPlayer'
 export { useAudioPlayerHotkeys } from './components/AudioPlayer/useAudioPlayerHotkeys';
-export { VideoPlayer } from './components/VideoPlayer/VideoPlayer';
+export { VideoPlayerParent as VideoPlayer } from './components/VideoPlayer/VideoPlayerParent';
 export { useListReturn } from './hooks/useListData';
 import './index.css'
 export { executeEvent, subscribeToEvent, unsubscribeFromEvent } from './utils/events';

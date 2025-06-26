@@ -65,49 +65,49 @@ export const ReloadButton = ({ reloadVideo, isScreenSmall }: any) => {
   );
 };
 
-export const ProgressSlider = ({ progress, setLocalProgress, duration, playerRef, resetHideTimeout, isVideoPlayerSmall }: any) => {
+export const ProgressSlider = ({
+  progress,
+  setLocalProgress,
+  duration,
+  playerRef,
+  resetHideTimeout,
+  isVideoPlayerSmall,
+}: any) => {
   const sliderRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-const [sliderValue, setSliderValue] = useState(0); // local slider value
+  const [sliderValue, setSliderValue] = useState(0); // local slider value
   const [hoverX, setHoverX] = useState<number | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [showDuration, setShowDuration] = useState(0);
 
-const showTimeFunc = (val: number, clientX: number) => {
-  const slider = sliderRef.current;
-  if (!slider) return;
-  console.log('time',val, duration)
-  const percent = val / duration;
-  const time = Math.min(Math.max(0, percent * duration), duration);
+  const showTimeFunc = (val: number, clientX: number) => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+    const percent = val / duration;
+    const time = Math.min(Math.max(0, percent * duration), duration);
 
-  setHoverX(clientX);
-  setShowDuration(time);
+    setHoverX(clientX);
+    setShowDuration(time);
 
-  resetHideTimeout()
-  // Optionally debounce processing thumbnails
-  // debounceTimeoutRef.current = setTimeout(() => {
-  //   debouncedExtract(time, clientX);
-  // }, THUMBNAIL_DEBOUNCE);
-};
+    resetHideTimeout();
+  };
   const onProgressChange = (e: any, value: number | number[]) => {
-      const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-if(clientX && resetHideTimeout){
+    const clientX =
+      "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    if (clientX && resetHideTimeout) {
       showTimeFunc(value as number, clientX);
-
-
-}
+    }
     setIsDragging(true);
     setSliderValue(value as number);
   };
-const onChangeCommitted = (e: any, value: number | number[]) => {
+  const onChangeCommitted = (e: any, value: number | number[]) => {
     if (!playerRef.current) return;
- setSliderValue(value as number);
+    setSliderValue(value as number);
     playerRef.current?.currentTime(value as number);
-            setIsDragging(false);
-            setLocalProgress(value)
-handleMouseLeave()
+    setIsDragging(false);
+    setLocalProgress(value);
+    handleMouseLeave();
   };
-
 
   const THUMBNAIL_DEBOUNCE = 500;
   const THUMBNAIL_MIN_DIFF = 10;
@@ -128,10 +128,6 @@ handleMouseLeave()
 
     setShowDuration(time);
     if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-
-    // debounceTimeoutRef.current = setTimeout(() => {
-    //   debouncedExtract(time, e.clientX);
-    // }, THUMBNAIL_DEBOUNCE);
   };
 
   const handleMouseLeave = () => {
@@ -160,10 +156,8 @@ handleMouseLeave()
     console.log("thumbnailUrl", thumbnailUrl, hoverX);
   }
 
- const handleClickCapture = (e: React.MouseEvent) => {
-    
-      e.stopPropagation();
-    
+  const handleClickCapture = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   return (
@@ -190,8 +184,7 @@ handleMouseLeave()
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClickCapture={handleClickCapture}
-         value={isDragging ? sliderValue : progress} // use local state if dragging
-
+        value={isDragging ? sliderValue : progress} // use local state if dragging
         onChange={onProgressChange}
         onChangeCommitted={onChangeCommitted}
         min={0}
@@ -232,8 +225,6 @@ handleMouseLeave()
           placement="top"
           disablePortal
           modifiers={[{ name: "offset", options: { offset: [-10, 0] } }]}
-          
- 
         >
           <Box
             sx={{
@@ -241,37 +232,15 @@ handleMouseLeave()
               flexDirection: "column",
               alignItems: "center",
               bgcolor: alpha("#181818", 0.75),
-              padding: '5px',
-              borderRadius: '5px'
+              padding: "5px",
+              borderRadius: "5px",
             }}
           >
-            {/* <Box
-            sx={{
-              width: 250,
-              height: 125,
-              backgroundColor: "black",
-              border: "1px solid white",
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: '7px',
-              background: '#444444',
-              padding: '2px'
-            }}
-          >
-            
-            <img
-              src={thumbnailUrl}
-              alt="preview"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </Box> */}
             <Typography
               sx={{
                 fontSize: "0.8rom",
                 textShadow: "0 0 5px rgba(0, 0, 0, 0.7)",
-                fontFamily: "sans-serif"
+                fontFamily: "sans-serif",
               }}
             >
               {formatTime(showDuration)}
@@ -290,8 +259,8 @@ export const VideoTime = ({ progress, isScreenSmall, duration }: any) => {
       placement="bottom"
       arrow
       disableHoverListener={isScreenSmall}
-  disableFocusListener={isScreenSmall}
-  disableTouchListener={isScreenSmall}
+      disableFocusListener={isScreenSmall}
+      disableTouchListener={isScreenSmall}
     >
       <Typography
         sx={{
@@ -359,7 +328,13 @@ const VolumeSlider = ({ width, volume, onVolumeChange }: any) => {
   );
 };
 
-export const VolumeControl = ({ sliderWidth, onVolumeChange, volume , isMuted, toggleMute}: any) => {
+export const VolumeControl = ({
+  sliderWidth,
+  onVolumeChange,
+  volume,
+  isMuted,
+  toggleMute,
+}: any) => {
   return (
     <Box
       sx={{ display: "flex", gap: "5px", alignItems: "center", width: "100%" }}
@@ -381,7 +356,7 @@ export const PlaybackRate = ({
   increaseSpeed,
   isScreenSmall,
   onSelect,
-  openPlaybackMenu
+  openPlaybackMenu,
 }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const btnRef = useRef(null);
@@ -398,7 +373,7 @@ export const PlaybackRate = ({
         arrow
       >
         <IconButton
-        ref={btnRef}
+          ref={btnRef}
           sx={{
             color: "white",
             fontSize: fontSizeSmall,
@@ -409,8 +384,6 @@ export const PlaybackRate = ({
           <SlowMotionVideoIcon />
         </IconButton>
       </CustomFontTooltip>
-
-   
     </>
   );
 };
@@ -478,136 +451,138 @@ export const FullscreenButton = ({ toggleFullscreen, isScreenSmall }: any) => {
 };
 
 interface PlayBackMenuProps {
-  close: ()=> void
-  isOpen: boolean
-  onSelect: (speed: number)=> void;
-  playbackRate: number
-  isFromDrawer: boolean
+  close: () => void;
+  isOpen: boolean;
+  onSelect: (speed: number) => void;
+  playbackRate: number;
+  isFromDrawer: boolean;
 }
-export const PlayBackMenu = ({close, onSelect, isOpen, playbackRate, isFromDrawer}: PlayBackMenuProps)=> {
-  const theme = useTheme()
-  const ref = useRef<any>(null)
+export const PlayBackMenu = ({
+  close,
+  onSelect,
+  isOpen,
+  playbackRate,
+  isFromDrawer,
+}: PlayBackMenuProps) => {
+  const theme = useTheme();
+  const ref = useRef<any>(null);
 
-  useEffect(()=> {
-    if(isOpen){
-      ref?.current?.focus()
+  useEffect(() => {
+    if (isOpen) {
+      ref?.current?.focus();
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   const handleBlur = (e: React.FocusEvent) => {
-  if (!e.currentTarget.contains(e.relatedTarget) && !isFromDrawer) {
-    close();
-  }
-};
-  if(!isOpen) return null
+    if (!e.currentTarget.contains(e.relatedTarget) && !isFromDrawer) {
+      close();
+    }
+  };
+  if (!isOpen) return null;
   return (
-
-   <Box
-   ref={ref}
-   tabIndex={-1}
-   onBlur={handleBlur}
-                    bgcolor={alpha("#181818", 0.98)}
-
-        sx={
-          {
-            position: isFromDrawer ? 'relative' : 'absolute',
-              bottom: isFromDrawer ? 'relative' : 60,
-              right:isFromDrawer ? 'relative' : 5,
-              color: "white",
-              opacity: 0.9,
-              borderRadius: 2,
-              boxShadow: isFromDrawer ? 'relative' : 5,
-              p: 1,
-              minWidth: 225,
-              height: 300,
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              zIndex: 10,
-            }
-        }
+    <Box
+      ref={ref}
+      tabIndex={-1}
+      onBlur={handleBlur}
+      bgcolor={alpha("#181818", 0.98)}
+      sx={{
+        position: isFromDrawer ? "relative" : "absolute",
+        bottom: isFromDrawer ? "relative" : 60,
+        right: isFromDrawer ? "relative" : 5,
+        color: "white",
+        opacity: 0.9,
+        borderRadius: 2,
+        boxShadow: isFromDrawer ? "relative" : 5,
+        p: 1,
+        minWidth: 225,
+        height: 300,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        zIndex: 10,
+      }}
+    >
+      <Box
+        sx={{
+          padding: "5px 0px 10px 0px",
+          display: "flex",
+          gap: "10px",
+          width: "100%",
+        }}
       >
-        <Box
-          sx={{
-            padding: "5px 0px 10px 0px",
-            display: "flex",
-            gap: "10px",
-            width: "100%",
-          }}
-        >
-          <ButtonBase onClick={close}>
-            <ArrowBackIosIcon
-              sx={{
-                fontSize: "1.15em",
+        <ButtonBase onClick={close}>
+          <ArrowBackIosIcon
+            sx={{
+              fontSize: "1.15em",
+            }}
+          />
+        </ButtonBase>
+        <ButtonBase>
+          <Typography
+            onClick={close}
+            sx={{
+              fontSize: "0.85rem",
+            }}
+          >
+            Playback speed
+          </Typography>
+        </ButtonBase>
+      </Box>
+      <Divider />
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: 1,
+          overflow: "auto",
+          "::-webkit-scrollbar-track": {
+            backgroundColor: "transparent",
+          },
+
+          "::-webkit-scrollbar": {
+            width: "16px",
+            height: "10px",
+          },
+
+          "::-webkit-scrollbar-thumb": {
+            backgroundColor: theme.palette.primary.main,
+            borderRadius: "8px",
+            backgroundClip: "content-box",
+            border: "4px solid transparent",
+            transition: "0.3s background-color",
+          },
+
+          "::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: theme.palette.primary.dark,
+          },
+        }}
+      >
+        {speeds?.map((speed) => {
+          const isSelected = speed === playbackRate;
+          return (
+            <ButtonBase
+              disabled={isSelected}
+              key={speed}
+              onClick={(e) => {
+                onSelect(speed);
+                close();
               }}
-            />
-          </ButtonBase>
-          <ButtonBase>
-            <Typography
-              onClick={close}
               sx={{
-                fontSize: "0.85rem",
+                px: 2,
+                py: 1,
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                },
+                width: "100%",
+                justifyContent: "space-between",
               }}
             >
-              Playback speed
-            </Typography>
-          </ButtonBase>
-        </Box>
-        <Divider />
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            flexGrow: 1,
-            overflow: "auto",
-            "::-webkit-scrollbar-track": {
-              backgroundColor: "transparent",
-            },
-
-            "::-webkit-scrollbar": {
-              width: "16px",
-              height: "10px",
-            },
-
-            "::-webkit-scrollbar-thumb": {
-              backgroundColor: theme.palette.primary.main,
-              borderRadius: "8px",
-              backgroundClip: "content-box",
-              border: "4px solid transparent",
-              transition: "0.3s background-color",
-            },
-
-            "::-webkit-scrollbar-thumb:hover": {
-              backgroundColor: theme.palette.primary.dark,
-            },
-          }}
-        >
-          {speeds?.map((speed) => {
-            const isSelected = speed === playbackRate;
-            return (
-              <ButtonBase
-                disabled={isSelected}
-                key={speed}
-                onClick={(e) => {
-                  onSelect(speed)
-                  close()
-                }}
-                sx={{
-                  px: 2,
-                  py: 1,
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  },
-                  width: "100%",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Typography>{speed}</Typography>
-                {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
-              </ButtonBase>
-            );
-          })}
-        </Box>
+              <Typography>{speed}</Typography>
+              {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
+            </ButtonBase>
+          );
+        })}
       </Box>
-  )
-}
+    </Box>
+  );
+};

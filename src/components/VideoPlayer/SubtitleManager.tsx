@@ -42,8 +42,8 @@ import { useGlobal } from "../../context/GlobalProvider";
 import { ENTITY_SUBTITLE, SERVICE_SUBTITLE } from "./video-player-constants";
 import ISO6391, { LanguageCode } from "iso-639-1";
 import LanguageSelect from "./LanguageSelect";
-import DownloadIcon from '@mui/icons-material/Download';
-import DownloadingIcon from '@mui/icons-material/Downloading';
+import DownloadIcon from "@mui/icons-material/Download";
+import DownloadingIcon from "@mui/icons-material/Downloading";
 import {
   useDropzone,
   DropzoneRootProps,
@@ -64,17 +64,16 @@ import { RequestQueueWithPromise } from "../../utils/queue";
 
 export const requestQueueGetStatus = new RequestQueueWithPromise(1);
 
-
 export interface SubtitleManagerProps {
   qortalMetadata: QortalGetMetadata;
   close: () => void;
   open: boolean;
   onSelect: (subtitle: SubtitlePublishedData) => void;
   subtitleBtnRef: any;
-  currentSubTrack: null | string
-  setDrawerOpenSubtitles: (val: boolean)=> void
-  isFromDrawer: boolean
-  exitFullscreen: ()=> void
+  currentSubTrack: null | string;
+  setDrawerOpenSubtitles: (val: boolean) => void;
+  isFromDrawer: boolean;
+  exitFullscreen: () => void;
 }
 export interface Subtitle {
   language: string | null;
@@ -113,7 +112,7 @@ const SubtitleManagerComponent = ({
   currentSubTrack,
   setDrawerOpenSubtitles,
   isFromDrawer = false,
-  exitFullscreen
+  exitFullscreen,
 }: SubtitleManagerProps) => {
   const [mode, setMode] = useState(1);
   const [isOpenPublish, setIsOpenPublish] = useState(false);
@@ -146,12 +145,13 @@ const SubtitleManagerComponent = ({
         identifier: postIdSearch,
         name,
         limit: 0,
-        includeMetadata: true
+        includeMetadata: true,
       };
-      const res = await lists.fetchResourcesResultsOnly(
-        searchParams
+      const res = await lists.fetchResourcesResultsOnly(searchParams);
+      lists.addList(
+        `subs-${videoId}`,
+        res?.filter((item) => !!item?.metadata?.title) || []
       );
-      lists.addList(`subs-${videoId}`, res?.filter((item)=> !!item?.metadata?.title) || []);
     } catch (error) {
       console.error(error);
     } finally {
@@ -175,38 +175,42 @@ const SubtitleManagerComponent = ({
     getPublishedSubtitles,
   ]);
 
-   const ref = useRef<any>(null)
+  const ref = useRef<any>(null);
 
-  useEffect(()=> {
-    if(open){
-      ref?.current?.focus()
+  useEffect(() => {
+    if (open) {
+      ref?.current?.focus();
     }
-  }, [open])
+  }, [open]);
 
-  console.log('isFromDrawer', )
+  console.log("isFromDrawer");
 
   const handleBlur = (e: React.FocusEvent) => {
-  if (!e.currentTarget.contains(e.relatedTarget) && !isOpenPublish && !isFromDrawer && open) {
-    console.log('hello close')
-    close();
-    setIsOpenPublish(false)
-  }
-};
+    if (
+      !e.currentTarget.contains(e.relatedTarget) &&
+      !isOpenPublish &&
+      !isFromDrawer &&
+      open
+    ) {
+      console.log("hello close");
+      close();
+      setIsOpenPublish(false);
+    }
+  };
 
   const publishHandler = async (subtitles: Subtitle[]) => {
     try {
       const videoId = `${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`;
 
-     
       const name = auth?.name;
       if (!name) return;
       const resources: ResourceToPublish[] = [];
       const tempResources: { qortalMetadata: QortalMetadata; data: any }[] = [];
       for (const sub of subtitles) {
-         const identifier = await identifierOperations.buildLooseIdentifier(
-        ENTITY_SUBTITLE,
-        videoId
-      );
+        const identifier = await identifierOperations.buildLooseIdentifier(
+          ENTITY_SUBTITLE,
+          videoId
+        );
         const data = {
           subtitleData: sub.base64,
           language: sub.language,
@@ -233,7 +237,7 @@ const SubtitleManagerComponent = ({
             created: Date.now(),
             metadata: {
               title: sub.language || undefined,
-            }
+            },
           },
           data: data,
         });
@@ -260,33 +264,30 @@ const SubtitleManagerComponent = ({
   };
 
   const theme = useTheme();
-  if(!open) return null
+  if (!open) return null;
   return (
     <>
       <Box
-   ref={ref}
-   tabIndex={-1}
-   onBlur={handleBlur}
-                    bgcolor={alpha("#181818", 0.98)}
-
-        sx={
-          {
-            position: isFromDrawer ? 'relative' : 'absolute',
-              bottom: isFromDrawer ? 'unset' : 60,
-              right: isFromDrawer ? 'unset' : 5,
-              color: "white",
-              opacity: 0.9,
-              borderRadius: 2,
-              boxShadow: isFromDrawer ? 'unset' : 5,
-              p: 1,
-              minWidth: 225,
-              height: 300,
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              zIndex: 10,
-            }
-        }
+        ref={ref}
+        tabIndex={-1}
+        onBlur={handleBlur}
+        bgcolor={alpha("#181818", 0.98)}
+        sx={{
+          position: isFromDrawer ? "relative" : "absolute",
+          bottom: isFromDrawer ? "unset" : 60,
+          right: isFromDrawer ? "unset" : 5,
+          color: "white",
+          opacity: 0.9,
+          borderRadius: 2,
+          boxShadow: isFromDrawer ? "unset" : 5,
+          p: 1,
+          minWidth: 225,
+          height: 300,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          zIndex: 10,
+        }}
       >
         <Box
           sx={{
@@ -318,8 +319,7 @@ const SubtitleManagerComponent = ({
               marginLeft: "auto",
             }}
             onClick={() => {
-                            setIsOpenPublish(true)
-
+              setIsOpenPublish(true);
             }}
           >
             <ModeEditIcon
@@ -399,8 +399,6 @@ const SubtitleManagerComponent = ({
             Load community subs
           </Button>
         </Box>
-        
-     
       </Box>
       <PublishSubtitles
         isOpen={isOpenPublish}
@@ -408,11 +406,9 @@ const SubtitleManagerComponent = ({
         publishHandler={publishHandler}
         mySubtitles={mySubtitles}
       />
-   
     </>
   );
 };
-
 
 interface PublisherSubtitlesProps {
   publisherName: string;
@@ -450,13 +446,13 @@ const PublisherSubtitles = ({
         {!currentSubTrack ? <CheckIcon /> : <ArrowForwardIosIcon />}
       </ButtonBase>
 
-      {subtitles?.map((sub) => {
+      {subtitles?.map((sub, i) => {
         return (
           <Subtitle
             currentSubtrack={currentSubTrack}
             onSelect={onSelect}
             sub={sub}
-            key={`${sub?.qortalMetadata?.service}-${sub?.qortalMetadata?.name}-${sub?.qortalMetadata?.identifier}`}
+            key={i}
           />
         );
       })}
@@ -725,6 +721,7 @@ const PublishSubtitles = ({
             {mySubtitles?.map((sub, i) => {
               return (
                 <Card
+                  key={i}
                   sx={{
                     padding: "10px",
                     width: "500px",
@@ -758,66 +755,65 @@ interface SubProps {
   onSelect: (subtitle: Subtitle) => void;
   currentSubtrack: null | string;
 }
-  const subtitlesStatus: Record<string, boolean> = {}
+const subtitlesStatus: Record<string, boolean> = {};
 
 const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
-  const [selectedToDownload, setSelectedToDownload] = useState<null | QortalGetMetadata>(null)
-  const [isReady, setIsReady] = useState(false)
-  const { resource, isLoading, error, refetch  } = usePublish(2, "JSON", sub, true);
+  const [isReady, setIsReady] = useState(false);
+  const { resource, isLoading, error, refetch } = usePublish(
+    2,
+    "JSON",
+    sub,
+    true
+  );
   const isSelected = currentSubtrack === resource?.data?.language;
-  const [isGettingStatus, setIsGettingStatus] = useState(true)
-  // useEffect(()=> {
-  //   if(resource?.data){
-  //     console.log('onselectdone')
-  //      onSelect(resource?.data)
-  //   }
-  // }, [isSelected, resource?.data])
-  const getStatus = useCallback(async (service: Service, name: string, identifier: string)=> {
-    try {
-      if(subtitlesStatus[`${service}-${name}-${identifier}`]){
-        setIsReady(true)
-        refetch()
-        return
-      }
-      
-    const response =  await requestQueueGetStatus.enqueue(
-                  (): Promise<string> => {
-                    return  qortalRequest({
-        action: 'GET_QDN_RESOURCE_STATUS',
-        identifier,
-        service,
-        name,
-        build: false
-      })
-                  }
-                );
-      if(response?.status === 'READY'){
-        setIsReady(true)
-       subtitlesStatus[`${service}-${name}-${identifier}`] = true
-       refetch()
+  const [isGettingStatus, setIsGettingStatus] = useState(true);
 
-      }
-    } catch (error) {
-      
-    } finally {
-      setIsGettingStatus(false)
-    }
-  }, [])
+  const getStatus = useCallback(
+    async (service: Service, name: string, identifier: string) => {
+      try {
+        if (subtitlesStatus[`${service}-${name}-${identifier}`]) {
+          setIsReady(true);
+          refetch();
+          return;
+        }
 
-  useEffect(()=> {
-    if(sub?.service && sub?.name && sub?.identifier){
-          getStatus(sub?.service, sub?.name, sub?.identifier)
+        const response = await requestQueueGetStatus.enqueue(
+          (): Promise<string> => {
+            return qortalRequest({
+              action: "GET_QDN_RESOURCE_STATUS",
+              identifier,
+              service,
+              name,
+              build: false,
+            });
+          }
+        );
+        if (response?.status === "READY") {
+          setIsReady(true);
+          subtitlesStatus[`${service}-${name}-${identifier}`] = true;
+          refetch();
+        }
+      } catch (error) {
+      } finally {
+        setIsGettingStatus(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (sub?.service && sub?.name && sub?.identifier) {
+      getStatus(sub?.service, sub?.name, sub?.identifier);
     }
-  }, [sub?.identifier, sub?.name, sub?.service])
+  }, [sub?.identifier, sub?.name, sub?.service]);
 
   return (
     <ButtonBase
       onClick={() => {
-        if(resource?.data){
-                  onSelect(isSelected ? null : resource?.data)
-
+        if (resource?.data) {
+          onSelect(isSelected ? null : resource?.data);
         } else {
-         refetch()
+          refetch();
         }
       }}
       sx={{
@@ -830,14 +826,23 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
         justifyContent: "space-between",
       }}
     >
-      {isGettingStatus && <Skeleton variant="text" sx={{ fontSize: "1.25rem", width: '100%' }} />}
+      {isGettingStatus && (
+        <Skeleton variant="text" sx={{ fontSize: "1.25rem", width: "100%" }} />
+      )}
       {!isGettingStatus && (
         <>
           <Typography>{sub?.metadata?.title}</Typography>
-          {(!isLoading && !error && !resource?.data) ? <DownloadIcon /> : isLoading ? <DownloadingIcon /> :  isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
+          {!isLoading && !error && !resource?.data ? (
+            <DownloadIcon />
+          ) : isLoading ? (
+            <DownloadingIcon />
+          ) : isSelected ? (
+            <CheckIcon />
+          ) : (
+            <ArrowForwardIosIcon />
+          )}
         </>
       )}
-
     </ButtonBase>
   );
 };
