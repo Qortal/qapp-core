@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { TimelineAction, VideoPlayer, VideoPlayerProps } from "./VideoPlayer";
 import { useGlobalPlayerStore } from "../../state/pip";
 import Player from "video.js/dist/types/player";
 import { useIsPlaying } from "../../state/video";
 import { QortalGetMetadata } from "../../types/interfaces/resources";
+import { GlobalContext } from "../../context/GlobalProvider";
 
 export interface VideoPlayerParentProps {
   qortalVideoResource: QortalGetMetadata;
@@ -23,6 +24,7 @@ export const VideoPlayerParent = ({
   onEnded,
   timelineActions,
 }: VideoPlayerParentProps) => {
+  const context = useContext(GlobalContext)
   const playerRef = useRef<Player | null>(null);
   const locationRef = useRef<string | null>(null);
   const videoLocationRef = useRef<null | string>(null);
@@ -39,7 +41,7 @@ export const VideoPlayerParent = ({
       const isPlaying = isPlayingRef.current;
       const currentSrc = player?.currentSrc();
 
-      if (currentSrc && isPlaying && videoLocationRef.current) {
+      if (context?.enableGlobalVideoFeature && currentSrc && isPlaying && videoLocationRef.current) {
         const current = player?.currentTime?.();
         const currentSource = player?.currentType();
 
@@ -54,7 +56,7 @@ export const VideoPlayerParent = ({
         });
       }
     };
-  }, []);
+  }, [context?.enableGlobalVideoFeature]);
   useEffect(() => {
     return () => {
       const player = playerRef.current;

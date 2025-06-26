@@ -28,6 +28,7 @@ interface GlobalContextType {
   identifierOperations: ReturnType<typeof useIdentifiers>;
   persistentOperations: ReturnType<typeof usePersistentStore>;
   indexOperations: ReturnType<typeof useIndexes>;
+  enableGlobalVideoFeature: boolean
 }
 
 // ✅ Define Config Type for Hook Options
@@ -38,6 +39,7 @@ interface GlobalProviderProps {
     auth?: UseAuthProps;
     appName: string;
     publicSalt: string;
+    enableGlobalVideoFeature?: boolean
   };
 
   toastStyle?: CSSProperties;
@@ -78,8 +80,9 @@ export const GlobalProvider = ({
       identifierOperations,
       persistentOperations,
       indexOperations,
+      enableGlobalVideoFeature: config?.enableGlobalVideoFeature || false
     }),
-    [auth, lists, appInfo, identifierOperations, persistentOperations]
+    [auth, lists, appInfo, identifierOperations, persistentOperations, config?.enableGlobalVideoFeature]
   );
   const { clearOldProgress } = useProgressStore();
 
@@ -90,8 +93,10 @@ export const GlobalProvider = ({
   return (
 
     <GlobalContext.Provider value={contextValue}>
-  
-         <GlobalPipPlayer />
+        {config?.enableGlobalVideoFeature && (
+          <GlobalPipPlayer />
+        )}
+       
     
         
      
