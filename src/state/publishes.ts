@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { QortalGetMetadata } from "../types/interfaces/resources";
+import { QortalGetMetadata, Service } from "../types/interfaces/resources";
 import { Resource } from "../hooks/useResources";
 
 interface PublishCache {
@@ -28,8 +28,16 @@ export interface ResourceStatus {
     localChunkCount: number
     totalChunkCount: number
     percentLoaded: number
-
+    path?: string
+    filename?: string
 } 
+interface ResourceStatusEntry {
+  id: string;
+  metadata: QortalGetMetadata;
+  status: ResourceStatus;
+  path?: string;
+  filename?: string;
+}
 interface PublishState {
   publishes: Record<string, PublishCache>;
   resourceStatus: Record<string, ResourceStatus | null>;
@@ -39,6 +47,8 @@ interface PublishState {
   setPublish: (qortalGetMetadata: QortalGetMetadata, data: Resource | null, customExpiry?: number) => void;
   clearExpiredPublishes: () => void;
   publishExpiryDuration: number; // Default expiry duration
+ getAllResourceStatus: () => ResourceStatusEntry[];
+
 }
 
 export const usePublishStore = create<PublishState>((set, get) => ({
@@ -92,10 +102,13 @@ export const usePublishStore = create<PublishState>((set, get) => ({
     }));
   },
   getResourceStatus: (resourceId) => {
-    if(!resourceId) return null;
-    const status = get().resourceStatus[resourceId];
-    return status || null;
-  },
+  if (!resourceId) return null;
+  const status = get().resourceStatus[resourceId];
+  if (!status) return null;
+
+  const { path, filename, ...rest } = status;
+  return rest;
+},
   clearExpiredPublishes: () => {
     set((state) => {
       const now = Date.now();
@@ -105,4 +118,30 @@ export const usePublishStore = create<PublishState>((set, get) => ({
       return { publishes: updatedPublishes };
     });
   },
+getAllResourceStatus: () => {
+  const { resourceStatus } = get();
+
+  return Object.entries(resourceStatus)
+    .filter(([_, status]) => status !== null)
+    .map(([id, status]) => {
+      const parts = id.split('-');
+      const service = parts[0] as Service;
+      const name = parts[1] || '';
+      const identifier = parts.length > 2 ? parts.slice(2).join('-') : '';
+      
+      const { path, filename, ...rest } = status!; // extract path from old ResourceStatus
+
+      return {
+        id,
+        metadata: {
+          service,
+          name,
+          identifier,
+        },
+        status: rest,
+        path, 
+        filename        
+      };
+    });
+}
 }));

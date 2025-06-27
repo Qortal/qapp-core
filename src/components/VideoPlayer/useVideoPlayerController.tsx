@@ -17,6 +17,8 @@ interface UseVideoControls {
   retryAttempts?: number;
   isMuted: boolean;
   videoRef: any;
+  filename?: string
+  path?: string
 }
 
 export const useVideoPlayerController = (props: UseVideoControls) => {
@@ -27,6 +29,8 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     qortalVideoResource,
     retryAttempts,
     isMuted,
+    filename = "",
+    path = ""
   } = props;
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -43,6 +47,8 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     useResourceStatus({
       resource: !startedFetch ? null : qortalVideoResource,
       retryAttempts,
+      filename,
+      path,
     });
 
   const idleTime = 5000; // Time in milliseconds

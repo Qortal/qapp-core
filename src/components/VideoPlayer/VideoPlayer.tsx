@@ -83,6 +83,8 @@ export interface VideoPlayerProps {
   playerRef: any;
   locationRef: RefObject<string | null>;
   videoLocationRef: RefObject<string | null>;
+  filename?:string
+  path?: string
 }
 
 const videoStyles = {
@@ -117,6 +119,8 @@ export const VideoPlayer = ({
   timelineActions,
   locationRef,
   videoLocationRef,
+  path,
+  filename
 }: VideoPlayerProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [videoObjectFit] = useState<StretchVideoType>("contain");
@@ -178,6 +182,7 @@ export const VideoPlayer = ({
     seekTo,
     togglePictureInPicture,
     downloadResource,
+    
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
@@ -185,6 +190,8 @@ export const VideoPlayer = ({
     retryAttempts,
     isMuted,
     videoRef,
+    filename,
+    path
   });
 
   const showControlsMobile =

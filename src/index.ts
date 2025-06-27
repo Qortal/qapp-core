@@ -8,6 +8,7 @@ export {TimelineAction} from './components/VideoPlayer/VideoPlayer'
 export { useAudioPlayerHotkeys } from './components/AudioPlayer/useAudioPlayerHotkeys';
 export { VideoPlayerParent as VideoPlayer } from './components/VideoPlayer/VideoPlayerParent';
 export { useListReturn } from './hooks/useListData';
+export { useAllResourceStatus } from './hooks/useAllResourceStatus';
 import './index.css'
 export { executeEvent, subscribeToEvent, unsubscribeFromEvent } from './utils/events';
 export { formatBytes, formatDuration } from './utils/numbers';

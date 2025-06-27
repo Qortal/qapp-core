@@ -5,10 +5,14 @@ import { QortalGetMetadata } from "../types/interfaces/resources";
 interface PropsUseResourceStatus {
   resource: QortalGetMetadata | null;
   retryAttempts?: number;
+  path?: string
+  filename?:string
 }
 export const useResourceStatus = ({
   resource,
   retryAttempts = 200,
+  path,
+  filename
 }: PropsUseResourceStatus) => {
   const resourceId = !resource ? null : `${resource.service}-${resource.name}-${resource.identifier}`;
   const status = usePublishStore((state)=> state.getResourceStatus(resourceId)) || null
@@ -41,7 +45,9 @@ export const useResourceStatus = ({
              "status": "SEARCHING",
             "localChunkCount": 0,
             "totalChunkCount": 0,
-            "percentLoaded": 0
+            "percentLoaded": 0,
+            path: path || "",
+            filename: filename || ""
             }
           );
         }

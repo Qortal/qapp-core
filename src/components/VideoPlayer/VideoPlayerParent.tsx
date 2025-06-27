@@ -14,6 +14,8 @@ export interface VideoPlayerParentProps {
   autoPlay?: boolean;
   onEnded?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
   timelineActions?: TimelineAction[];
+  path?: string
+  filename?: string
 }
 export const VideoPlayerParent = ({
   videoRef,
@@ -23,6 +25,8 @@ export const VideoPlayerParent = ({
   autoPlay,
   onEnded,
   timelineActions,
+  path,
+  filename
 }: VideoPlayerParentProps) => {
   const context = useContext(GlobalContext)
   const playerRef = useRef<Player | null>(null);
@@ -91,6 +95,8 @@ export const VideoPlayerParent = ({
       playerRef={playerRef}
       locationRef={locationRef}
       videoLocationRef={videoLocationRef}
+      filename={filename}
+      path={path}
     />
   );
 };
