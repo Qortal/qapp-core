@@ -1,4 +1,6 @@
-export const createAvatarLink = (qortalName: string)=> {
+export const createAvatarLink = (qortalName: string): string => {
+   if (!qortalName?.trim()) return '';
+
     return `/arbitrary/THUMBNAIL/${encodeURIComponent(qortalName)}/qortal_avatar?async=true`
 }
 

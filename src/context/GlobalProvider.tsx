@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { useAuth, UseAuthProps } from "../hooks/useAuth";
+import { useAuth, UseAuthProps } from "../hooks/useInitializeAuth";
 import { useResources } from "../hooks/useResources";
 import { useAppInfo } from "../hooks/useAppInfo";
 import { useIdentifiers } from "../hooks/useIdentifiers";
@@ -15,10 +15,8 @@ import { IndexManager } from "../components/IndexManager/IndexManager";
 import { useIndexes } from "../hooks/useIndexes";
 import { useProgressStore } from "../state/video";
 import { GlobalPipPlayer } from "../hooks/useGlobalPipPlayer";
-import { Location, NavigateFunction } from "react-router-dom";
 import { MultiPublishDialog } from "../components/MultiPublish/MultiPublishDialog";
 import { useMultiplePublishStore } from "../state/multiplePublish";
-import { useGlobalPlayerStore } from "../state/pip";
 
 // ✅ Define Global Context Type
 interface GlobalContextType {
@@ -28,7 +26,7 @@ interface GlobalContextType {
   identifierOperations: ReturnType<typeof useIdentifiers>;
   persistentOperations: ReturnType<typeof usePersistentStore>;
   indexOperations: ReturnType<typeof useIndexes>;
-  enableGlobalVideoFeature: boolean
+  enableGlobalVideoFeature: boolean;
 }
 
 // ✅ Define Config Type for Hook Options
@@ -39,7 +37,7 @@ interface GlobalProviderProps {
     auth?: UseAuthProps;
     appName: string;
     publicSalt: string;
-    enableGlobalVideoFeature?: boolean
+    enableGlobalVideoFeature?: boolean;
   };
 
   toastStyle?: CSSProperties;
@@ -47,9 +45,6 @@ interface GlobalProviderProps {
 
 // ✅ Create Context with Proper Type
 export const GlobalContext = createContext<GlobalContextType | null>(null);
-
-
-
 
 // 🔹 Global Provider (Handles Multiple Hooks)
 export const GlobalProvider = ({
@@ -59,7 +54,7 @@ export const GlobalProvider = ({
 }: GlobalProviderProps) => {
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
-  const isPublishing = useMultiplePublishStore((s)=> s.isPublishing);
+  const isPublishing = useMultiplePublishStore((s) => s.isPublishing);
   const appInfo = useAppInfo(config.appName, config?.publicSalt);
   const lists = useResources();
   const identifierOperations = useIdentifiers(
@@ -80,9 +75,16 @@ export const GlobalProvider = ({
       identifierOperations,
       persistentOperations,
       indexOperations,
-      enableGlobalVideoFeature: config?.enableGlobalVideoFeature || false
+      enableGlobalVideoFeature: config?.enableGlobalVideoFeature || false,
     }),
-    [auth, lists, appInfo, identifierOperations, persistentOperations, config?.enableGlobalVideoFeature]
+    [
+      auth,
+      lists,
+      appInfo,
+      identifierOperations,
+      persistentOperations,
+      config?.enableGlobalVideoFeature,
+    ]
   );
   const { clearOldProgress } = useProgressStore();
 
@@ -91,18 +93,10 @@ export const GlobalProvider = ({
   }, []);
 
   return (
-
     <GlobalContext.Provider value={contextValue}>
-        {config?.enableGlobalVideoFeature && (
-          <GlobalPipPlayer />
-        )}
-       
-    
-        
-     
-      {isPublishing && (
-         <MultiPublishDialog />
-      )}
+      {config?.enableGlobalVideoFeature && <GlobalPipPlayer />}
+
+      {isPublishing && <MultiPublishDialog />}
       <Toaster
         position="top-center"
         toastOptions={{
@@ -115,7 +109,6 @@ export const GlobalProvider = ({
 
       {children}
     </GlobalContext.Provider>
-
   );
 };
 

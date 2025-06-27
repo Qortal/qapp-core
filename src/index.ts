@@ -9,6 +9,8 @@ export { useAudioPlayerHotkeys } from './components/AudioPlayer/useAudioPlayerHo
 export { VideoPlayerParent as VideoPlayer } from './components/VideoPlayer/VideoPlayerParent';
 export { useListReturn } from './hooks/useListData';
 export { useAllResourceStatus } from './hooks/useAllResourceStatus';
+export { useQortBalance } from './hooks/useBalance';
+export { useAuth } from './hooks/useAuth';
 import './index.css'
 export { executeEvent, subscribeToEvent, unsubscribeFromEvent } from './utils/events';
 export { formatBytes, formatDuration } from './utils/numbers';

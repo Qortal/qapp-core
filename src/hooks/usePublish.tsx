@@ -7,7 +7,6 @@ import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
 import { useCacheStore } from "../state/cache";
 import { useMultiplePublishStore, usePublishStatusStore } from "../state/multiplePublish";
 import { ResourceToPublish } from "../types/qortalRequests/types";
-import { MultiplePublishError } from "../components/MultiPublish/MultiPublishDialog";
 
 interface StoredPublish {
     qortalMetadata: QortalMetadata;

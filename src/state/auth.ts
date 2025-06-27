@@ -23,6 +23,7 @@ interface AuthState {
   setIsLoadingUser: (loading: boolean) => void;
   setIsLoadingBalance: (loading: boolean) => void;
   setErrorLoadingUser: (error: string | null) => void;
+  setName: (name: string | null) => void;
 }
 
 // ✅ Typed Zustand Store
@@ -43,4 +44,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   setIsLoadingUser: (loading) => set({ isLoadingUser: loading }),
   setIsLoadingBalance: (loading) => set({ isLoadingInitialBalance: loading }),
   setErrorLoadingUser: (error) => set({ errorLoadingUser: error }),
+  setName: (name) =>
+    set({
+      name,
+      avatarUrl: !name
+        ? null
+        : `/arbitrary/THUMBNAIL/${encodeURIComponent(name)}/qortal_avatar?async=true`,
+    }),
 }));
