@@ -237,6 +237,7 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
           ...params,
           limit: targetLimit - filteredResults.length, // Adjust limit dynamically
           before: lastCreated,
+          excludeBlocked: true
         });
         if (!response || response.length === 0) {
           break; // No more data available
@@ -286,6 +287,7 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
           ...params,
           limit: targetLimit - filteredResults.length,
           before: lastCreated,
+          excludeBlocked: true
         });
   
         if (!response || response.length === 0) break;
