@@ -71,6 +71,9 @@ interface CacheState {
   resourceCacheExpiryDuration: number;
   setSearchCacheExpiryDuration: (duration: number) => void;
   setResourceCacheExpiryDuration: (duration: number)=> void;
+  deleteSearchCache: (listName: string) => void;
+  filterSearchCacheItemsByNames: (names: string[]) => void;
+
 }
 
 export const useCacheStore = create<CacheState>
@@ -128,6 +131,12 @@ export const useCacheStore = create<CacheState>
               },
             };
           }),
+          deleteSearchCache: (listName) =>
+  set((state) => {
+    const updatedSearchCache = { ...state.searchCache };
+    delete updatedSearchCache[listName];
+    return { searchCache: updatedSearchCache };
+  }),
           setSearchParamsForList: (listName, searchParamsStringified) =>
             set((state) => {
               const existingList = state.searchCache[listName] || {};
@@ -238,6 +247,27 @@ export const useCacheStore = create<CacheState>
           );
           return { searchCache: validSearchCache };
         }),
+        filterSearchCacheItemsByNames: (names) =>
+  set((state) => {
+    const updatedSearchCache: SearchCache = {};
+
+    for (const [listName, list] of Object.entries(state.searchCache)) {
+      const updatedSearches: { [searchTerm: string]: QortalMetadata[] } = {};
+
+      for (const [term, items] of Object.entries(list.searches)) {
+        updatedSearches[term] = items.filter(
+          (item) => !names.includes(item.name)
+        );
+      }
+
+      updatedSearchCache[listName] = {
+        ...list,
+        searches: updatedSearches,
+      };
+    }
+
+    return { searchCache: updatedSearchCache };
+  }),
     }),
  
 );

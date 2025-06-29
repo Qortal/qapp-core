@@ -11,6 +11,7 @@ export { useListReturn } from './hooks/useListData';
 export { useAllResourceStatus } from './hooks/useAllResourceStatus';
 export { useQortBalance } from './hooks/useBalance';
 export { useAuth } from './hooks/useAuth';
+export { useBlockedNames } from './hooks/useBlockedNames';
 import './index.css'
 export { executeEvent, subscribeToEvent, unsubscribeFromEvent } from './utils/events';
 export { formatBytes, formatDuration } from './utils/numbers';

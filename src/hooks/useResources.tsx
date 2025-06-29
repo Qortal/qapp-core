@@ -23,6 +23,7 @@ export interface Resource {
 }
 export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
   const setSearchCache = useCacheStore((s) => s.setSearchCache);
+  const deleteSearchCache = useCacheStore((s)=> s.deleteSearchCache)
   const getSearchCache = useCacheStore((s) => s.getSearchCache);
   const getResourceCache = useCacheStore((s) => s.getResourceCache);
   const setResourceCache = useCacheStore((s) => s.setResourceCache);
@@ -32,7 +33,12 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
   const addList = useListStore((s) => s.addList);
     const setPublish = usePublishStore((state)=> state.setPublish)
   
-  const deleteList = useListStore(state => state.deleteList)
+  const deleteListInStore = useListStore(state => state.deleteList)
+
+  const deleteList = useCallback((listName: string)=> {
+    deleteListInStore(listName)
+    deleteSearchCache(listName)
+  }, [])
   const requestControllers = new Map<string, AbortController>();
 
   const getArbitraryResource = async (
