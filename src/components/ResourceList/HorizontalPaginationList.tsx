@@ -18,7 +18,7 @@ interface HorizontalPaginatedListProps {
   defaultLoaderParams?: DefaultLoaderParams;
 }
 
-export const HorizontalPaginatedList = ({
+ const MemorizedComponent = ({
   items,
   listItem,
   loaderItem,
@@ -30,6 +30,7 @@ export const HorizontalPaginatedList = ({
   disablePagination,
   defaultLoaderParams
 }: HorizontalPaginatedListProps) => {
+
 const lastItemRef= useRef<any>(null)
 const lastItemRef2= useRef<any>(null)
 const [columnsPerRow, setColumnsPerRow] = useState<null | number>(null)
@@ -102,3 +103,7 @@ const displayedItems = disablePagination ? items : items?.length < (displayedLim
     </div>
   );
 };
+
+
+
+export const HorizontalPaginatedList = React.memo(MemorizedComponent);

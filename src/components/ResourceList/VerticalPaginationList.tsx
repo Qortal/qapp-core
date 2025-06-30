@@ -23,7 +23,7 @@ interface VerticalPaginatedListProps {
   defaultLoaderParams?: DefaultLoaderParams;
 }
 
-export const VerticalPaginatedList = ({
+ const MemorizedComponent = ({
   items,
   listItem,
   loaderItem,
@@ -111,3 +111,5 @@ export const VerticalPaginatedList = ({
     </>
   );
 };
+
+export const VerticalPaginatedList = React.memo(MemorizedComponent);
