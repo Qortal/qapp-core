@@ -116,20 +116,25 @@ export const ProgressSlider = ({
   const debounceTimeoutRef = useRef<any>(null);
   const previousBlobUrlRef = useRef<string | null>(null);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const slider = sliderRef.current;
-    if (!slider) return;
+const handleMouseMove = (e: React.MouseEvent) => {
+  const slider = sliderRef.current;
+  if (!slider) return;
 
-    const rect = slider.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = x / rect.width;
-    const time = Math.min(Math.max(0, percent * duration), duration);
-    setHoverX(e.clientX);
+  const rect = slider.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const percent = x / rect.width;
+  const time = Math.min(Math.max(0, percent * duration), duration);
 
-    setShowDuration(time);
-    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-  };
+  // Position anchor element at the correct spot
+  if (hoverAnchorRef.current) {
+    hoverAnchorRef.current.style.left = `${x}px`;
+  }
 
+  setHoverX(e.clientX); // optional – can be removed unless used elsewhere
+  setShowDuration(time);
+
+  if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+};
   const handleMouseLeave = () => {
     lastRequestedTimeRef.current = null;
     setThumbnailUrl(null);
@@ -167,17 +172,17 @@ export const ProgressSlider = ({
         padding: isVideoPlayerSmall ? "0px" : "0px 10px",
       }}
     >
-      <Box
-        ref={hoverAnchorRef}
-        sx={{
-          position: "absolute",
-          left: hoverX ?? -9999,
-          top: 0,
-          width: "1px",
-          height: "1px",
-          pointerEvents: "none",
-        }}
-      />
+     <Box
+  ref={hoverAnchorRef}
+  sx={{
+    position: "absolute",
+    top: 0,
+    width: "1px",
+    height: "1px",
+    pointerEvents: "none",
+    transform: "translateX(-50%)", // center popper on the anchor
+  }}
+/>
       <Slider
         ref={sliderRef}
         onMouseMove={handleMouseMove}
@@ -223,7 +228,7 @@ export const ProgressSlider = ({
           anchorEl={hoverAnchorRef.current}
           placement="top"
           disablePortal
-          modifiers={[{ name: "offset", options: { offset: [-10, 0] } }]}
+          modifiers={[{ name: "offset", options: { offset: [10, 0] } }]}
         >
           <Box
             sx={{

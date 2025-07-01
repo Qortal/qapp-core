@@ -319,7 +319,7 @@ export const VideoPlayer = ({
   useVideoPlayerHotKeys(hotkeyHandlers);
 
   const updateProgress = useCallback(() => {
-    if(!isPlaying) return
+    if(!isPlaying || !isPlayerInitialized) return
     const player = playerRef?.current;
     if (!player || typeof player?.currentTime !== "function") return;
 
@@ -328,7 +328,7 @@ export const VideoPlayer = ({
       setProgress(videoLocation, currentTime);
       setLocalProgress(currentTime);
     }
-  }, [videoLocation, isPlaying]);
+  }, [videoLocation, isPlaying, isPlayerInitialized]);
 
   useEffect(() => {
     if (videoLocation) {
@@ -616,8 +616,11 @@ export const VideoPlayer = ({
             playerRef.current?.poster("");
             playerRef.current?.playbackRate(playbackRate);
             playerRef.current?.volume(volume);
-            if (videoLocationRef.current) {
-              const savedProgress = getProgress(videoLocationRef.current);
+            const key = `${resource.service}-${resource.name}-${resource.identifier}`
+            console.log('key', key)
+            if (key) {
+              const savedProgress = getProgress(key);
+              console.log('savedProgress', savedProgress)
               if (typeof savedProgress === "number") {
                 playerRef.current?.currentTime(savedProgress);
               }
