@@ -83,7 +83,7 @@ interface BaseProps  {
   }
   onNewData?: (hasNewData: boolean) => void;
   ref?: any
-  scrollerRef?: React.RefObject<HTMLElement | null>
+  scrollerRef?: React.RefObject<HTMLElement | null> | null
 }
 
 const defaultStyles = {

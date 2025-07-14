@@ -78,7 +78,7 @@ export const LoadingVideo = ({
                 <>
                   <>{getDownloadProgress(percentLoaded)}</>
 
-                  <> Refetching in 25 seconds</>
+                  <> Refetching in 10 seconds</>
                 </>
               ) : status === "DOWNLOADED" ? (
                 <>Download Completed: building video...</>

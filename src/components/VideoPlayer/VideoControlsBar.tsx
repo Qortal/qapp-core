@@ -11,6 +11,7 @@ import {
 } from "./VideoControls";
 import SubtitlesIcon from "@mui/icons-material/Subtitles";
 import { CustomFontTooltip } from "./CustomFontTooltip";
+import { RefObject } from "react";
 interface VideoControlsBarProps {
   canPlay: boolean;
   isScreenSmall: boolean;
@@ -39,6 +40,7 @@ interface VideoControlsBarProps {
   togglePictureInPicture: () => void;
   isVideoPlayerSmall: boolean;
   setLocalProgress: (val: number) => void;
+  isOnTimeline: RefObject<boolean>;
 }
 
 export const VideoControlsBar = ({
@@ -69,6 +71,7 @@ export const VideoControlsBar = ({
   openPlaybackMenu,
   togglePictureInPicture,
   isVideoPlayerSmall,
+  isOnTimeline
 }: VideoControlsBarProps) => {
   const showMobileControls = isScreenSmall && canPlay;
 
@@ -111,6 +114,7 @@ export const VideoControlsBar = ({
             playerRef={playerRef}
             progress={progress}
             duration={duration}
+            isOnTimeline={isOnTimeline}
           />
           {!isVideoPlayerSmall && (
             <Box

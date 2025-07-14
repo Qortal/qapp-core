@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import { QortalGetMetadata, Service } from "../types/interfaces/resources";
 import { Resource } from "../hooks/useResources";
+import { RequestQueueWithPromise } from "../utils/queue";
+
+export const requestQueueBuildFile = new RequestQueueWithPromise(
+  1
+);
+export const requestQueueStatusFile = new RequestQueueWithPromise(
+  2
+);
 
 interface PublishCache {
   data: Resource | null;
@@ -31,6 +39,12 @@ export interface ResourceStatus {
     path?: string
     filename?: string
 } 
+
+interface GlobalDownloadEntry {
+  interval: ReturnType<typeof setInterval> | null;
+  timeout: ReturnType<typeof setTimeout> | null;
+}
+
 interface ResourceStatusEntry {
   id: string;
   metadata: QortalGetMetadata;
@@ -48,12 +62,22 @@ interface PublishState {
   clearExpiredPublishes: () => void;
   publishExpiryDuration: number; // Default expiry duration
  getAllResourceStatus: () => ResourceStatusEntry[];
+   startGlobalDownload: (
+    resourceId: string,
+    metadata: QortalGetMetadata,
+    retryAttempts: number,
+    path?: string,
+    filename?: string
+  ) => void;
+  stopGlobalDownload: (resourceId: string) => void;
+  globalDownloads: Record<string, GlobalDownloadEntry>;
 
 }
 
 export const usePublishStore = create<PublishState>((set, get) => ({
   resourceStatus: {},
   publishes: {},
+  globalDownloads: {},
   publishExpiryDuration: 5 * 60 * 1000, // Default expiry: 5 minutes
 
   getPublish: (qortalGetMetadata, ignoreExpire = false) => {
@@ -143,5 +167,204 @@ getAllResourceStatus: () => {
         filename        
       };
     });
-}
+},
+startGlobalDownload: (
+  resourceId,
+  metadata,
+  retryAttempts,
+  path,
+  filename
+) => {
+  if (get().globalDownloads[resourceId]) return;
+
+  const { service, name, identifier } = metadata;
+  const setResourceStatus = get().setResourceStatus;
+  const stopGlobalDownload = get().stopGlobalDownload;
+  const getResourceStatus = get().getResourceStatus;
+
+  const intervalMap: Record<string, any> = {};
+  const timeoutMap: Record<string, any> = {};
+  const statusMap: Record<string, ResourceStatus | null> = {};
+
+  statusMap[resourceId] = getResourceStatus(resourceId);
+
+  let isCalling = false;
+  let percentLoaded = 0;
+  let timer = 29;
+  let tries = 0;
+  let calledFirstTime = false;
+  let isPaused = false
+  const callFunction = async (build?: boolean, isRecalling?: boolean) => {
+    try {
+      console.log('retryAttempts', retryAttempts, tries)
+      if ((isCalling || isPaused) && !build) return;
+         isCalling = true;
+      statusMap[resourceId] = getResourceStatus(resourceId);
+
+      if (statusMap[resourceId]?.status === 'READY') {
+        if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
+        if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
+        intervalMap[resourceId] = null;
+        timeoutMap[resourceId] = null;
+        stopGlobalDownload(resourceId);
+        return;
+      }
+
+      if (!isRecalling) {
+        setResourceStatus(
+          { service, name, identifier },
+          {
+            status: "SEARCHING",
+            localChunkCount: 0,
+            totalChunkCount: 0,
+            percentLoaded: 0,
+            path: path || "",
+            filename: filename || ""
+          }
+        );
+      }
+
+      
+    
+
+      let res;
+
+      if (!build) {
+        const urlFirstTime = `/arbitrary/resource/status/${service}/${name}/${identifier}`;
+        const resCall = await requestQueueStatusFile.enqueue(()=> fetch(urlFirstTime, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        })) 
+        // res = await resCall.json();
+        res = await resCall.json()
+        setResourceStatus({ service, name, identifier }, { ...res });
+
+        if (tries > retryAttempts) {
+          if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
+          if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
+          intervalMap[resourceId] = null;
+          timeoutMap[resourceId] = null;
+          stopGlobalDownload(resourceId);
+          setResourceStatus({ service, name, identifier }, {
+            ...res,
+            status: "FAILED_TO_DOWNLOAD"
+          });
+          return;
+        }
+
+       
+      }
+
+      if (build || (calledFirstTime === false && res?.status !== "READY")) {
+        calledFirstTime = true;
+        isCalling = true;
+        const url = `/arbitrary/resource/properties/${service}/${name}/${identifier}?build=true`;
+        // const resCall = await fetch(url, {
+        //   method: "GET",
+        //   headers: { "Content-Type": "application/json" },
+        // });
+        const resCall = await requestQueueBuildFile.enqueue(()=> fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }))
+        res = await resCall.json();
+          isPaused = false
+      }
+
+  
+    
+
+      if (res.localChunkCount) {
+        if (res.percentLoaded) {
+          if (
+            res.percentLoaded === percentLoaded &&
+            res.percentLoaded !== 100
+          ) {
+            timer -= 5;
+          } else {
+            timer = 29;
+          }
+
+          if (timer < 0) {
+            timer = 29;
+            isCalling = true;
+            isPaused = true
+             tries += 1;
+            setResourceStatus({ service, name, identifier }, {
+              ...res,
+              status: "REFETCHING"
+            });
+
+            timeoutMap[resourceId] = setTimeout(() => {
+           
+              callFunction(true, true);
+            }, 10000);
+
+            return;
+          }
+
+          percentLoaded = res.percentLoaded;
+        }
+
+        setResourceStatus({ service, name, identifier }, { ...res });
+      }
+
+      if (res?.status === "READY") {
+        if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
+        if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
+        intervalMap[resourceId] = null;
+        timeoutMap[resourceId] = null;
+        stopGlobalDownload(resourceId);
+        setResourceStatus({ service, name, identifier }, { ...res });
+        return;
+      }
+
+      if (res?.status === "DOWNLOADED") {
+        const url = `/arbitrary/resource/status/${service}/${name}/${identifier}?build=true`;
+        const resCall = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        res = await resCall.json();
+      }
+
+    } catch (error) {
+      console.error("Error during resource fetch:", error);
+    } finally {
+      isCalling = false;
+    }
+  };
+
+  callFunction();
+
+  intervalMap[resourceId] = setInterval(() => {
+    callFunction(false, true);
+  }, 5000);
+
+  set((state) => ({
+    globalDownloads: {
+      ...state.globalDownloads,
+      [resourceId]: {
+        interval: intervalMap[resourceId],
+        timeout: timeoutMap[resourceId],
+      },
+    },
+  }));
+},
+
+
+
+  stopGlobalDownload: (resourceId) => {
+    const entry = get().globalDownloads[resourceId];
+    if (entry) {
+      if (entry.interval !== null) clearInterval(entry.interval);
+      if (entry.timeout !== null) clearTimeout(entry.timeout);
+      set((state) => {
+        const updated = { ...state.globalDownloads };
+        delete updated[resourceId];
+        return { globalDownloads: updated };
+      });
+    }
+  },
+
 }));

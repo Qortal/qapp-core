@@ -221,6 +221,7 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
         delete copyParams.before
         delete copyParams.offset
         setSearchParamsForList(listName, JSON.stringify(copyParams))
+        fetchDataFromResults(searchCache, returnType);
         return searchCache;
       }
 

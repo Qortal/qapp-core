@@ -72,6 +72,7 @@ export const ProgressSlider = ({
   playerRef,
   resetHideTimeout,
   isVideoPlayerSmall,
+  isOnTimeline
 }: any) => {
   const sliderRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -132,6 +133,7 @@ const handleMouseMove = (e: React.MouseEvent) => {
 
   setHoverX(e.clientX); // optional – can be removed unless used elsewhere
   setShowDuration(time);
+ 
 
   if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
 };
@@ -163,6 +165,15 @@ const handleMouseMove = (e: React.MouseEvent) => {
   const handleClickCapture = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
+
+  useEffect(()=> {
+    if(!isOnTimeline) return
+    if(hoverX){
+      isOnTimeline.current = true
+    } else {
+      isOnTimeline.current = false
+    }
+  }, [hoverX])
 
   return (
     <Box

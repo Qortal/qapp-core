@@ -7,12 +7,17 @@ interface PropsUseResourceStatus {
   retryAttempts?: number;
   path?: string
   filename?:string
+  isGlobal?: boolean;
+  disableAutoFetch?: boolean
+
 }
 export const useResourceStatus = ({
   resource,
-  retryAttempts = 200,
+  retryAttempts = 40,
   path,
-  filename
+  filename,
+  isGlobal,
+  disableAutoFetch
 }: PropsUseResourceStatus) => {
   const resourceId = !resource ? null : `${resource.service}-${resource.name}-${resource.identifier}`;
   const status = usePublishStore((state)=> state.getResourceStatus(resourceId)) || null
@@ -20,7 +25,8 @@ export const useResourceStatus = ({
   const timeoutRef = useRef<any>(null)
   const setResourceStatus = usePublishStore((state) => state.setResourceStatus);
   const statusRef = useRef<ResourceStatus | null>(null)
-
+const startGlobalDownload = usePublishStore((state) => state.startGlobalDownload);
+const stopGlobalDownload = usePublishStore((state) => state.stopGlobalDownload);
   useEffect(()=> {
     statusRef.current = status
   }, [status])
@@ -53,7 +59,7 @@ export const useResourceStatus = ({
         }
         let isCalling = false;
         let percentLoaded = 0;
-        let timer = 24;
+        let timer = 29;
         let tries = 0;
         let calledFirstTime = false;
         const callFunction = async () => {
@@ -119,11 +125,11 @@ export const useResourceStatus = ({
               ) {
                 timer = timer - 5;
               } else {
-                timer = 24;
+                timer = 29;
               }
 
               if (timer < 0) {
-                timer = 24;
+                timer = 29;
                 isCalling = true;
 
                 setResourceStatus(
@@ -137,7 +143,7 @@ export const useResourceStatus = ({
                 timeoutRef.current = setTimeout(() => {
                   isCalling = false;
                   downloadResource({ name, service, identifier }, true, true);
-                }, 25000);
+                }, 10000);
 
                 return;
               }
@@ -201,13 +207,22 @@ export const useResourceStatus = ({
     [retryAttempts]
   );
   useEffect(() => {
+    if(disableAutoFetch) return
     if (resource?.identifier && resource?.name && resource?.service) {
-      statusRef.current = null
+          const id = `${resource.service}-${resource.name}-${resource.identifier}`;
+
+      if (isGlobal) {
+
+      startGlobalDownload(id, resource, retryAttempts, path, filename);
+    } else {
+statusRef.current = null
       downloadResource({
         service: resource?.service,
         name: resource?.name,
         identifier: resource?.identifier,
       });
+    }
+      
     }
     return ()=> {
         if(intervalRef.current){
@@ -224,10 +239,13 @@ export const useResourceStatus = ({
     resource?.name,
     resource?.service,
     downloadResource,
+    isGlobal,
+    retryAttempts, path, filename, disableAutoFetch
   ]);
 
   const handledownloadResource = useCallback(()=> {
 if (resource?.identifier && resource?.name && resource?.service) {
+
   if(intervalRef.current){
             clearInterval(intervalRef.current)
             intervalRef.current = null
@@ -236,18 +254,33 @@ if (resource?.identifier && resource?.name && resource?.service) {
             clearTimeout(timeoutRef.current)
             timeoutRef.current = null
         }
-
+         setResourceStatus(
+            { service: resource.service, name: resource.name, identifier: resource.identifier },
+            {
+             "status": "SEARCHING",
+            "localChunkCount": 0,
+            "totalChunkCount": 0,
+            "percentLoaded": 0,
+            path: path || "",
+            filename: filename || ""
+            }
+          );
+ if (isGlobal) {
+   const id = `${resource.service}-${resource.name}-${resource.identifier}`;
+   stopGlobalDownload(id)
+      startGlobalDownload(id, resource, retryAttempts, path, filename);
+    } else {
       downloadResource({
         service: resource?.service,
         name: resource?.name,
         identifier: resource?.identifier,
       });
     }
-  
+}
   }, [resource?.identifier,
     resource?.name,
     resource?.service,
-    downloadResource])
+    downloadResource, isGlobal, retryAttempts, path, filename])
 
   const resourceUrl = resource ? `/arbitrary/${resource.service}/${resource.name}/${resource.identifier}` : null;
 

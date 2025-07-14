@@ -5,7 +5,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Box, IconButton } from "@mui/material";
 import { VideoContainer } from "../components/VideoPlayer/VideoPlayer-styles";
 import { Rnd } from "react-rnd";
-import { useProgressStore } from "../state/video";
+import { useProgressStore, useVideoStore } from "../state/video";
 import CloseIcon from "@mui/icons-material/Close";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
@@ -28,7 +28,9 @@ export const GlobalPipPlayer = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-
+ const volume = useVideoStore(
+    (state) => state.playbackSettings.volume
+  );
   const context = useContext(GlobalContext);
   const navigate = useNavigate()
   const videoNode = useRef<HTMLVideoElement>(null);
@@ -106,7 +108,7 @@ export const GlobalPipPlayer = () => {
       // Set source and resume if needed
       player.src({ src: videoSrc, type: type });
       player.currentTime(currentTime);
-
+      player.volume(volume)
       if (isPlaying) {
         const playPromise = player.play();
 
@@ -119,7 +121,7 @@ export const GlobalPipPlayer = () => {
         player.pause();
       }
     }
-  }, [videoSrc, type, isPlaying, currentTime]);
+  }, [videoSrc, type, isPlaying, currentTime, volume]);
 
   //   const onDragStart = () => {
   //     timer = Date.now();

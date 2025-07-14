@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export const useScrollTrackerRef = (listName: string, hasList: boolean, scrollerRef: React.RefObject<HTMLElement | null> | undefined) => {
+export const useScrollTrackerRef = (listName: string, hasList: boolean, scrollerRef: React.RefObject<HTMLElement | null> | undefined | null) => {
   const [hasMounted, setHasMounted] = useState(false)
   const hasScrollRef = useRef(false)
   useEffect(() => {

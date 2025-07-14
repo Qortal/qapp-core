@@ -125,6 +125,7 @@ export const VideoPlayer = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [videoObjectFit] = useState<StretchVideoType>("contain");
   const { isPlaying, setIsPlaying } = useIsPlaying();
+  const isOnTimeline = useRef(false)
   const [width, setWidth] = useState(0);
   useEffect(() => {
     const observer = new ResizeObserver(([entry]) => {
@@ -373,8 +374,9 @@ export const VideoPlayer = ({
       backgroundColor: "#000000",
       height: isFullscreen ? "calc(100vh - 40px)" : "100%",
       width: "100%",
+      cursor: showControls ? 'default' : "none"
     };
-  }, [videoObjectFit, isFullscreen]);
+  }, [videoObjectFit, isFullscreen, showControls]);
 
   const handleEnded = useCallback(
     (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
@@ -415,6 +417,7 @@ export const VideoPlayer = ({
     setShowControls(true);
     if (hideTimeout.current) clearTimeout(hideTimeout.current);
     hideTimeout.current = setTimeout(() => {
+      if(isOnTimeline?.current) return
       setShowControls(false);
     }, 2500); // 3s of inactivity
   };
@@ -797,6 +800,7 @@ export const VideoPlayer = ({
             openPlaybackMenu={openPlaybackMenu}
             togglePictureInPicture={togglePictureInPicture}
             setLocalProgress={setLocalProgress}
+            isOnTimeline={isOnTimeline}
           />
         )}
         {timelineActions && Array.isArray(timelineActions) && (

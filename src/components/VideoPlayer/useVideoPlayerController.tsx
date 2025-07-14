@@ -49,6 +49,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
       retryAttempts,
       filename,
       path,
+      isGlobal: true
     });
 
   const idleTime = 5000; // Time in milliseconds
