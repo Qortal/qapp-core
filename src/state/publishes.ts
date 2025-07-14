@@ -230,13 +230,13 @@ startGlobalDownload: (
       let res;
 
       if (!build) {
-        const urlFirstTime = `/arbitrary/resource/status/${service}/${name}/${identifier}`;
-        const resCall = await requestQueueStatusFile.enqueue(()=> fetch(urlFirstTime, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        })) 
+        res = await requestQueueStatusFile.enqueue(()=> qortalRequest({
+        action: "GET_QDN_RESOURCE_STATUS",
+        name: name,
+        service: service,
+        identifier: identifier,
+      })) 
         // res = await resCall.json();
-        res = await resCall.json()
         setResourceStatus({ service, name, identifier }, { ...res });
 
         if (tries > retryAttempts) {
@@ -320,12 +320,14 @@ startGlobalDownload: (
       }
 
       if (res?.status === "DOWNLOADED") {
-        const url = `/arbitrary/resource/status/${service}/${name}/${identifier}?build=true`;
-        const resCall = await fetch(url, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
-        res = await resCall.json();
+       res =  await qortalRequest({
+        action: "GET_QDN_RESOURCE_STATUS",
+        name: name,
+        service: service,
+        identifier: identifier,
+        build: true
+      })
+      
       }
 
     } catch (error) {

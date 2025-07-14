@@ -5,11 +5,10 @@ import { QortalGetMetadata } from "../types/interfaces/resources";
 interface PropsUseResourceStatus {
   resource: QortalGetMetadata | null;
   retryAttempts?: number;
-  path?: string
-  filename?:string
+  path?: string;
+  filename?: string;
   isGlobal?: boolean;
-  disableAutoFetch?: boolean
-
+  disableAutoFetch?: boolean;
 }
 export const useResourceStatus = ({
   resource,
@@ -17,43 +16,54 @@ export const useResourceStatus = ({
   path,
   filename,
   isGlobal,
-  disableAutoFetch
+  disableAutoFetch,
 }: PropsUseResourceStatus) => {
-  const resourceId = !resource ? null : `${resource.service}-${resource.name}-${resource.identifier}`;
-  const status = usePublishStore((state)=> state.getResourceStatus(resourceId)) || null
-  const intervalRef = useRef<any>(null)
-  const timeoutRef = useRef<any>(null)
+  const resourceId = !resource
+    ? null
+    : `${resource.service}-${resource.name}-${resource.identifier}`;
+  const status =
+    usePublishStore((state) => state.getResourceStatus(resourceId)) || null;
+  const intervalRef = useRef<any>(null);
+  const timeoutRef = useRef<any>(null);
   const setResourceStatus = usePublishStore((state) => state.setResourceStatus);
-  const statusRef = useRef<ResourceStatus | null>(null)
-const startGlobalDownload = usePublishStore((state) => state.startGlobalDownload);
-const stopGlobalDownload = usePublishStore((state) => state.stopGlobalDownload);
-  useEffect(()=> {
-    statusRef.current = status
-  }, [status])
+  const statusRef = useRef<ResourceStatus | null>(null);
+  const startGlobalDownload = usePublishStore(
+    (state) => state.startGlobalDownload
+  );
+  const stopGlobalDownload = usePublishStore(
+    (state) => state.stopGlobalDownload
+  );
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
   const downloadResource = useCallback(
-    ({ service, name, identifier }: QortalGetMetadata, build?: boolean, isRecalling?: boolean) => {
+    (
+      { service, name, identifier }: QortalGetMetadata,
+      build?: boolean,
+      isRecalling?: boolean
+    ) => {
       try {
-        if(statusRef.current && statusRef.current?.status === 'READY'){
+        if (statusRef.current && statusRef.current?.status === "READY") {
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
           }
           if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
           }
-           intervalRef.current = null;
-            timeoutRef.current = null;
-          return
+          intervalRef.current = null;
+          timeoutRef.current = null;
+          return;
         }
-        if(!isRecalling){
-            setResourceStatus(
+        if (!isRecalling) {
+          setResourceStatus(
             { service, name, identifier },
             {
-             "status": "SEARCHING",
-            "localChunkCount": 0,
-            "totalChunkCount": 0,
-            "percentLoaded": 0,
-            path: path || "",
-            filename: filename || ""
+              status: "SEARCHING",
+              localChunkCount: 0,
+              totalChunkCount: 0,
+              percentLoaded: 0,
+              path: path || "",
+              filename: filename || "",
             }
           );
         }
@@ -68,20 +78,19 @@ const stopGlobalDownload = usePublishStore((state) => state.stopGlobalDownload);
 
           let res;
           if (!build) {
-            const urlFirstTime = `/arbitrary/resource/status/${service}/${name}/${identifier}`;
-            const resCall = await fetch(urlFirstTime, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
+            res = await qortalRequest({
+              action: "GET_QDN_RESOURCE_STATUS",
+              name: name,
+              service: service,
+              identifier: identifier,
             });
-            res = await resCall.json();
+
             setResourceStatus(
-                { service, name, identifier },
-                {
-                  ...res
-                }
-              );
+              { service, name, identifier },
+              {
+                ...res,
+              }
+            );
             if (tries > retryAttempts) {
               if (intervalRef.current) {
                 clearInterval(intervalRef.current);
@@ -98,7 +107,7 @@ const stopGlobalDownload = usePublishStore((state) => state.stopGlobalDownload);
                   status: "FAILED_TO_DOWNLOAD",
                 }
               );
-            
+
               return;
             }
             tries = tries + 1;
@@ -160,7 +169,6 @@ const stopGlobalDownload = usePublishStore((state) => state.stopGlobalDownload);
           }
           // Check if progress is 100% and clear interval if true
           if (res?.status === "READY") {
-          
             if (intervalRef.current) {
               clearInterval(intervalRef.current);
             }
@@ -169,70 +177,119 @@ const stopGlobalDownload = usePublishStore((state) => state.stopGlobalDownload);
             }
             intervalRef.current = null;
             timeoutRef.current = null;
-            setResourceStatus({service, name, identifier}, {
+            setResourceStatus(
+              { service, name, identifier },
+              {
                 ...res,
-            })
-            return
+              }
+            );
+            return;
           }
           if (res?.status === "DOWNLOADED") {
-            const url = `/arbitrary/resource/status/${service}/${name}/${identifier}?build=true`;
-            const resCall = await fetch(url, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
+            res = await qortalRequest({
+              action: "GET_QDN_RESOURCE_STATUS",
+              name: name,
+              service: service,
+              identifier: identifier,
+              build: true,
             });
-            res = await resCall.json();
           }
         };
-       callFunction();
+        callFunction();
 
-      if (!intervalRef.current) {
-        intervalRef.current = setInterval(callFunction, 5000);
-      }
+        if (!intervalRef.current) {
+          intervalRef.current = setInterval(callFunction, 5000);
+        }
       } catch (error) {
         console.error("Error during resource fetch:", error);
       }
-      return ()=> {
-           if (intervalRef.current) {
-              clearInterval(intervalRef.current);
-              intervalRef.current = null
-            }
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-              timeoutRef.current = null
-            }
-      }
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+      };
     },
     [retryAttempts]
   );
   useEffect(() => {
-    if(disableAutoFetch) return
+    if (disableAutoFetch) return;
     if (resource?.identifier && resource?.name && resource?.service) {
-          const id = `${resource.service}-${resource.name}-${resource.identifier}`;
+      const id = `${resource.service}-${resource.name}-${resource.identifier}`;
 
       if (isGlobal) {
+        startGlobalDownload(id, resource, retryAttempts, path, filename);
+      } else {
+        statusRef.current = null;
+        downloadResource({
+          service: resource?.service,
+          name: resource?.name,
+          identifier: resource?.identifier,
+        });
+      }
+    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [
+    resource?.identifier,
+    resource?.name,
+    resource?.service,
+    downloadResource,
+    isGlobal,
+    retryAttempts,
+    path,
+    filename,
+    disableAutoFetch,
+  ]);
 
-      startGlobalDownload(id, resource, retryAttempts, path, filename);
-    } else {
-statusRef.current = null
-      downloadResource({
-        service: resource?.service,
-        name: resource?.name,
-        identifier: resource?.identifier,
-      });
-    }
-      
-    }
-    return ()=> {
-        if(intervalRef.current){
-            clearInterval(intervalRef.current)
-            intervalRef.current = null
+  const handledownloadResource = useCallback(() => {
+    if (resource?.identifier && resource?.name && resource?.service) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      setResourceStatus(
+        {
+          service: resource.service,
+          name: resource.name,
+          identifier: resource.identifier,
+        },
+        {
+          status: "SEARCHING",
+          localChunkCount: 0,
+          totalChunkCount: 0,
+          percentLoaded: 0,
+          path: path || "",
+          filename: filename || "",
         }
-        if(timeoutRef.current){
-            clearTimeout(timeoutRef.current)
-            timeoutRef.current = null
-        }
+      );
+      if (isGlobal) {
+        const id = `${resource.service}-${resource.name}-${resource.identifier}`;
+        stopGlobalDownload(id);
+        startGlobalDownload(id, resource, retryAttempts, path, filename);
+      } else {
+        downloadResource({
+          service: resource?.service,
+          name: resource?.name,
+          identifier: resource?.identifier,
+        });
+      }
     }
   }, [
     resource?.identifier,
@@ -240,58 +297,32 @@ statusRef.current = null
     resource?.service,
     downloadResource,
     isGlobal,
-    retryAttempts, path, filename, disableAutoFetch
+    retryAttempts,
+    path,
+    filename,
   ]);
 
-  const handledownloadResource = useCallback(()=> {
-if (resource?.identifier && resource?.name && resource?.service) {
+  const resourceUrl = resource
+    ? `/arbitrary/${resource.service}/${resource.name}/${resource.identifier}`
+    : null;
 
-  if(intervalRef.current){
-            clearInterval(intervalRef.current)
-            intervalRef.current = null
-        }
-        if(timeoutRef.current){
-            clearTimeout(timeoutRef.current)
-            timeoutRef.current = null
-        }
-         setResourceStatus(
-            { service: resource.service, name: resource.name, identifier: resource.identifier },
-            {
-             "status": "SEARCHING",
-            "localChunkCount": 0,
-            "totalChunkCount": 0,
-            "percentLoaded": 0,
-            path: path || "",
-            filename: filename || ""
-            }
-          );
- if (isGlobal) {
-   const id = `${resource.service}-${resource.name}-${resource.identifier}`;
-   stopGlobalDownload(id)
-      startGlobalDownload(id, resource, retryAttempts, path, filename);
-    } else {
-      downloadResource({
-        service: resource?.service,
-        name: resource?.name,
-        identifier: resource?.identifier,
-      });
-    }
-}
-  }, [resource?.identifier,
-    resource?.name,
-    resource?.service,
-    downloadResource, isGlobal, retryAttempts, path, filename])
-
-  const resourceUrl = resource ? `/arbitrary/${resource.service}/${resource.name}/${resource.identifier}` : null;
-
-  return useMemo(() => ({
-    status: status?.status || "INITIAL",
-    localChunkCount: status?.localChunkCount || 0,
-    totalChunkCount: status?.totalChunkCount || 0,
-    percentLoaded: status?.percentLoaded || 0,
-    isReady: status?.status === 'READY',
-    resourceUrl,
-    downloadResource: handledownloadResource
-  }), [status?.status, status?.localChunkCount, status?.totalChunkCount, status?.percentLoaded, resourceUrl, downloadResource]);
-   
+  return useMemo(
+    () => ({
+      status: status?.status || "INITIAL",
+      localChunkCount: status?.localChunkCount || 0,
+      totalChunkCount: status?.totalChunkCount || 0,
+      percentLoaded: status?.percentLoaded || 0,
+      isReady: status?.status === "READY",
+      resourceUrl,
+      downloadResource: handledownloadResource,
+    }),
+    [
+      status?.status,
+      status?.localChunkCount,
+      status?.totalChunkCount,
+      status?.percentLoaded,
+      resourceUrl,
+      downloadResource,
+    ]
+  );
 };
