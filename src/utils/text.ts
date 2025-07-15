@@ -16,7 +16,7 @@ export function processText(input: string): string {
               const link = document.createElement('span');
               link.setAttribute('data-url', part);
               link.textContent = part;
-              link.style.color = 'var(--code-block-text-color)';
+              link.style.color = '#8ab4f8';
               link.style.textDecoration = 'underline';
               link.style.cursor = 'pointer';
               fragment.appendChild(link);
