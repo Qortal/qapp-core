@@ -1,6 +1,5 @@
 import React, {
   CSSProperties,
-  Ref,
   useCallback,
   useEffect,
   useMemo,
@@ -9,9 +8,7 @@ import React, {
 } from "react";
 import {
   QortalMetadata,
-  QortalSearchParams,
 } from "../../types/interfaces/resources";
-import { useResources } from "../../hooks/useResources";
 import { VirtualizedList } from "../../common/VirtualizedList";
 import { ListLoader } from "../../common/ListLoader";
 import { ListItem, useCacheStore } from "../../state/cache";
@@ -58,9 +55,9 @@ export interface Results {
   resourceItems: QortalMetadata[]
   isLoadingList: boolean
 }
+
 interface BaseProps  {
-  search: QortalSearchParams;
-  entityParams?: EntityParams;
+  listOfResources: QortalMetadata[];
   listItem: (item: ListItem, index: number) => React.ReactNode;
   styles?: ResourceListStyles;
   loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode;
@@ -77,13 +74,10 @@ interface BaseProps  {
   retryAttempts?: number
   returnType: 'JSON' | 'BASE64'
   onResults?: (results: Results)=> void
-  searchNewData?: {
-    interval: number
-    intervalSearch: QortalSearchParams
-  }
   onNewData?: (hasNewData: boolean) => void;
   ref?: any
-  scrollerRef?: React.RefObject<HTMLElement | null> | null
+  scrollerRef?: React.RefObject<HTMLElement | null> | null,
+  limit: number
 }
 
 const defaultStyles = {
@@ -105,8 +99,11 @@ type PropsResourceListDisplay = VirtualizedProps | NonVirtualizedProps;
 
 
 export const MemorizedComponent = ({
-  search,
+  ///
+  listOfResources,
+  ///
   listItem,
+  limit,
   styles = defaultStyles,
   defaultLoaderParams,
   loaderItem,
@@ -119,37 +116,25 @@ export const MemorizedComponent = ({
   resourceCacheDuration,
   disablePagination,
   disableScrollTracker,
-  entityParams,
   returnType = 'JSON',
   retryAttempts = 2,
   onResults,
-  searchNewData,
   onNewData,
   ref,
   scrollerRef
 }: PropsResourceListDisplay)  => {
-  const {identifierOperations, lists} = useGlobal()
-  const [generatedIdentifier, setGeneratedIdentifier] = useState("")
-  const [memoizedParams, setMemorizedParams] = useState('')
-  const setSearchParamsForList = useCacheStore((s) => s.setSearchParamsForList);
-  const memoizedParamsSearchNewData = useMemo(() => {
-    if(searchNewData?.intervalSearch){
-      return JSON.stringify(searchNewData?.intervalSearch)
-    }
-    return undefined
-  }, [searchNewData?.intervalSearch]);
+  const { lists} = useGlobal()
+
+
   const temporaryResources = useCacheStore().getTemporaryResources(listName)
   const list = useListStore((state) => state.lists[listName]?.items) || [];
-
   const [isLoading, setIsLoading] = useState(list?.length > 0 ? false : true);
 
   const isListExpired = useCacheStore().isListExpired(listName)
   const isListExpiredRef = useRef<boolean | string>(true)
-  const memoizedParamsRef = useRef<string>('')
   useEffect(()=> {
     isListExpiredRef.current = isListExpired
-    memoizedParamsRef.current = memoizedParams
-  }, [isListExpired, memoizedParams])
+  }, [isListExpired])
 
   const filterOutDeletedResources = useCacheStore((s) => s.filterOutDeletedResources);
 const deletedResources = useCacheStore((s) => s.deletedResources);
@@ -160,12 +145,7 @@ const addItems = useListStore((s) => s.addItems);
 
 
 
-  const searchIntervalRef = useRef<any>(null)
   const lastItemTimestampRef = useRef<null | number>(null)
-  const stringifiedEntityParams = useMemo(()=> {
-    if(!entityParams) return null
-    return JSON .stringify(entityParams)
-  }, [entityParams])
 
   useEffect(()=> {
     if(list?.length > 0){
@@ -176,68 +156,14 @@ const addItems = useListStore((s) => s.addItems);
  
 
 
-  useEffect(()=> {
-    if(!searchNewData?.interval || !memoizedParamsSearchNewData  || !generatedIdentifier) return
-    let isCalling = false
-    searchIntervalRef.current = setInterval(async () => {
-      
-      try {
-        if(!lastItemTimestampRef.current) return
-        if(isCalling) return
-        isCalling = true
-        const parsedParams = {...(JSON.parse(memoizedParamsSearchNewData))};
-        parsedParams.identifier = generatedIdentifier
-        parsedParams.after = lastItemTimestampRef.current
-        const responseData = await lists.fetchResourcesResultsOnly(parsedParams); // Awaiting the async function
-        if(onNewData && responseData?.length > 0){
-          onNewData(true)
-        }
-      } catch (error) {
-        console.error(error)
-      } finally {
-        isCalling = false
-      }
-    }, searchNewData?.interval);
-
-    return ()=> {
-      if(searchIntervalRef.current){
-        
-        clearInterval(searchIntervalRef.current)
-      }
-    }
-  }, [searchNewData?.interval, memoizedParamsSearchNewData, generatedIdentifier])
 
 
-  useEffect(()=> {
-    try {
-      if (!search.identifier && stringifiedEntityParams) {
-        const parsedEntityParams = JSON.parse(stringifiedEntityParams)
-        const buildSearch = async ()=> {
-         const res = await  identifierOperations.buildSearchPrefix(
-            parsedEntityParams.entityType,
-            parsedEntityParams.parentId || null,
-          )
-          if(res){
-            setGeneratedIdentifier(res)
-            setMemorizedParams(JSON.stringify({...search, identifier: res}))
 
-          }
-        }
-    
-
-        buildSearch()
-        return
-      }
-      setGeneratedIdentifier(search?.identifier)
-      setMemorizedParams(JSON.stringify({...search, identifier: search?.identifier}))
-    } catch (error) {
-      console.error(error)
-    }
-  }, [stringifiedEntityParams, search , identifierOperations.buildSearchPrefix])
+  
 
   const getResourceList = useCallback(async () => {
     try {
-      if(!generatedIdentifier) return
+      if(listOfResources?.length === 0) return
       setIsLoading(true);
       await new Promise((res)=> {
         setTimeout(() => {
@@ -246,8 +172,8 @@ const addItems = useListStore((s) => s.addItems);
       })
     
       lastItemTimestampRef.current = null
-      const parsedParams = {...(JSON.parse(memoizedParams))};
-      const responseData = await lists.fetchResources(parsedParams, listName, returnType, true); // Awaiting the async function
+      const parsedParams = {limit, offset: 0};
+      const responseData = await lists.fetchPreloadedResources(parsedParams, listOfResources, listName, returnType, true); // Awaiting the async function
         addList(listName,  responseData || []);
         if(onNewData){
           onNewData(false)
@@ -257,7 +183,7 @@ const addItems = useListStore((s) => s.addItems);
     } finally {
       setIsLoading(false);
     }
-  }, [memoizedParams, generatedIdentifier, lists.fetchResources]); // Added dependencies for re-fetching
+  }, [listOfResources, lists.fetchPreloadedResources]); // Added dependencies for re-fetching
 
   const resetSearch = useCallback(async ()=> {
     lists.deleteList(listName);
@@ -270,28 +196,15 @@ const addItems = useListStore((s) => s.addItems);
    }
  }, [resetSearch])
   useEffect(() => {
-    if(!listName || !memoizedParams) return
+    if(!listName || listOfResources?.length === 0) return
     const isExpired = useCacheStore.getState().isListExpired(listName);
-      if(typeof isExpired === 'string' && typeof memoizedParams=== 'string') {
-        let copyMemoizedParams = {...(JSON.parse(memoizedParams))}
-        delete copyMemoizedParams.after
-        delete copyMemoizedParams.before
-        delete copyMemoizedParams.offset
-        copyMemoizedParams = JSON.stringify(copyMemoizedParams)
-        if(copyMemoizedParams === isExpired){
-          const copyParams = {...(JSON.parse(memoizedParams))}
-        delete copyParams.after
-        delete copyParams.before
-        delete copyParams.offset
-          setSearchParamsForList(listName, JSON.stringify(copyParams))
-          setIsLoading(false)
+      if(typeof isExpired === 'string') {
+         setIsLoading(false)
         return
-        }
-        
       }
     sessionStorage.removeItem(`scroll-position-${listName}`);
     getResourceList();
-  }, [getResourceList, listName]); // Runs when dependencies change
+  }, [getResourceList, listName, listOfResources, limit]); 
 
   const {elementRef} = useScrollTracker(listName, list?.length > 0, scrollerRef ? true : !disableVirtualization ? true : disableScrollTracker);
   useScrollTrackerRef(listName, list?.length > 0,  scrollerRef)
@@ -324,19 +237,17 @@ const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheEx
 
   const getResourceMoreList = useCallback(async (displayLimit?: number) => {
     try {
-      if(!generatedIdentifier) return
-      const parsedParams = {...(JSON.parse(memoizedParams))};
-      parsedParams.before = list.length === 0 ? null : list[list.length - 1]?.created
-      parsedParams.offset = null
-      if(displayLimit){
-        parsedParams.limit = displayLimit
-      }
-      const responseData = await lists.fetchResources(parsedParams, listName, returnType); // Awaiting the async function
+      if(listOfResources.length === 0 || limit === 0) return
+       
+      const parsedParams = {limit, offset: listToDisplay?.length + (limit || 20)};
+
+   
+      const responseData = await lists.fetchPreloadedResources(parsedParams, listOfResources, listName, returnType); // Awaiting the async function
       addItems(listName, responseData || [])
     } catch (error) {
       console.error("Failed to fetch resources:", error);
     } 
-  }, [memoizedParams, listName, list]); 
+  }, [listOfResources, listName, limit, listToDisplay]); 
 
 
 
@@ -372,8 +283,6 @@ removeFromList(listName, displayLimit)
     const onLoadMore = useCallback((displayLimit: number)=> {
 getResourceMoreList(displayLimit)
   }, [getResourceMoreList])
-
-  console.log('listToDisplay', listToDisplay)
 
   return (
     <div ref={elementRef} style={{
@@ -426,13 +335,13 @@ getResourceMoreList(displayLimit)
           )}
           {disableVirtualization && direction === "HORIZONTAL" && (
             <>
-             <HorizontalPaginatedList defaultLoaderParams={defaultLoaderParams} disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={onLoadLess}  items={listToDisplay} listItem={renderListItem} onLoadMore={onLoadMore} gap={styles?.gap} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
+             <HorizontalPaginatedList defaultLoaderParams={defaultLoaderParams} disablePagination={disablePagination} limit={limit || 20} onLoadLess={onLoadLess}  items={listToDisplay} listItem={renderListItem} onLoadMore={onLoadMore} gap={styles?.gap} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
             </>
             
           )}
           {disableVirtualization && direction === "VERTICAL" && (
             <div style={disabledVirutalizationStyles}>
-              <VerticalPaginatedList disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={(displayLimit)=> {
+              <VerticalPaginatedList disablePagination={disablePagination} limit={limit || 20} onLoadLess={(displayLimit)=> {
 
               removeFromList(listName, displayLimit)
              }} defaultLoaderParams={defaultLoaderParams} items={listToDisplay} listItem={renderListItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} loaderItem={loaderItem} />
@@ -455,15 +364,12 @@ function arePropsEqual(
     prevProps.disableVirtualization === nextProps.disableVirtualization &&
     prevProps.direction === nextProps.direction &&
     prevProps.onSeenLastItem === nextProps.onSeenLastItem &&
-    JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&
     JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles) &&
-    prevProps.listItem === nextProps.listItem &&
-    JSON.stringify(prevProps.entityParams) === JSON.stringify(nextProps.entityParams) &&
-    JSON.stringify(prevProps.searchNewData) === JSON.stringify(nextProps.searchNewData)
+    prevProps.listItem === nextProps.listItem
   );
 }
 
-export const ResourceListDisplay = React.memo(MemorizedComponent, arePropsEqual);
+export const ResourceListPreloadedDisplay = React.memo(MemorizedComponent, arePropsEqual);
 
 interface ListItemWrapperProps {
   item: QortalMetadata;

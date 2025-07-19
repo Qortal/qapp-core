@@ -13,6 +13,8 @@ export interface VideoPlayerParentProps {
   poster?: string;
   autoPlay?: boolean;
   onEnded?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
+  onPlay?: () => void;
+  onPause?: () => void;
   timelineActions?: TimelineAction[];
   path?: string
   filename?: string
@@ -24,6 +26,8 @@ export const VideoPlayerParent = ({
   poster,
   autoPlay,
   onEnded,
+  onPlay,
+  onPause,
   timelineActions,
   path,
   filename
@@ -97,6 +101,8 @@ export const VideoPlayerParent = ({
       videoLocationRef={videoLocationRef}
       filename={filename}
       path={path}
+      onPlay={onPlay}
+      onPause={onPause}
     />
   );
 };

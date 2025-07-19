@@ -99,4 +99,9 @@ export interface QortalMetadata {
     reverse?: boolean;
     mode?: 'ALL' | 'LATEST'
   }
+
+   export interface QortalPreloadedParams {
+    limit: number
+    offset: number
+  }
   

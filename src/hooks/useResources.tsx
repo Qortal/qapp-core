@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import {
   QortalGetMetadata,
   QortalMetadata,
+  QortalPreloadedParams,
   QortalSearchParams,
 } from "../types/interfaces/resources";
 import { ListItem, useCacheStore } from "../state/cache";
@@ -270,6 +271,49 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
     [getSearchCache, setSearchCache, fetchDataFromResults]
   );
 
+   const fetchPreloadedResources = useCallback(
+    async (
+      params: QortalPreloadedParams,
+      listOfResources: QortalMetadata[],
+      listName: string,
+      returnType: ReturnType = 'JSON',
+      cancelRequests?: boolean,
+    ): Promise<QortalMetadata[]> => {
+      if (cancelRequests) {
+        cancelAllRequests();
+      }
+
+      // const cacheKey = generateCacheKey(params);
+      const cacheKey = generatePreloadedCacheKey(params);
+      const searchCache = getSearchCache(listName, cacheKey);
+      if (searchCache) {
+        const copyParams = {...params}
+
+        setSearchParamsForList(listName, JSON.stringify(copyParams))
+        fetchDataFromResults(searchCache, returnType);
+        return searchCache;
+      }
+
+      let responseData: QortalMetadata[] = [];
+      let filteredResults: QortalMetadata[] = [];
+      const targetLimit = params.offset || 20; // Use `params.limit` if provided, else default to 20
+      const isUnlimited = params.limit === 0;
+
+      if(isUnlimited){
+        filteredResults = listOfResources
+      } else {
+        filteredResults = listOfResources?.slice(0, targetLimit)
+      }
+      const copyParams = {...params}
+     
+      setSearchCache(listName, cacheKey, filteredResults, cancelRequests ? JSON.stringify(copyParams) : null);
+      fetchDataFromResults(filteredResults, returnType);
+
+      return filteredResults;
+    },
+    [getSearchCache, setSearchCache, fetchDataFromResults]
+  );
+
   const fetchResourcesResultsOnly = useCallback(
     async (
       params: QortalSearchParams
@@ -374,8 +418,9 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
     deleteResource,
     deleteList,
     addList,
-    fetchResourcesResultsOnly
-  }), [fetchResources, addNewResources, updateNewResources, deleteResource, deleteList, fetchResourcesResultsOnly, addList]);
+    fetchResourcesResultsOnly,
+    fetchPreloadedResources
+  }), [fetchResources, addNewResources, updateNewResources, deleteResource, deleteList, fetchResourcesResultsOnly, addList, fetchPreloadedResources]);
   
 };
 
@@ -424,6 +469,24 @@ export const generateCacheKey = (params: QortalSearchParams): string => {
     offset !== undefined && `o-${offset}`,
     reverse !== undefined && `r-${reverse}`,
     mode !== undefined && `mo-${mode}`,
+  ]
+    .filter(Boolean) // Remove undefined or empty values
+    .join("_"); // Join into a string
+
+  return keyParts;
+};
+
+
+export const generatePreloadedCacheKey = (params: QortalPreloadedParams): string => {
+  const {
+ limit,
+ offset
+  } = params;
+
+  const keyParts = [
+   
+    limit !== undefined && `l-${limit}`,
+     offset !== undefined && `o-${offset}`,
   ]
     .filter(Boolean) // Remove undefined or empty values
     .join("_"); // Join into a string

@@ -79,6 +79,8 @@ export interface VideoPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   onEnded?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
+  onPlay?: ()=> void;
+  onPause?: ()=> void;
   timelineActions?: TimelineAction[];
   playerRef: any;
   locationRef: RefObject<string | null>;
@@ -116,6 +118,8 @@ export const VideoPlayer = ({
   poster,
   autoPlay,
   onEnded,
+  onPlay: onPlayParent,
+  onPause: onPauseParent,
   timelineActions,
   locationRef,
   videoLocationRef,
@@ -342,10 +346,17 @@ export const VideoPlayer = ({
 
   const onPlay = useCallback(() => {
     setIsPlaying(true);
+     if(onPlayParent){
+      onPlayParent()
+    }
   }, [setIsPlaying]);
 
   const onPause = useCallback(() => {
     setIsPlaying(false);
+    if(onPauseParent){
+      onPauseParent()
+    }
+  
   }, [setIsPlaying]);
   const onVolumeChangeHandler = useCallback(
     (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
