@@ -158,12 +158,14 @@ const addItems = useListStore((s) => s.addItems);
 
 
 
-
   
 
   const getResourceList = useCallback(async () => {
     try {
-      if(listOfResources?.length === 0) return
+      if(listOfResources?.length === 0){
+        setIsLoading(false);
+        return
+      }
       setIsLoading(true);
       await new Promise((res)=> {
         setTimeout(() => {
@@ -196,7 +198,13 @@ const addItems = useListStore((s) => s.addItems);
    }
  }, [resetSearch])
   useEffect(() => {
-    if(!listName || listOfResources?.length === 0) return
+    if(!listName || listOfResources?.length === 0){
+      if(listName){
+        setIsLoading(false)
+      }
+
+      return
+    }
     const isExpired = useCacheStore.getState().isListExpired(listName);
       if(typeof isExpired === 'string') {
          setIsLoading(false)
@@ -283,6 +291,9 @@ removeFromList(listName, displayLimit)
     const onLoadMore = useCallback((displayLimit: number)=> {
 getResourceMoreList(displayLimit)
   }, [getResourceMoreList])
+
+  console.log('isLoading', isLoading, listToDisplay?.length)
+
 
   return (
     <div ref={elementRef} style={{

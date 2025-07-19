@@ -26,6 +26,8 @@ export const useResourceStatus = ({
   const intervalRef = useRef<any>(null);
   const timeoutRef = useRef<any>(null);
   const setResourceStatus = usePublishStore((state) => state.setResourceStatus);
+  const getResourceStatus = usePublishStore((state) => state.getResourceStatus);
+
   const statusRef = useRef<ResourceStatus | null>(null);
   const startGlobalDownload = usePublishStore(
     (state) => state.startGlobalDownload
@@ -55,7 +57,10 @@ export const useResourceStatus = ({
           return;
         }
         if (!isRecalling) {
-          setResourceStatus(
+          const id = `${service}-${name}-${identifier}`
+          const resourceStatus = getResourceStatus(id)
+          if(!resourceStatus){
+            setResourceStatus(
             { service, name, identifier },
             {
               status: "SEARCHING",
@@ -66,6 +71,8 @@ export const useResourceStatus = ({
               filename: filename || "",
             }
           );
+          }
+          
         }
         let isCalling = false;
         let percentLoaded = 0;
@@ -264,6 +271,9 @@ export const useResourceStatus = ({
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
+        const id = `${resource?.service}-${resource?.name}-${resource?.identifier}`
+          const resourceStatus = getResourceStatus(id)
+          if(!resourceStatus){
       setResourceStatus(
         {
           service: resource.service,
@@ -279,6 +289,7 @@ export const useResourceStatus = ({
           filename: filename || "",
         }
       );
+    }
       if (isGlobal) {
         const id = `${resource.service}-${resource.name}-${resource.identifier}`;
         stopGlobalDownload(id);
