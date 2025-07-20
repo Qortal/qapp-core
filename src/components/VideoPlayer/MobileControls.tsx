@@ -229,7 +229,7 @@ export const MobileControls = ({
         sx={{
           width: "100%",
           position: "absolute",
-          bottom: 0,
+          bottom: '2px',
           display: "flex",
           flexDirection: "column",
         }}

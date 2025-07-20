@@ -52,7 +52,7 @@ const DynamicGrid: React.FC<DynamicGridProps> = ({
         }}
       >
         {items.map((component, index) => (
-          <div ref={index === 0 ? itemContainerRef : null} key={index} style={{ width: "100%", display: "flex", justifyContent: "center", maxWidth: '400px' }}>
+          <div ref={index === 0 ? itemContainerRef : null} key={index} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
             {component} {/* ✅ Renders user-provided component */}
           </div>
         ))}
