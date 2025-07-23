@@ -186,6 +186,7 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
             `${item?.service}-${item?.name}-${item?.identifier}`,
             fullDataObject
           );
+          setPublish(fullDataObject?.qortalMetadata, fullDataObject);
           return fullDataObject;
         }
       } catch (error) {
