@@ -1,0 +1,69 @@
+{
+  "subtitle": {
+    "subtitles": "字幕",
+    "no_subtitles": "无字幕",
+    "load_community_subs": "加载社区字幕",
+    "off": "关闭",
+    "deleting_subtitle": "正在删除字幕...",
+    "deleted": "字幕已删除",
+    "unable_delete": "无法删除",
+    "publishing": "正在发布字幕...",
+    "published": "字幕已发布",
+    "unable_publish": "无法发布",
+    "my_subtitles": "我的字幕",
+    "new": "新建",
+    "existing": "已有",
+    "import_subtitles": "导入字幕"
+  },
+  "actions": {
+    "remove": "移除",
+    "publish": "发布",
+    "delete": "删除",
+    "publish_metadata": "发布元数据",
+    "publish_index": "发布索引",
+    "cancel": "取消",
+    "continue": "继续",
+    "close": "关闭",
+    "retry": "重试"
+  },
+  "video": {
+    "playback_speed": "播放速度",
+    "toggle_fullscreen": "切换全屏 (F)",
+    "video_speed": "视频速度。加快 (+ 或 >)，减慢 (- 或 <)",
+    "toggle_mute": "切换静音 (M)，音量加 (↑)，音量减 (↓)",
+    "seek_video": "按 10% 增量跳转视频 (0–9)",
+    "reload_video": "重新加载视频 (R)",
+    "play_pause": "播放/暂停 (空格键)"
+  },
+  "index": {
+    "title": "索引管理器",
+    "create_new_index": "创建新索引",
+    "add_metadata": "添加元数据",
+    "publishing_metadata": "正在发布元数据...",
+    "published_metadata": "元数据发布成功",
+    "failed_metadata": "元数据发布失败",
+    "example": "示例外观如下：",
+    "metadata_title": "标题",
+    "metadata_description": "描述",
+    "metadata_title_placeholder": "为链接添加标题",
+    "metadata_description_placeholder": "为链接添加描述",
+    "characters": "字符",
+    "publishing_index": "正在发布索引...",
+    "published_index": "索引发布成功",
+    "failed_index": "索引发布失败",
+    "recommended_indices": "推荐索引",
+    "add_search_term": "添加搜索词",
+    "search_terms": "搜索词",
+    "recommendation_size": "建议每个搜索词不超过 {{recommendedSize}} 个字符",
+    "multiple_title": "添加多个索引",
+    "multiple_description": "多个索引可以降低发布费用，但在未来搜索结果中的权重会较低。"
+  },
+  "multi_publish": {
+    "title": "发布状态",
+    "publish_failed": "发布失败",
+    "file_chunk": "文件片段",
+    "file_processing": "正在处理文件",
+    "success": "发布成功",
+    "attempt_retry": "发布失败。正在尝试重试..."
+  }
+}

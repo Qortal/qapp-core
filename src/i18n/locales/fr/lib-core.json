@@ -1,0 +1,69 @@
+{
+  "subtitle": {
+    "subtitles": "Sous-titres",
+    "no_subtitles": "Aucun sous-titre",
+    "load_community_subs": "Charger les sous-titres de la communauté",
+    "off": "Désactivé",
+    "deleting_subtitle": "Suppression du sous-titre...",
+    "deleted": "Sous-titre supprimé",
+    "unable_delete": "Impossible de supprimer",
+    "publishing": "Publication des sous-titres...",
+    "published": "Sous-titres publiés",
+    "unable_publish": "Impossible de publier",
+    "my_subtitles": "Mes sous-titres",
+    "new": "Nouveau",
+    "existing": "Existant",
+    "import_subtitles": "Importer des sous-titres"
+  },
+  "actions": {
+    "remove": "supprimer",
+    "publish": "publier",
+    "delete": "effacer",
+    "publish_metadata": "publier les métadonnées",
+    "publish_index": "publier l’index",
+    "cancel": "annuler",
+    "continue": "continuer",
+    "close": "fermer",
+    "retry": "réessayer"
+  },
+  "video": {
+    "playback_speed": "Vitesse de lecture",
+    "toggle_fullscreen": "Plein écran (F)",
+    "video_speed": "Vitesse de la vidéo. Augmenter (+ ou >), Diminuer (- ou <)",
+    "toggle_mute": "Activer/désactiver le son (M), Monter (HAUT), Baisser (BAS)",
+    "seek_video": "Avancer dans la vidéo par incréments de 10 % (0–9)",
+    "reload_video": "Recharger la vidéo (R)",
+    "play_pause": "Lecture/Pause (Barre d’espace)"
+  },
+  "index": {
+    "title": "Gestionnaire d’index",
+    "create_new_index": "Créer un nouvel index",
+    "add_metadata": "Ajouter des métadonnées",
+    "publishing_metadata": "Publication des métadonnées...",
+    "published_metadata": "Métadonnées publiées avec succès",
+    "failed_metadata": "Échec de la publication des métadonnées",
+    "example": "Exemple de présentation :",
+    "metadata_title": "Titre",
+    "metadata_description": "Description",
+    "metadata_title_placeholder": "Ajouter un titre pour le lien",
+    "metadata_description_placeholder": "Ajouter une description pour le lien",
+    "characters": "caractères",
+    "publishing_index": "Publication de l’index...",
+    "published_index": "Index publié avec succès",
+    "failed_index": "Échec de la publication de l’index",
+    "recommended_indices": "Index recommandés",
+    "add_search_term": "Ajouter un terme de recherche",
+    "search_terms": "termes de recherche",
+    "recommendation_size": "Il est recommandé de limiter chaque terme à moins de {{recommendedSize}} caractères",
+    "multiple_title": "Ajout d’index multiples",
+    "multiple_description": "Les index supplémentaires réduisent les frais de publication, mais auront moins d’impact dans les résultats de recherche futurs."
+  },
+  "multi_publish": {
+    "title": "Statut de publication",
+    "publish_failed": "Échec de la publication",
+    "file_chunk": "Morceau de fichier",
+    "file_processing": "Traitement du fichier",
+    "success": "Publié avec succès",
+    "attempt_retry": "Échec de la publication. Nouvelle tentative..."
+  }
+}

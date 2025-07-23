@@ -1,0 +1,69 @@
+{
+  "subtitle": {
+    "subtitles": "Субтитры",
+    "no_subtitles": "Нет субтитров",
+    "load_community_subs": "Загрузить субтитры сообщества",
+    "off": "Выключено",
+    "deleting_subtitle": "Удаление субтитров...",
+    "deleted": "Субтитры удалены",
+    "unable_delete": "Не удалось удалить",
+    "publishing": "Публикация субтитров...",
+    "published": "Субтитры опубликованы",
+    "unable_publish": "Не удалось опубликовать",
+    "my_subtitles": "Мои субтитры",
+    "new": "Новые",
+    "existing": "Существующие",
+    "import_subtitles": "Импорт субтитров"
+  },
+  "actions": {
+    "remove": "удалить",
+    "publish": "опубликовать",
+    "delete": "удалить",
+    "publish_metadata": "опубликовать метаданные",
+    "publish_index": "опубликовать индекс",
+    "cancel": "отмена",
+    "continue": "продолжить",
+    "close": "закрыть",
+    "retry": "повторить"
+  },
+  "video": {
+    "playback_speed": "Скорость воспроизведения",
+    "toggle_fullscreen": "Полный экран (F)",
+    "video_speed": "Скорость видео. Увеличить (+ или >), Уменьшить (- или <)",
+    "toggle_mute": "Вкл/выкл звук (M), Громче (ВВЕРХ), Тише (ВНИЗ)",
+    "seek_video": "Переход по видео на 10% (0–9)",
+    "reload_video": "Перезагрузить видео (R)",
+    "play_pause": "Воспроизвести/Пауза (Пробел)"
+  },
+  "index": {
+    "title": "Менеджер индексов",
+    "create_new_index": "Создать новый индекс",
+    "add_metadata": "Добавить метаданные",
+    "publishing_metadata": "Публикация метаданных...",
+    "published_metadata": "Метаданные успешно опубликованы",
+    "failed_metadata": "Не удалось опубликовать метаданные",
+    "example": "Пример того, как это может выглядеть:",
+    "metadata_title": "Заголовок",
+    "metadata_description": "Описание",
+    "metadata_title_placeholder": "Добавьте заголовок для ссылки",
+    "metadata_description_placeholder": "Добавьте описание для ссылки",
+    "characters": "символов",
+    "publishing_index": "Публикация индекса...",
+    "published_index": "Индекс успешно опубликован",
+    "failed_index": "Не удалось опубликовать индекс",
+    "recommended_indices": "Рекомендуемые индексы",
+    "add_search_term": "Добавить поисковый запрос",
+    "search_terms": "поисковые запросы",
+    "recommendation_size": "Рекомендуется использовать не более {{recommendedSize}} символов на запрос",
+    "multiple_title": "Добавление нескольких индексов",
+    "multiple_description": "Дополнительные индексы снижают стоимость публикации, но будут иметь меньший вес в результатах поиска в будущем."
+  },
+  "multi_publish": {
+    "title": "Статус публикации",
+    "publish_failed": "Ошибка публикации",
+    "file_chunk": "Фрагмент файла",
+    "file_processing": "Обработка файла",
+    "success": "Успешно опубликовано",
+    "attempt_retry": "Публикация не удалась. Повторная попытка..."
+  }
+}
