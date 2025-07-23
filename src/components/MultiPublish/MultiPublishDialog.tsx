@@ -22,6 +22,8 @@ import { ResourceToPublish } from "../../types/qortalRequests/types";
 import { QortalGetMetadata } from "../../types/interfaces/resources";
 import ErrorIcon from '@mui/icons-material/Error';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { useLibTranslation } from "../../hooks/useLibTranslation";
+import { t } from "i18next";
 
 export interface MultiplePublishError {
   error: {
@@ -31,6 +33,8 @@ export interface MultiplePublishError {
 
 
 export const MultiPublishDialogComponent = () => {
+      const { t } = useLibTranslation();
+  
   const {
     resources,
     isPublishing,
@@ -177,7 +181,7 @@ export const MultiPublishDialogComponent = () => {
   disableAutoFocus
   disableRestoreFocus
     >
-      <DialogTitle>Publishing Status</DialogTitle>
+      <DialogTitle>{t("multi_publish.title")}</DialogTitle>
       <DialogContent>
         {publishError && (
           <Stack spacing={3}>
@@ -215,7 +219,7 @@ export const MultiPublishDialogComponent = () => {
           gap: '10px'
         }}>
           <ErrorIcon color="error" />
-              <Typography variant="body2">Publish failed</Typography>
+              <Typography variant="body2">{t("multi_publish.publish_failed")}</Typography>
         </Box>
         )}
         
@@ -229,7 +233,7 @@ export const MultiPublishDialogComponent = () => {
           reject(new Error('Canceled Publish'));
           reset();
         }}>
-          Close
+          {t("actions.close")}
         </Button>
         {failedResources?.length > 0 && (
           <Button
@@ -238,7 +242,7 @@ export const MultiPublishDialogComponent = () => {
             variant="contained"
             onClick={publishMultipleResources}
           >
-            Retry
+           {t("actions.retry")}
           </Button>
         )}
            </Box>
@@ -306,14 +310,14 @@ useEffect(() => {
 
       <Box mt={2}>
         <Typography variant="body2" gutterBottom>
-          File Chunk {publishStatus?.chunks || 0}/{publishStatus?.totalChunks || 0} ({chunkPercent.toFixed(0)}%)
+          {t("multi_publish.file_chunk")} {publishStatus?.chunks || 0}/{publishStatus?.totalChunks || 0} ({chunkPercent.toFixed(0)}%)
         </Typography>
         <LinearProgress variant="determinate" value={chunkPercent} />
       </Box>
 
       <Box mt={2}>
         <Typography variant="body2" gutterBottom>
-          File Processing ({publishStatus?.processed ? 100 : processingStart ? processingPercent.toFixed(0) : '0'}%)
+          {t("multi_publish.file_processing")} ({publishStatus?.processed ? 100 : processingStart ? processingPercent.toFixed(0) : '0'}%)
         </Typography>
         <LinearProgress variant="determinate" value={publishStatus?.processed ? 100 : processingPercent} />
       </Box>
@@ -321,14 +325,14 @@ useEffect(() => {
       {publishStatus?.processed && (
         <Box mt={2} display="flex" gap={1} alignItems="center">
           <CheckCircleIcon color="success" />
-          <Typography variant="body2">Published successfully</Typography>
+          <Typography variant="body2">{t("multi_publish.success")}</Typography>
         </Box>
       )}
 
       {publishStatus?.retry && !publishStatus?.error && !publishStatus?.processed && (
         <Box mt={2} display="flex" gap={1} alignItems="center">
           <ErrorIcon color="error" />
-          <Typography variant="body2">Publish failed. Attempting retry...</Typography>
+          <Typography variant="body2">{t("multi_publish.attempt_retry")}</Typography>
         </Box>
       )}
 
@@ -336,7 +340,7 @@ useEffect(() => {
         <Box mt={2} display="flex" gap={1} alignItems="center">
           <ErrorIcon color="error" />
           <Typography variant="body2">
-            Publish failed. {publishStatus?.error?.reason || 'Unknown error'}
+            {t("multi_publish.publish_failed")} - {publishStatus?.error?.reason || 'Unknown error'}
           </Typography>
         </Box>
       )}

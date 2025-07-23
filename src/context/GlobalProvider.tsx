@@ -17,6 +17,7 @@ import { useProgressStore } from "../state/video";
 import { GlobalPipPlayer } from "../hooks/useGlobalPipPlayer";
 import { MultiPublishDialog } from "../components/MultiPublish/MultiPublishDialog";
 import { useMultiplePublishStore } from "../state/multiplePublish";
+import { useIframe } from "../hooks/useIframe";
 
 // ✅ Define Global Context Type
 interface GlobalContextType {
@@ -52,6 +53,8 @@ export const GlobalProvider = ({
   config,
   toastStyle = {},
 }: GlobalProviderProps) => {
+ 
+  useIframe()
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
   const isPublishing = useMultiplePublishStore((s) => s.isPublishing);
@@ -94,6 +97,7 @@ export const GlobalProvider = ({
 
   return (
     <GlobalContext.Provider value={contextValue}>
+
       {config?.enableGlobalVideoFeature && <GlobalPipPlayer />}
 
       {isPublishing && <MultiPublishDialog />}
@@ -108,6 +112,7 @@ export const GlobalProvider = ({
       <IndexManager username={auth?.name} />
 
       {children}
+
     </GlobalContext.Provider>
   );
 };

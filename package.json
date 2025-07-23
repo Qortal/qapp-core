@@ -18,7 +18,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
+    "generate-i18n": "./scripts/generate_locales.js",
+    "build": "npm run generate-i18n && tsup",
     "prepare": "npm run build",
     "clean": "rm -rf dist"
   },
@@ -30,10 +31,12 @@
     "dayjs": "^1.11.13",
     "dexie": "^4.0.11",
     "dompurify": "^3.2.4",
+    "i18next": "^25.3.2",
     "idb-keyval": "^6.2.2",
     "iso-639-1": "^3.1.5",
     "react-dropzone": "^14.3.8",
     "react-hot-toast": "^2.5.2",
+    "react-i18next": "^15.6.1",
     "react-idle-timer": "^5.7.2",
     "react-intersection-observer": "^9.16.0",
     "react-rnd": "^10.5.2",

@@ -12,6 +12,8 @@ import {
 import SubtitlesIcon from "@mui/icons-material/Subtitles";
 import { CustomFontTooltip } from "./CustomFontTooltip";
 import { RefObject } from "react";
+import { useLibTranslation } from "../../hooks/useLibTranslation";
+import i18n from "../../i18n/i18n";
 interface VideoControlsBarProps {
   canPlay: boolean;
   isScreenSmall: boolean;
@@ -71,8 +73,10 @@ export const VideoControlsBar = ({
   openPlaybackMenu,
   togglePictureInPicture,
   isVideoPlayerSmall,
-  isOnTimeline
+  isOnTimeline,
 }: VideoControlsBarProps) => {
+  const { t } = useLibTranslation();
+
   const showMobileControls = isScreenSmall && canPlay;
 
   const controlGroupSX = {
@@ -145,8 +149,11 @@ export const VideoControlsBar = ({
                   increaseSpeed={increaseSpeed}
                   decreaseSpeed={decreaseSpeed}
                 />
-                {/* <ObjectFitButton /> */}
-                <CustomFontTooltip title="Subtitles" placement="bottom" arrow>
+                <CustomFontTooltip
+                  title={t("subtitle.subtitles")}
+                  placement="bottom"
+                  arrow
+                >
                   <IconButton
                     ref={subtitleBtnRef}
                     onClick={openSubtitleManager}
@@ -158,7 +165,7 @@ export const VideoControlsBar = ({
                     />
                   </IconButton>
                 </CustomFontTooltip>
-                {/* <PictureInPictureButton togglePictureInPicture={togglePictureInPicture} /> */}
+
                 <FullscreenButton toggleFullscreen={toggleFullscreen} />
               </Box>
             </Box>

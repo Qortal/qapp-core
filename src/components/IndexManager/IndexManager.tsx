@@ -39,6 +39,8 @@ import { useModal } from "../useModal";
 import { createAvatarLink } from "../../utils/qortal";
 import { extractComponents } from "../../utils/text";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import { useLibTranslation } from "../../hooks/useLibTranslation";
+import { t } from "i18next";
 
 const uid = new ShortUniqueId({ length: 10, dictionary: "alphanum" });
 
@@ -57,6 +59,8 @@ interface PropsIndexManager {
 const cleanString = (str: string) => str.replace(/\s{2,}/g, ' ').trim().toLocaleLowerCase();
 
 export const IndexManager = ({ username }: PropsIndexManager) => {
+    const { t } = useLibTranslation();
+  
   const open = useIndexStore((state) => state.open);
   const setOpen = useIndexStore((state) => state.setOpen);
   const [title, setTitle] = useState("");
@@ -123,7 +127,7 @@ export const IndexManager = ({ username }: PropsIndexManager) => {
         },
       }}
     >
-      <DialogTitle>Index manager</DialogTitle>
+      <DialogTitle>{t("index.title")}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={handleClose}
@@ -196,6 +200,8 @@ const EntryMode = ({
   username,
   hasMetadata,
 }: PropsEntryMode) => {
+      const { t } = useLibTranslation();
+
   return (
     <>
       <DialogContent>
@@ -222,7 +228,7 @@ const EntryMode = ({
                 width: "100%",
               }}
             >
-              <Typography>Create new index</Typography>
+              <Typography>{t("index.create_new_index")}</Typography>
             </Box>
           </ButtonBase>
           {/* <ButtonBase
@@ -260,7 +266,7 @@ const EntryMode = ({
                 alignItems: "center",
               }}
             >
-              <Typography>Add metadata</Typography>
+              <Typography>{t("index.add_metadata")}</Typography>
               {hasMetadata && <CheckCircleIcon color="success" />}
             </Box>
           </ButtonBase>
@@ -288,12 +294,14 @@ const AddMetadata = ({
   setDescription,
   setTitle,
 }: PropsAddMetadata) => {
+      const { t } = useLibTranslation();
+
   const publish = usePublish();
 
   const disableButton = !title.trim() || !description.trim() || !name || !link;
 
   const createMetadata = async () => {
-    const loadId = showLoading("Publishing metadata...");
+    const loadId = showLoading(t("index.publishing_metadata"));
     try {
       const identifierWithoutHash = name + link;
       const identifier = await hashWordWithoutPublicSalt(
@@ -313,7 +321,7 @@ const AddMetadata = ({
       });
 
       if (res?.signature) {
-        showSuccess("Successfully published metadata");
+        showSuccess(t("index.published_metadata"));
         publish.updatePublish(
           {
             identifier,
@@ -325,7 +333,7 @@ const AddMetadata = ({
       }
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to publish metadata";
+        error instanceof Error ? error.message : t("index.failed_metadata");
       showError(message);
     } finally {
       dismissToast(loadId);
@@ -350,7 +358,7 @@ const AddMetadata = ({
           <IconButton disabled={mode === 1} onClick={() => setMode(1)}>
             <ArrowBackIosIcon />
           </IconButton>
-          <Typography>Example of how it could look like:</Typography>
+          <Typography>{t("index.example")}</Typography>
           <Card sx={{
             width: '100%',
             padding: '5px'
@@ -437,12 +445,12 @@ const AddMetadata = ({
           </Box>
           </Card>
           <Box>
-            <Typography>Title</Typography>
+            <Typography>{t("index.metadata.title")}</Typography>
             <TextField
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               size="small"
-              placeholder="Add a title for the link"
+              placeholder={t("index.metadata_title_placeholder")}
               slotProps={{
                 htmlInput: { maxLength: 50 },
               }}
@@ -452,19 +460,19 @@ const AddMetadata = ({
                   variant="caption"
                   color={title.length >= 50 ? "error" : "text.secondary"}
                 >
-                  {title.length}/{50} characters
+                  {title.length}/{50} {` ${t("index.characters")}`}
                 </Typography>
               }
             />
           </Box>
           <Box>
-            <Typography>Description</Typography>
+            <Typography>{t("index.metadata.description")}</Typography>
             <TextField
               fullWidth
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               size="small"
-              placeholder="Add a description for the link"
+              placeholder={t("index.metadata_description_placeholder")}
               slotProps={{
                 htmlInput: { maxLength: 120 },
               }}
@@ -473,7 +481,7 @@ const AddMetadata = ({
                   variant="caption"
                   color={description.length >= 120 ? "error" : "text.secondary"}
                 >
-                  {description.length}/{120} characters
+                  {description.length}/{120} {` ${t("index.characters")}`}
                 </Typography>
               }
             />
@@ -486,7 +494,7 @@ const AddMetadata = ({
           disabled={disableButton}
           variant="contained"
         >
-          Publish metadata
+          {t("actions.publish_metadata")}
         </Button>
       </DialogActions>
     </>
@@ -507,6 +515,8 @@ const CreateIndex = ({
   category,
   rootName,
 }: PropsCreateIndex) => {
+      const { t } = useLibTranslation();
+
   const [terms, setTerms] = useState<string[]>([]);
   const publish = usePublish();
   const [size, setSize] = useState(0);
@@ -588,7 +598,7 @@ const CreateIndex = ({
   const disableButton = (terms.length === 0 && !recommendedSelection) || !name || !link;
 
   const createIndex = async () => {
-    const loadId = showLoading("Publishing index...");
+    const loadId = showLoading(t("index.publishing_index"));
     try {
       const hashedRootName = await hashWordWithoutPublicSalt(rootName, 20);
       const hashedLink = await hashWordWithoutPublicSalt(link, 20);
@@ -603,7 +613,7 @@ const CreateIndex = ({
       });
 
       if (res?.signature) {
-        showSuccess("Successfully published index");
+        showSuccess(t("index.published_index"));
         publish.updatePublish(
           {
             identifier,
@@ -616,7 +626,7 @@ const CreateIndex = ({
       }
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to publish index";
+        error instanceof Error ? error.message : t("index.failed_index");
       showError(message);
     } finally {
       dismissToast(loadId);
@@ -645,7 +655,7 @@ const CreateIndex = ({
           </IconButton>
           {recommendedIndices?.length > 0 && (
             <>
-            <Typography>Recommended Indices</Typography>
+            <Typography>{t("index.recommended_indices")}</Typography>
               <RadioGroup
         aria-labelledby="demo-controlled-radio-buttons-group"
         name="controlled-radio-buttons-group"
@@ -673,7 +683,7 @@ const CreateIndex = ({
         value={recommendedSelection}
         onChange={handleChange}
       >
-            <FormControlLabel value="" control={<Radio />} label="Add search term" />
+            <FormControlLabel value="" control={<Radio />} label={t("index.add_search_term")} />
             </RadioGroup>
             <Spacer height="10px" />
             {!recommendedSelection && (
@@ -681,7 +691,7 @@ const CreateIndex = ({
                 maxLength={17}
                 items={terms}
                 onlyStrings
-                label="search terms"
+                label={t("index.search_terms")}
                 setItems={async (termsNew: string[]) => {
                   try {
                     if (terms?.length === 1 && termsNew?.length === 2) {
@@ -704,8 +714,10 @@ const CreateIndex = ({
                   shouldRecommendMax && fullSize > 230 ? "visible" : "hidden",
               }}
             >
-              It is recommended to keep your term character count below{" "}
-              {recommendedSize} characters
+
+               {t("index.recommendation_size", {
+                recommendedSize
+              })}
             </Typography>
           </Box>
         </Box>
@@ -716,7 +728,7 @@ const CreateIndex = ({
           disabled={disableButton}
           variant="contained"
         >
-          Publish index
+          {t("actions.publish_index")}
         </Button>
       </DialogActions>
       <Dialog
@@ -733,18 +745,17 @@ const CreateIndex = ({
         }}
       >
         <DialogTitle id="alert-dialog-title">
-          Adding multiple indices
+           {t("index.multiple_title")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Subsequent indices will keep your publish fees lower, but they will
-            have less strength in future search results.
+            {t("index.multiple_description")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={onCancel}>Cancel</Button>
+          <Button variant="contained" onClick={onCancel}>{t("actions.cancel")}</Button>
           <Button variant="contained" onClick={onOk}>
-            Continue
+           {t("actions.continue")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -762,6 +773,8 @@ const YourIndices = ({
     category,
     rootName,
   }: PropsCreateIndex) => {
+        const { t } = useLibTranslation();
+
     const [terms, setTerms] = useState<string[]>([]);
     const publish = usePublish();
     const [size, setSize] = useState(0);

@@ -3,9 +3,7 @@ import {
   Box,
   ButtonBase,
   Divider,
-  Fade,
   IconButton,
-  Popover,
   Popper,
   Slider,
   Typography,
@@ -13,11 +11,9 @@ import {
 } from "@mui/material";
 export const fontSizeExSmall = "60%";
 export const fontSizeSmall = "80%";
-import AspectRatioIcon from "@mui/icons-material/AspectRatio";
 import {
   Fullscreen,
   Pause,
-  PictureInPicture,
   PlayArrow,
   Refresh,
   VolumeOff,
@@ -25,17 +21,20 @@ import {
 } from "@mui/icons-material";
 import { formatTime } from "../../utils/time.js";
 import { CustomFontTooltip } from "./CustomFontTooltip.js";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SlowMotionVideoIcon from "@mui/icons-material/SlowMotionVideo";
 const buttonPaddingBig = "6px";
 const buttonPaddingSmall = "4px";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import CheckIcon from "@mui/icons-material/Check";
+import { useLibTranslation } from "../../hooks/useLibTranslation.js";
 
 export const PlayButton = ({ togglePlay, isPlaying, isScreenSmall }: any) => {
+  const { t } = useLibTranslation();
+
   return (
-    <CustomFontTooltip title="Pause/Play (Spacebar)" placement="bottom" arrow>
+    <CustomFontTooltip title={t("video.play_pause")} placement="bottom" arrow>
       <IconButton
         sx={{
           color: "white",
@@ -50,8 +49,10 @@ export const PlayButton = ({ togglePlay, isPlaying, isScreenSmall }: any) => {
 };
 
 export const ReloadButton = ({ reloadVideo, isScreenSmall }: any) => {
+  const { t } = useLibTranslation();
+
   return (
-    <CustomFontTooltip title="Reload Video (R)" placement="bottom" arrow>
+    <CustomFontTooltip title={t("video.reload_video")} placement="bottom" arrow>
       <IconButton
         sx={{
           color: "white",
@@ -72,7 +73,7 @@ export const ProgressSlider = ({
   playerRef,
   resetHideTimeout,
   isVideoPlayerSmall,
-  isOnTimeline
+  isOnTimeline,
 }: any) => {
   const sliderRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -117,26 +118,25 @@ export const ProgressSlider = ({
   const debounceTimeoutRef = useRef<any>(null);
   const previousBlobUrlRef = useRef<string | null>(null);
 
-const handleMouseMove = (e: React.MouseEvent) => {
-  const slider = sliderRef.current;
-  if (!slider) return;
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const slider = sliderRef.current;
+    if (!slider) return;
 
-  const rect = slider.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const percent = x / rect.width;
-  const time = Math.min(Math.max(0, percent * duration), duration);
+    const rect = slider.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percent = x / rect.width;
+    const time = Math.min(Math.max(0, percent * duration), duration);
 
-  // Position anchor element at the correct spot
-  if (hoverAnchorRef.current) {
-    hoverAnchorRef.current.style.left = `${x}px`;
-  }
+    // Position anchor element at the correct spot
+    if (hoverAnchorRef.current) {
+      hoverAnchorRef.current.style.left = `${x}px`;
+    }
 
-  setHoverX(e.clientX); // optional – can be removed unless used elsewhere
-  setShowDuration(time);
- 
+    setHoverX(e.clientX); // optional – can be removed unless used elsewhere
+    setShowDuration(time);
 
-  if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-};
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+  };
   const handleMouseLeave = () => {
     lastRequestedTimeRef.current = null;
     setThumbnailUrl(null);
@@ -166,14 +166,14 @@ const handleMouseMove = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
 
-  useEffect(()=> {
-    if(!isOnTimeline) return
-    if(hoverX){
-      isOnTimeline.current = true
+  useEffect(() => {
+    if (!isOnTimeline) return;
+    if (hoverX) {
+      isOnTimeline.current = true;
     } else {
-      isOnTimeline.current = false
+      isOnTimeline.current = false;
     }
-  }, [hoverX])
+  }, [hoverX]);
 
   return (
     <Box
@@ -183,17 +183,17 @@ const handleMouseMove = (e: React.MouseEvent) => {
         padding: isVideoPlayerSmall ? "0px" : "0px 10px",
       }}
     >
-     <Box
-  ref={hoverAnchorRef}
-  sx={{
-    position: "absolute",
-    top: 0,
-    width: "1px",
-    height: "1px",
-    pointerEvents: "none",
-    transform: "translateX(-50%)", // center popper on the anchor
-  }}
-/>
+      <Box
+        ref={hoverAnchorRef}
+        sx={{
+          position: "absolute",
+          top: 0,
+          width: "1px",
+          height: "1px",
+          pointerEvents: "none",
+          transform: "translateX(-50%)", // center popper on the anchor
+        }}
+      />
       <Slider
         ref={sliderRef}
         onMouseMove={handleMouseMove}
@@ -268,9 +268,11 @@ const handleMouseMove = (e: React.MouseEvent) => {
 };
 
 export const VideoTime = ({ progress, isScreenSmall, duration }: any) => {
+  const { t } = useLibTranslation();
+
   return (
     <CustomFontTooltip
-      title="Seek video in 10% increments (0-9)"
+      title={t("video.seek_video")}
       placement="bottom"
       arrow
       disableHoverListener={isScreenSmall}
@@ -295,12 +297,10 @@ export const VideoTime = ({ progress, isScreenSmall, duration }: any) => {
 };
 
 const VolumeButton = ({ isMuted, toggleMute }: any) => {
+  const { t } = useLibTranslation();
+
   return (
-    <CustomFontTooltip
-      title="Toggle Mute (M), Raise (UP), Lower (DOWN)"
-      placement="bottom"
-      arrow
-    >
+    <CustomFontTooltip title={t("video.toggle_mute")} placement="bottom" arrow>
       <IconButton
         sx={{
           color: "white",
@@ -373,6 +373,8 @@ export const PlaybackRate = ({
   onSelect,
   openPlaybackMenu,
 }: any) => {
+  const { t } = useLibTranslation();
+
   const [isOpen, setIsOpen] = useState(false);
   const btnRef = useRef(null);
   const theme = useTheme();
@@ -383,7 +385,7 @@ export const PlaybackRate = ({
   return (
     <>
       <CustomFontTooltip
-        title="Video Speed. Increase (+ or >), Decrease (- or <)"
+        title={t("video.video_speed")}
         placement="bottom"
         arrow
       >
@@ -403,55 +405,15 @@ export const PlaybackRate = ({
   );
 };
 
-export const ObjectFitButton = ({ toggleObjectFit, isScreenSmall }: any) => {
-  return (
-    <CustomFontTooltip title="Toggle Aspect Ratio (O)" placement="bottom" arrow>
-      <IconButton
-        sx={{
-          color: "white",
-          padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
-        }}
-        onClick={() => toggleObjectFit()}
-      >
-        <AspectRatioIcon />
-      </IconButton>
-    </CustomFontTooltip>
-  );
-};
-
-export const PictureInPictureButton = ({
-  isFullscreen,
-  toggleRef,
-  togglePictureInPicture,
-  isScreenSmall,
-}: any) => {
-  return (
-    <>
-      {!isFullscreen && (
-        <CustomFontTooltip
-          title="Picture in Picture (P)"
-          placement="bottom"
-          arrow
-        >
-          <IconButton
-            sx={{
-              color: "white",
-              padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
-            }}
-            ref={toggleRef}
-            onClick={togglePictureInPicture}
-          >
-            <PictureInPicture />
-          </IconButton>
-        </CustomFontTooltip>
-      )}
-    </>
-  );
-};
-
 export const FullscreenButton = ({ toggleFullscreen, isScreenSmall }: any) => {
+  const { t } = useLibTranslation();
+
   return (
-    <CustomFontTooltip title="Toggle Fullscreen (F)" placement="bottom" arrow>
+    <CustomFontTooltip
+      title={t("video.toggle_fullscreen")}
+      placement="bottom"
+      arrow
+    >
       <IconButton
         sx={{
           color: "white",
@@ -479,6 +441,8 @@ export const PlayBackMenu = ({
   playbackRate,
   isFromDrawer,
 }: PlayBackMenuProps) => {
+  const { t } = useLibTranslation();
+
   const theme = useTheme();
   const ref = useRef<any>(null);
 
@@ -539,7 +503,7 @@ export const PlayBackMenu = ({
               fontSize: "0.85rem",
             }}
           >
-            Playback speed
+            {t("video.playback_speed")}
           </Typography>
         </ButtonBase>
       </Box>

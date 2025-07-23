@@ -292,7 +292,6 @@ removeFromList(listName, displayLimit)
 getResourceMoreList(displayLimit)
   }, [getResourceMoreList])
 
-  console.log('isLoading', isLoading, listToDisplay?.length)
 
 
   return (

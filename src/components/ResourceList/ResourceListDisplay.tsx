@@ -373,7 +373,6 @@ removeFromList(listName, displayLimit)
 getResourceMoreList(displayLimit)
   }, [getResourceMoreList])
 
-  console.log('listToDisplay', listToDisplay)
 
   return (
     <div ref={elementRef} style={{

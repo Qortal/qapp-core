@@ -631,10 +631,8 @@ export const VideoPlayer = ({
             playerRef.current?.playbackRate(playbackRate);
             playerRef.current?.volume(volume);
             const key = `${resource.service}-${resource.name}-${resource.identifier}`
-            console.log('key', key)
             if (key) {
               const savedProgress = getProgress(key);
-              console.log('savedProgress', savedProgress)
               if (typeof savedProgress === "number") {
                 playerRef.current?.currentTime(savedProgress);
               }

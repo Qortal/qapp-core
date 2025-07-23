@@ -61,6 +61,7 @@ import {
   showSuccess,
 } from "../../utils/toast";
 import { RequestQueueWithPromise } from "../../utils/queue";
+import { useLibTranslation } from "../../hooks/useLibTranslation";
 
 export const requestQueueGetStatus = new RequestQueueWithPromise(1);
 
@@ -114,6 +115,8 @@ const SubtitleManagerComponent = ({
   isFromDrawer = false,
   exitFullscreen,
 }: SubtitleManagerProps) => {
+  const { t } = useLibTranslation();
+
   const [mode, setMode] = useState(1);
   const [isOpenPublish, setIsOpenPublish] = useState(false);
   const { lists, identifierOperations, auth } = useGlobal();
@@ -308,7 +311,7 @@ const SubtitleManagerComponent = ({
                 fontSize: "0.85rem",
               }}
             >
-              Subtitles
+              {t("subtitle.subtitles")}
             </Typography>
           </ButtonBase>
           <ButtonBase
@@ -365,7 +368,7 @@ const SubtitleManagerComponent = ({
                 marginTop: "20px",
               }}
             >
-              No subtitles
+              {t("subtitle.no_subtitles")}
             </Typography>
           )}
 
@@ -393,7 +396,7 @@ const SubtitleManagerComponent = ({
             disabled={showAll}
             onClick={() => setShowAll(true)}
           >
-            Load community subs
+            {t("subtitle.load_community_subs")}
           </Button>
         </Box>
       </Box>
@@ -424,6 +427,8 @@ const PublisherSubtitles = ({
   onBack,
   currentSubTrack,
 }: PublisherSubtitlesProps) => {
+  const { t } = useLibTranslation();
+
   return (
     <>
       <ButtonBase
@@ -439,7 +444,7 @@ const PublisherSubtitles = ({
           justifyContent: "space-between",
         }}
       >
-        <Typography>Off</Typography>
+        <Typography>{t("subtitle.off")}</Typography>
         {!currentSubTrack ? <CheckIcon /> : <ArrowForwardIosIcon />}
       </ButtonBase>
 
@@ -470,6 +475,8 @@ const PublishSubtitles = ({
   setIsOpen,
   mySubtitles,
 }: PublishSubtitlesProps) => {
+  const { t } = useLibTranslation();
+
   const [language, setLanguage] = useState<null | string>(null);
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -488,7 +495,7 @@ const PublishSubtitles = ({
         };
         newSubtitles.push(newSubtitle);
       } catch (error) {
-        console.error("Failed to parse audio file:", error);
+        console.error("Failed to convert to base64:", error);
       }
     }
     setSubtitles((prev) => [...newSubtitles, ...prev]);
@@ -538,11 +545,13 @@ const PublishSubtitles = ({
     let loadId;
     try {
       setIsPublishing(true);
-      loadId = showLoading("Deleting subtitle...");
+      loadId = showLoading(t("subtitle.deleting_subtitle"));
       await lists.deleteResource([sub]);
-      showSuccess("Deleted subtitle");
+      showSuccess(t("subtitle.deleted"));
     } catch (error) {
-      showError(error instanceof Error ? error.message : "Unable to delete");
+      showError(
+        error instanceof Error ? error.message : t("subtitle.unable_delete")
+      );
     } finally {
       setIsPublishing(false);
       dismissToast(loadId);
@@ -553,12 +562,14 @@ const PublishSubtitles = ({
     let loadId;
     try {
       setIsPublishing(true);
-      loadId = showLoading("Publishing subtitles...");
+      loadId = showLoading(t("subtitle.publishing"));
       await publishHandler(subtitles);
-      showSuccess("Subtitles published");
+      showSuccess(t("subtitle.published"));
       setSubtitles([]);
     } catch (error) {
-      showError(error instanceof Error ? error.message : "Unable to publish");
+      showError(
+        error instanceof Error ? error.message : t("subtitle.unable_publish")
+      );
     } finally {
       dismissToast(loadId);
       setIsPublishing(false);
@@ -587,7 +598,7 @@ const PublishSubtitles = ({
         },
       }}
     >
-      <DialogTitle>My Subtitles</DialogTitle>
+      <DialogTitle>{t("subtitle.my_subtitles")}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={handleClose}
@@ -626,8 +637,8 @@ const PublishSubtitles = ({
               onChange={handleChange}
               aria-label="basic tabs example"
             >
-              <Tab label="New" {...a11yProps(0)} />
-              <Tab label="Existing" {...a11yProps(1)} />
+              <Tab label={t("subtitle.new")} {...a11yProps(0)} />
+              <Tab label={t("subtitle.existing")} {...a11yProps(1)} />
             </Tabs>
           </Box>
         </Box>
@@ -651,7 +662,7 @@ const PublishSubtitles = ({
                 variant="contained"
               >
                 <input {...getInputProps()} />
-                Import subtitles
+                {t("subtitle.import_subtitles")}
               </Button>
             </Box>
             {subtitles?.map((sub, i) => {
@@ -697,7 +708,7 @@ const PublishSubtitles = ({
                       size="small"
                       color="secondary"
                     >
-                      remove
+                      {t("actions.remove")}
                     </Button>
                   </Box>
                 </Card>
@@ -739,7 +750,7 @@ const PublishSubtitles = ({
             disabled={disableButton}
             variant="contained"
           >
-            Publish
+            {t("actions.publish")}
           </Button>
         )}
       </DialogActions>
@@ -849,6 +860,8 @@ interface MySubtitleProps {
   onDelete: (subtitle: QortalGetMetadata) => void;
 }
 const MySubtitle = ({ sub, onDelete }: MySubtitleProps) => {
+  const { t } = useLibTranslation();
+
   const { resource, isLoading, error } = usePublish(2, "JSON", sub);
   return (
     <Card
@@ -887,7 +900,7 @@ const MySubtitle = ({ sub, onDelete }: MySubtitleProps) => {
           size="small"
           color="secondary"
         >
-          delete
+          {t("actions.delete")}
         </Button>
       </Box>
     </Card>

@@ -196,7 +196,7 @@ startGlobalDownload: (
   let isPaused = false
   const callFunction = async (build?: boolean, isRecalling?: boolean) => {
     try {
-      console.log('retryAttempts', retryAttempts, tries)
+      
       if ((isCalling || isPaused) && !build) return;
          isCalling = true;
       statusMap[resourceId] = getResourceStatus(resourceId);
