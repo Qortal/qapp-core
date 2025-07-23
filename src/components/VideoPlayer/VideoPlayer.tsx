@@ -409,6 +409,7 @@ export const VideoPlayer = ({
 
     const handleLoadedMetadata = () => {
       const duration = player.duration?.();
+   
       if (typeof duration === "number" && !isNaN(duration)) {
         setDuration(duration);
       }
@@ -416,6 +417,10 @@ export const VideoPlayer = ({
 
     player.on("loadedmetadata", handleLoadedMetadata);
 
+  
+  if (player?.readyState() >= 1) {
+    handleLoadedMetadata();
+  }
     return () => {
       player.off("loadedmetadata", handleLoadedMetadata);
     };
