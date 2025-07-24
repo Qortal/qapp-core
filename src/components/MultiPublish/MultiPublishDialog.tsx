@@ -258,6 +258,8 @@ interface IndividualResourceComponentProps {
 }
 
 const IndividualResourceComponent = ({ publish, publishKey, publishStatus }: IndividualResourceComponentProps) => {
+  const { t } = useLibTranslation();
+
   const [now, setNow] = useState(Date.now());
   const [processingStart, setProcessingStart] = useState<number | undefined>();
 
