@@ -74,6 +74,9 @@ export const ProgressSlider = ({
   resetHideTimeout,
   isVideoPlayerSmall,
   isOnTimeline,
+  railColor,
+  thumbColor,
+  trackColor
 }: any) => {
   const sliderRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -212,24 +215,24 @@ export const ProgressSlider = ({
           height: "0px",
           "@media (pointer: coarse)": { padding: "0px" },
           "& .MuiSlider-thumb": {
-            backgroundColor: "red",
+            backgroundColor: thumbColor || "red",
             width: "14px",
             height: "14px",
           },
           "& .MuiSlider-thumb::after": {
             width: "14px",
             height: "14px",
-            backgroundColor: "red",
+            backgroundColor: thumbColor || "red",
           },
           "& .MuiSlider-rail": {
             opacity: 0.5,
             height: "6px",
-            backgroundColor: "#73859f80",
+            backgroundColor: railColor || "#73859f80",
           },
           "& .MuiSlider-track": {
             height: "6px",
             border: "0px",
-            backgroundColor: "red",
+            backgroundColor: trackColor || "red",
           },
         }}
       />
@@ -459,6 +462,15 @@ export const PlayBackMenu = ({
   };
   if (!isOpen) return null;
   return (
+    <>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9, // one layer below MUI drawer
+      }}
+      onClick={(e) => e.stopPropagation()}
+    />
     <Box
       ref={ref}
       tabIndex={-1}
@@ -563,5 +575,6 @@ export const PlayBackMenu = ({
         })}
       </Box>
     </Box>
+    </>
   );
 };

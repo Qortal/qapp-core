@@ -1,4 +1,5 @@
 import {
+  CSSProperties,
   RefObject,
   useCallback,
   useEffect,
@@ -79,14 +80,21 @@ export interface VideoPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   onEnded?: (e: React.SyntheticEvent<HTMLVideoElement, Event>) => void;
-  onPlay?: ()=> void;
-  onPause?: ()=> void;
+  onPlay?: () => void;
+  onPause?: () => void;
   timelineActions?: TimelineAction[];
   playerRef: any;
   locationRef: RefObject<string | null>;
   videoLocationRef: RefObject<string | null>;
-  filename?:string
-  path?: string
+  filename?: string;
+  path?: string;
+  styling?: {
+    progressSlider?: {
+      thumbColor?: CSSProperties["color"];
+      railColor?: CSSProperties["color"];
+      trackColor?: CSSProperties["color"];
+    };
+  };
 }
 
 const videoStyles = {
@@ -124,12 +132,13 @@ export const VideoPlayer = ({
   locationRef,
   videoLocationRef,
   path,
-  filename
+  filename,
+  styling,
 }: VideoPlayerProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [videoObjectFit] = useState<StretchVideoType>("contain");
   const { isPlaying, setIsPlaying } = useIsPlaying();
-  const isOnTimeline = useRef(false)
+  const isOnTimeline = useRef(false);
   const [width, setWidth] = useState(0);
   useEffect(() => {
     const observer = new ResizeObserver(([entry]) => {
@@ -187,7 +196,6 @@ export const VideoPlayer = ({
     seekTo,
     togglePictureInPicture,
     downloadResource,
-    
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
@@ -196,7 +204,7 @@ export const VideoPlayer = ({
     isMuted,
     videoRef,
     filename,
-    path
+    path,
   });
 
   const showControlsMobile =
@@ -324,7 +332,7 @@ export const VideoPlayer = ({
   useVideoPlayerHotKeys(hotkeyHandlers);
 
   const updateProgress = useCallback(() => {
-    if(!isPlaying || !isPlayerInitialized) return
+    if (!isPlaying || !isPlayerInitialized) return;
     const player = playerRef?.current;
     if (!player || typeof player?.currentTime !== "function") return;
 
@@ -346,17 +354,16 @@ export const VideoPlayer = ({
 
   const onPlay = useCallback(() => {
     setIsPlaying(true);
-     if(onPlayParent){
-      onPlayParent()
+    if (onPlayParent) {
+      onPlayParent();
     }
   }, [setIsPlaying]);
 
   const onPause = useCallback(() => {
     setIsPlaying(false);
-    if(onPauseParent){
-      onPauseParent()
+    if (onPauseParent) {
+      onPauseParent();
     }
-  
   }, [setIsPlaying]);
   const onVolumeChangeHandler = useCallback(
     (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
@@ -385,7 +392,7 @@ export const VideoPlayer = ({
       backgroundColor: "#000000",
       height: isFullscreen ? "calc(100vh - 40px)" : "100%",
       width: "100%",
-      cursor: showControls ? 'default' : "none"
+      cursor: showControls ? "default" : "none",
     };
   }, [videoObjectFit, isFullscreen, showControls]);
 
@@ -409,7 +416,7 @@ export const VideoPlayer = ({
 
     const handleLoadedMetadata = () => {
       const duration = player.duration?.();
-   
+
       if (typeof duration === "number" && !isNaN(duration)) {
         setDuration(duration);
       }
@@ -417,10 +424,9 @@ export const VideoPlayer = ({
 
     player.on("loadedmetadata", handleLoadedMetadata);
 
-  
-  if (player?.readyState() >= 1) {
-    handleLoadedMetadata();
-  }
+    if (player?.readyState() >= 1) {
+      handleLoadedMetadata();
+    }
     return () => {
       player.off("loadedmetadata", handleLoadedMetadata);
     };
@@ -433,7 +439,7 @@ export const VideoPlayer = ({
     setShowControls(true);
     if (hideTimeout.current) clearTimeout(hideTimeout.current);
     hideTimeout.current = setTimeout(() => {
-      if(isOnTimeline?.current) return
+      if (isOnTimeline?.current) return;
       setShowControls(false);
     }, 2500); // 3s of inactivity
   };
@@ -635,7 +641,7 @@ export const VideoPlayer = ({
             playerRef.current?.poster("");
             playerRef.current?.playbackRate(playbackRate);
             playerRef.current?.volume(volume);
-            const key = `${resource.service}-${resource.name}-${resource.identifier}`
+            const key = `${resource.service}-${resource.name}-${resource.identifier}`;
             if (key) {
               const savedProgress = getProgress(key);
               if (typeof savedProgress === "number") {
@@ -815,6 +821,7 @@ export const VideoPlayer = ({
             togglePictureInPicture={togglePictureInPicture}
             setLocalProgress={setLocalProgress}
             isOnTimeline={isOnTimeline}
+            styling={styling}
           />
         )}
         {timelineActions && Array.isArray(timelineActions) && (
@@ -841,6 +848,7 @@ export const VideoPlayer = ({
             progress={localProgress}
             playerRef={playerRef}
             showControlsMobile={showControlsMobile}
+            styling={styling}
           />
         )}
 
@@ -891,7 +899,9 @@ export const VideoPlayer = ({
             />
           </Drawer>
         </ClickAwayListener>
-        <ClickAwayListener onClickAway={() => setDrawerOpenPlayback(false)}>
+        <ClickAwayListener onClickAway={() => {
+          setDrawerOpenPlayback(false)
+        }}>
           <Drawer
             variant="persistent"
             anchor="bottom"

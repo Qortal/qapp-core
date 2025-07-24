@@ -267,6 +267,14 @@ const SubtitleManagerComponent = ({
   if (!open) return null;
   return (
     <>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9, // one layer below MUI drawer
+      }}
+      onClick={(e) => e.stopPropagation()}
+    />
       <Box
         ref={ref}
         tabIndex={-1}

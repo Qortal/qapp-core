@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { CSSProperties, useContext, useEffect, useRef } from "react";
 import { TimelineAction, VideoPlayer, VideoPlayerProps } from "./VideoPlayer";
 import { useGlobalPlayerStore } from "../../state/pip";
 import Player from "video.js/dist/types/player";
@@ -16,8 +16,15 @@ export interface VideoPlayerParentProps {
   onPlay?: () => void;
   onPause?: () => void;
   timelineActions?: TimelineAction[];
-  path?: string
-  filename?: string
+  path?: string;
+  filename?: string;
+  styling?: {
+    progressSlider?: {
+      thumbColor?: CSSProperties["color"];
+      railColor?: CSSProperties["color"];
+      trackColor?: CSSProperties["color"];
+    };
+  };
 }
 export const VideoPlayerParent = ({
   videoRef,
@@ -30,9 +37,10 @@ export const VideoPlayerParent = ({
   onPause,
   timelineActions,
   path,
-  filename
+  filename,
+  styling,
 }: VideoPlayerParentProps) => {
-  const context = useContext(GlobalContext)
+  const context = useContext(GlobalContext);
   const playerRef = useRef<Player | null>(null);
   const locationRef = useRef<string | null>(null);
   const videoLocationRef = useRef<null | string>(null);
@@ -49,7 +57,12 @@ export const VideoPlayerParent = ({
       const isPlaying = isPlayingRef.current;
       const currentSrc = player?.currentSrc();
 
-      if (context?.enableGlobalVideoFeature && currentSrc && isPlaying && videoLocationRef.current) {
+      if (
+        context?.enableGlobalVideoFeature &&
+        currentSrc &&
+        isPlaying &&
+        videoLocationRef.current
+      ) {
         const current = player?.currentTime?.();
         const currentSource = player?.currentType();
 
@@ -103,6 +116,7 @@ export const VideoPlayerParent = ({
       path={path}
       onPlay={onPlay}
       onPause={onPause}
+      styling={styling}
     />
   );
 };

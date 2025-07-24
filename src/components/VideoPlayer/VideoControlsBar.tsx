@@ -11,7 +11,7 @@ import {
 } from "./VideoControls";
 import SubtitlesIcon from "@mui/icons-material/Subtitles";
 import { CustomFontTooltip } from "./CustomFontTooltip";
-import { RefObject } from "react";
+import { CSSProperties, RefObject } from "react";
 import { useLibTranslation } from "../../hooks/useLibTranslation";
 import i18n from "../../i18n/i18n";
 interface VideoControlsBarProps {
@@ -43,6 +43,13 @@ interface VideoControlsBarProps {
   isVideoPlayerSmall: boolean;
   setLocalProgress: (val: number) => void;
   isOnTimeline: RefObject<boolean>;
+  styling?: {
+    progressSlider?: {
+      thumbColor?: CSSProperties["color"];
+      railColor?: CSSProperties["color"];
+      trackColor?: CSSProperties["color"];
+    };
+  };
 }
 
 export const VideoControlsBar = ({
@@ -74,6 +81,7 @@ export const VideoControlsBar = ({
   togglePictureInPicture,
   isVideoPlayerSmall,
   isOnTimeline,
+  styling
 }: VideoControlsBarProps) => {
   const { t } = useLibTranslation();
 
@@ -119,6 +127,9 @@ export const VideoControlsBar = ({
             progress={progress}
             duration={duration}
             isOnTimeline={isOnTimeline}
+            thumbColor={styling?.progressSlider?.thumbColor}
+            railColor={styling?.progressSlider?.railColor}
+            trackColor={styling?.progressSlider?.trackColor}
           />
           {!isVideoPlayerSmall && (
             <Box

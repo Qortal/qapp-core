@@ -1,76 +1,5 @@
 {
   "resources": {
-    "ar": {
-      "lib-core": {
-        "subtitle": {
-          "subtitles": "الترجمات",
-          "no_subtitles": "لا توجد ترجمات",
-          "load_community_subs": "تحميل ترجمات المجتمع",
-          "off": "إيقاف",
-          "deleting_subtitle": "جارٍ حذف الترجمة...",
-          "deleted": "تم حذف الترجمة",
-          "unable_delete": "تعذّر الحذف",
-          "publishing": "جارٍ نشر الترجمات...",
-          "published": "تم نشر الترجمات",
-          "unable_publish": "تعذّر النشر",
-          "my_subtitles": "ترجماتي",
-          "new": "جديد",
-          "existing": "موجود",
-          "import_subtitles": "استيراد ترجمات"
-        },
-        "actions": {
-          "remove": "إزالة",
-          "publish": "نشر",
-          "delete": "حذف",
-          "publish_metadata": "نشر البيانات الوصفية",
-          "publish_index": "نشر الفهرس",
-          "cancel": "إلغاء",
-          "continue": "متابعة",
-          "close": "إغلاق",
-          "retry": "إعادة المحاولة"
-        },
-        "video": {
-          "playback_speed": "سرعة التشغيل",
-          "toggle_fullscreen": "تبديل ملء الشاشة (F)",
-          "video_speed": "سرعة الفيديو. زيادة (+ أو >)، نقصان (- أو <)",
-          "toggle_mute": "تبديل كتم الصوت (M)، رفع الصوت (أعلى)، خفض الصوت (أسفل)",
-          "seek_video": "تقديم الفيديو بنسبة 10٪ (0-9)",
-          "reload_video": "إعادة تحميل الفيديو (R)",
-          "play_pause": "تشغيل/إيقاف مؤقت (المسطرة)"
-        },
-        "index": {
-          "title": "مدير الفهارس",
-          "create_new_index": "إنشاء فهرس جديد",
-          "add_metadata": "إضافة بيانات وصفية",
-          "publishing_metadata": "جارٍ نشر البيانات الوصفية...",
-          "published_metadata": "تم نشر البيانات الوصفية بنجاح",
-          "failed_metadata": "فشل في نشر البيانات الوصفية",
-          "example": "مثال على الشكل المتوقع:",
-          "metadata_title": "العنوان",
-          "metadata_description": "الوصف",
-          "metadata_title_placeholder": "أضف عنوانًا للرابط",
-          "metadata_description_placeholder": "أضف وصفًا للرابط",
-          "characters": "حروف",
-          "publishing_index": "جارٍ نشر الفهرس...",
-          "published_index": "تم نشر الفهرس بنجاح",
-          "failed_index": "فشل في نشر الفهرس",
-          "recommended_indices": "الفهارس الموصى بها",
-          "add_search_term": "إضافة مصطلح بحث",
-          "search_terms": "مصطلحات البحث",
-          "recommendation_size": "يُنصح بأن يكون عدد حروف المصطلح أقل من {{recommendedSize}} حرفًا",
-          "multiple_title": "إضافة فهارس متعددة",
-          "multiple_description": "الفهارس اللاحقة ستقلل من رسوم النشر، لكنها ستكون أقل تأثيرًا في نتائج البحث المستقبلية."
-        },
-        "multi_publish": {
-          "title": "حالة النشر",
-          "publish_failed": "فشل النشر",
-          "file_chunk": "جزء من الملف",
-          "file_processing": "جارٍ معالجة الملف",
-          "success": "تم النشر بنجاح",
-          "attempt_retry": "فشل النشر. تتم المحاولة مرة أخرى..."
-        }
-      }
-    },
     "de": {
       "lib-core": {
         "subtitle": {
@@ -142,74 +71,74 @@
         }
       }
     },
-    "en": {
+    "ar": {
       "lib-core": {
         "subtitle": {
-          "subtitles": "Subtitles",
-          "no_subtitles": "No subtitles",
-          "load_community_subs": "Load community subtitles",
-          "off": "Off",
-          "deleting_subtitle": "Deleting subtitle...",
-          "deleted": "Deleted subtitle",
-          "unable_delete": "unable to delete",
-          "publishing": "Publishing subtitles...",
-          "published": "Subtitles published",
-          "unable_publish": "Unable to publish",
-          "my_subtitles": "My Subtitles",
-          "new": "New",
-          "existing": "Existing",
-          "import_subtitles": "Import subtitles"
+          "subtitles": "الترجمات",
+          "no_subtitles": "لا توجد ترجمات",
+          "load_community_subs": "تحميل ترجمات المجتمع",
+          "off": "إيقاف",
+          "deleting_subtitle": "جارٍ حذف الترجمة...",
+          "deleted": "تم حذف الترجمة",
+          "unable_delete": "تعذّر الحذف",
+          "publishing": "جارٍ نشر الترجمات...",
+          "published": "تم نشر الترجمات",
+          "unable_publish": "تعذّر النشر",
+          "my_subtitles": "ترجماتي",
+          "new": "جديد",
+          "existing": "موجود",
+          "import_subtitles": "استيراد ترجمات"
         },
         "actions": {
-          "remove": "remove",
-          "publish": "publish",
-          "delete": "delete",
-          "publish_metadata": "publish metadata",
-          "publish_index": "publish index",
-          "cancel": "cancel",
-          "continue": "continue",
-          "close": "close",
-          "retry": "retry"
+          "remove": "إزالة",
+          "publish": "نشر",
+          "delete": "حذف",
+          "publish_metadata": "نشر البيانات الوصفية",
+          "publish_index": "نشر الفهرس",
+          "cancel": "إلغاء",
+          "continue": "متابعة",
+          "close": "إغلاق",
+          "retry": "إعادة المحاولة"
         },
         "video": {
-          "playback_speed": "Playback speed",
-          "toggle_fullscreen": "Toggle Fullscreen (F)",
-          "video_speed": "Video Speed. Increase (+ or >), Decrease (- or <)",
-          "toggle_mute": "Toggle Mute (M), Raise (UP), Lower (DOWN)",
-          "seek_video": "Seek video in 10% increments (0-9)",
-          "reload_video": "Reload Video (R)",
-          "play_pause": "Pause/Play (Spacebar)"
+          "playback_speed": "سرعة التشغيل",
+          "toggle_fullscreen": "تبديل ملء الشاشة (F)",
+          "video_speed": "سرعة الفيديو. زيادة (+ أو >)، نقصان (- أو <)",
+          "toggle_mute": "تبديل كتم الصوت (M)، رفع الصوت (أعلى)، خفض الصوت (أسفل)",
+          "seek_video": "تقديم الفيديو بنسبة 10٪ (0-9)",
+          "reload_video": "إعادة تحميل الفيديو (R)",
+          "play_pause": "تشغيل/إيقاف مؤقت (المسطرة)"
         },
         "index": {
-          "title": "Index Manager",
-          "create_new_index": "Create new index",
-          "add_metadata": "Add metadata",
-          "publishing_metadata": "Publishing metadata...",
-          "published_metadata": "Successfully published metadata",
-          "failed_metadata": "Failed to publish metadata",
-          "example": "Example of how it could look like:",
-          "metadata_title": "Title",
-          "metadata_description": "Description",
-          "metadata_title_placeholder": "Add a title for the link",
-          "metadata_description_placeholder": "Add a description for the link",
-          "characters": "characters",
-          "publishing_index": "Publishing index...",
-          "published_index": "Successfully published index",
-          "failed_index": "Failed to publish index",
-          "recommended_indices": "Recommended Indices",
-          "add_search_term": "Add search term",
-          "search_terms": "search terms",
-          "recommendation_size": "It is recommended to keep your term character count below {{recommendedSize}} characters",
-          "multiple_title": "Adding multiple indices",
-          "multiple_description": "Subsequent indices will keep your publish fees lower, but they will have less strength in future search results."
+          "title": "مدير الفهارس",
+          "create_new_index": "إنشاء فهرس جديد",
+          "add_metadata": "إضافة بيانات وصفية",
+          "publishing_metadata": "جارٍ نشر البيانات الوصفية...",
+          "published_metadata": "تم نشر البيانات الوصفية بنجاح",
+          "failed_metadata": "فشل في نشر البيانات الوصفية",
+          "example": "مثال على الشكل المتوقع:",
+          "metadata_title": "العنوان",
+          "metadata_description": "الوصف",
+          "metadata_title_placeholder": "أضف عنوانًا للرابط",
+          "metadata_description_placeholder": "أضف وصفًا للرابط",
+          "characters": "حروف",
+          "publishing_index": "جارٍ نشر الفهرس...",
+          "published_index": "تم نشر الفهرس بنجاح",
+          "failed_index": "فشل في نشر الفهرس",
+          "recommended_indices": "الفهارس الموصى بها",
+          "add_search_term": "إضافة مصطلح بحث",
+          "search_terms": "مصطلحات البحث",
+          "recommendation_size": "يُنصح بأن يكون عدد حروف المصطلح أقل من {{recommendedSize}} حرفًا",
+          "multiple_title": "إضافة فهارس متعددة",
+          "multiple_description": "الفهارس اللاحقة ستقلل من رسوم النشر، لكنها ستكون أقل تأثيرًا في نتائج البحث المستقبلية."
         },
         "multi_publish": {
-          "title": "Publishing Status",
-          "publish_failed": "Publish Failed",
-          "file_chunk": "File Chunk",
-          "file_processing": "File Processing",
-          "success": "Published successfully",
-          "attempt_retry": "Publish failed. Attempting retry..."
+          "title": "حالة النشر",
+          "publish_failed": "فشل النشر",
+          "file_chunk": "جزء من الملف",
+          "file_processing": "جارٍ معالجة الملف",
+          "success": "تم النشر بنجاح",
+          "attempt_retry": "فشل النشر. تتم المحاولة مرة أخرى..."
         }
       }
     },
@@ -281,6 +210,77 @@
           "file_processing": "Procesando archivo",
           "success": "Publicado con éxito",
           "attempt_retry": "Error en la publicación. Intentando reintentar..."
+        }
+      }
+    },
+    "en": {
+      "lib-core": {
+        "subtitle": {
+          "subtitles": "Subtitles",
+          "no_subtitles": "No subtitles",
+          "load_community_subs": "Load community subtitles",
+          "off": "Off",
+          "deleting_subtitle": "Deleting subtitle...",
+          "deleted": "Deleted subtitle",
+          "unable_delete": "unable to delete",
+          "publishing": "Publishing subtitles...",
+          "published": "Subtitles published",
+          "unable_publish": "Unable to publish",
+          "my_subtitles": "My Subtitles",
+          "new": "New",
+          "existing": "Existing",
+          "import_subtitles": "Import subtitles"
+        },
+        "actions": {
+          "remove": "remove",
+          "publish": "publish",
+          "delete": "delete",
+          "publish_metadata": "publish metadata",
+          "publish_index": "publish index",
+          "cancel": "cancel",
+          "continue": "continue",
+          "close": "close",
+          "retry": "retry"
+        },
+        "video": {
+          "playback_speed": "Playback speed",
+          "toggle_fullscreen": "Toggle Fullscreen (F)",
+          "video_speed": "Video Speed. Increase (+ or >), Decrease (- or <)",
+          "toggle_mute": "Toggle Mute (M), Raise (UP), Lower (DOWN)",
+          "seek_video": "Seek video in 10% increments (0-9)",
+          "reload_video": "Reload Video (R)",
+          "play_pause": "Pause/Play (Spacebar)"
+        },
+        "index": {
+          "title": "Index Manager",
+          "create_new_index": "Create new index",
+          "add_metadata": "Add metadata",
+          "publishing_metadata": "Publishing metadata...",
+          "published_metadata": "Successfully published metadata",
+          "failed_metadata": "Failed to publish metadata",
+          "example": "Example of how it could look like:",
+          "metadata_title": "Title",
+          "metadata_description": "Description",
+          "metadata_title_placeholder": "Add a title for the link",
+          "metadata_description_placeholder": "Add a description for the link",
+          "characters": "characters",
+          "publishing_index": "Publishing index...",
+          "published_index": "Successfully published index",
+          "failed_index": "Failed to publish index",
+          "recommended_indices": "Recommended Indices",
+          "add_search_term": "Add search term",
+          "search_terms": "search terms",
+          "recommendation_size": "It is recommended to keep your term character count below {{recommendedSize}} characters",
+          "multiple_title": "Adding multiple indices",
+          "multiple_description": "Subsequent indices will keep your publish fees lower, but they will have less strength in future search results."
+        },
+        "multi_publish": {
+          "title": "Publishing Status",
+          "publish_failed": "Publish Failed",
+          "file_chunk": "File Chunk",
+          "file_processing": "File Processing",
+          "success": "Published successfully",
+          "attempt_retry": "Publish failed. Attempting retry..."
         }
       }
     },
@@ -641,10 +641,10 @@
     }
   },
   "supportedLanguages": [
-    "ar",
     "de",
-    "en",
+    "ar",
     "es",
+    "en",
     "it",
     "ja",
     "fr",
