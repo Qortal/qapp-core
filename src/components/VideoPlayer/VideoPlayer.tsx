@@ -196,6 +196,7 @@ export const VideoPlayer = ({
     seekTo,
     togglePictureInPicture,
     downloadResource,
+    isStatusWrong
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
@@ -357,7 +358,7 @@ export const VideoPlayer = ({
     if (onPlayParent) {
       onPlayParent();
     }
-  }, [setIsPlaying]);
+  }, [setIsPlaying, onPlayParent]);
 
   const onPause = useCallback(() => {
     setIsPlaying(false);
@@ -762,6 +763,7 @@ export const VideoPlayer = ({
           isLoading={isLoading}
           startPlay={startPlay}
           downloadResource={downloadResource}
+          isStatusWrong={isStatusWrong}
         />
         <VideoElement
           ref={videoRef}

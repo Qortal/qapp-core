@@ -43,7 +43,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
   const startedFetchRef = useRef(false);
   const { playbackSettings, setPlaybackRate } = useVideoStore();
 
-  const { isReady, resourceUrl, status, percentLoaded, downloadResource } =
+  const { isReady, resourceUrl, status, localChunkCount, totalChunkCount , percentLoaded, downloadResource } =
     useResourceStatus({
       resource: !startedFetch ? null : qortalVideoResource,
       retryAttempts,
@@ -304,5 +304,6 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     seekTo,
     togglePictureInPicture,
     downloadResource,
+    isStatusWrong: !isNaN(totalChunkCount) && !isNaN(localChunkCount) &&  totalChunkCount === 2 && (totalChunkCount < localChunkCount)
   };
 };
