@@ -365,6 +365,7 @@ export interface ListQdnResourcesQortalRequest extends BaseRequest {
 
 export interface SearchQdnResourcesQortalRequest extends BaseRequest {
     action: 'SEARCH_QDN_RESOURCES'
+  identifier?: string
     default?: boolean
     includeStatus?: boolean
     includeMetadata?: boolean
