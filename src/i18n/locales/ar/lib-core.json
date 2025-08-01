@@ -1,0 +1,69 @@
+{
+  "subtitle": {
+    "subtitles": "الترجمات",
+    "no_subtitles": "لا توجد ترجمات",
+    "load_community_subs": "تحميل ترجمات المجتمع",
+    "off": "إيقاف",
+    "deleting_subtitle": "جارٍ حذف الترجمة...",
+    "deleted": "تم حذف الترجمة",
+    "unable_delete": "تعذّر الحذف",
+    "publishing": "جارٍ نشر الترجمات...",
+    "published": "تم نشر الترجمات",
+    "unable_publish": "تعذّر النشر",
+    "my_subtitles": "ترجماتي",
+    "new": "جديد",
+    "existing": "موجود",
+    "import_subtitles": "استيراد ترجمات"
+  },
+  "actions": {
+    "remove": "إزالة",
+    "publish": "نشر",
+    "delete": "حذف",
+    "publish_metadata": "نشر البيانات الوصفية",
+    "publish_index": "نشر الفهرس",
+    "cancel": "إلغاء",
+    "continue": "متابعة",
+    "close": "إغلاق",
+    "retry": "إعادة المحاولة"
+  },
+  "video": {
+    "playback_speed": "سرعة التشغيل",
+    "toggle_fullscreen": "تبديل ملء الشاشة (F)",
+    "video_speed": "سرعة الفيديو. زيادة (+ أو >)، نقصان (- أو <)",
+    "toggle_mute": "تبديل كتم الصوت (M)، رفع الصوت (أعلى)، خفض الصوت (أسفل)",
+    "seek_video": "تقديم الفيديو بنسبة 10٪ (0-9)",
+    "reload_video": "إعادة تحميل الفيديو (R)",
+    "play_pause": "تشغيل/إيقاف مؤقت (المسطرة)"
+  },
+  "index": {
+    "title": "مدير الفهارس",
+    "create_new_index": "إنشاء فهرس جديد",
+    "add_metadata": "إضافة بيانات وصفية",
+    "publishing_metadata": "جارٍ نشر البيانات الوصفية...",
+    "published_metadata": "تم نشر البيانات الوصفية بنجاح",
+    "failed_metadata": "فشل في نشر البيانات الوصفية",
+    "example": "مثال على الشكل المتوقع:",
+    "metadata_title": "العنوان",
+    "metadata_description": "الوصف",
+    "metadata_title_placeholder": "أضف عنوانًا للرابط",
+    "metadata_description_placeholder": "أضف وصفًا للرابط",
+    "characters": "حروف",
+    "publishing_index": "جارٍ نشر الفهرس...",
+    "published_index": "تم نشر الفهرس بنجاح",
+    "failed_index": "فشل في نشر الفهرس",
+    "recommended_indices": "الفهارس الموصى بها",
+    "add_search_term": "إضافة مصطلح بحث",
+    "search_terms": "مصطلحات البحث",
+    "recommendation_size": "يُنصح بأن يكون عدد حروف المصطلح أقل من {{recommendedSize}} حرفًا",
+    "multiple_title": "إضافة فهارس متعددة",
+    "multiple_description": "الفهارس اللاحقة ستقلل من رسوم النشر، لكنها ستكون أقل تأثيرًا في نتائج البحث المستقبلية."
+  },
+  "multi_publish": {
+    "title": "حالة النشر",
+    "publish_failed": "فشل النشر",
+    "file_chunk": "جزء من الملف",
+    "file_processing": "جارٍ معالجة الملف",
+    "success": "تم النشر بنجاح",
+    "attempt_retry": "فشل النشر. تتم المحاولة مرة أخرى..."
+  }
+}

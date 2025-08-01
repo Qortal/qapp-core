@@ -1,0 +1,69 @@
+{
+  "subtitle": {
+    "subtitles": "字幕",
+    "no_subtitles": "字幕なし",
+    "load_community_subs": "コミュニティ字幕を読み込む",
+    "off": "オフ",
+    "deleting_subtitle": "字幕を削除中...",
+    "deleted": "字幕を削除しました",
+    "unable_delete": "削除できませんでした",
+    "publishing": "字幕を公開中...",
+    "published": "字幕を公開しました",
+    "unable_publish": "公開できませんでした",
+    "my_subtitles": "自分の字幕",
+    "new": "新規",
+    "existing": "既存",
+    "import_subtitles": "字幕をインポート"
+  },
+  "actions": {
+    "remove": "削除する",
+    "publish": "公開する",
+    "delete": "削除",
+    "publish_metadata": "メタデータを公開",
+    "publish_index": "インデックスを公開",
+    "cancel": "キャンセル",
+    "continue": "続行",
+    "close": "閉じる",
+    "retry": "再試行"
+  },
+  "video": {
+    "playback_speed": "再生速度",
+    "toggle_fullscreen": "フルスクリーン切替 (F)",
+    "video_speed": "動画速度：速くする（+ または >）、遅くする（- または <）",
+    "toggle_mute": "ミュート切替 (M)、音量を上げる（↑）、下げる（↓）",
+    "seek_video": "動画を10%ずつシーク（0〜9）",
+    "reload_video": "動画を再読み込み (R)",
+    "play_pause": "再生/一時停止（スペースキー）"
+  },
+  "index": {
+    "title": "インデックスマネージャー",
+    "create_new_index": "新しいインデックスを作成",
+    "add_metadata": "メタデータを追加",
+    "publishing_metadata": "メタデータを公開中...",
+    "published_metadata": "メタデータの公開に成功しました",
+    "failed_metadata": "メタデータの公開に失敗しました",
+    "example": "表示例：",
+    "metadata_title": "タイトル",
+    "metadata_description": "説明",
+    "metadata_title_placeholder": "リンクのタイトルを入力",
+    "metadata_description_placeholder": "リンクの説明を入力",
+    "characters": "文字",
+    "publishing_index": "インデックスを公開中...",
+    "published_index": "インデックスを公開しました",
+    "failed_index": "インデックスの公開に失敗しました",
+    "recommended_indices": "おすすめのインデックス",
+    "add_search_term": "検索語を追加",
+    "search_terms": "検索語",
+    "recommendation_size": "検索語は{{recommendedSize}}文字未満に抑えることを推奨します",
+    "multiple_title": "複数のインデックスを追加",
+    "multiple_description": "複数のインデックスにより公開コストを抑えられますが、検索結果での影響は小さくなります。"
+  },
+  "multi_publish": {
+    "title": "公開状況",
+    "publish_failed": "公開に失敗しました",
+    "file_chunk": "ファイルチャンク",
+    "file_processing": "ファイル処理中",
+    "success": "公開に成功しました",
+    "attempt_retry": "公開に失敗しました。再試行中..."
+  }
+}

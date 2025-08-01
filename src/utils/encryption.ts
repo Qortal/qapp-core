@@ -129,6 +129,33 @@ export async function buildSearchPrefix(
     : `${appHash}-${entityPrefix}-`; // ✅ Global search for entity type
 }
 
+export async function buildLooseSearchPrefix(
+  entityType: string,
+  parentId?: string | null
+): Promise<string> {
+  // Hash entity type (6 chars)
+  const entityPrefix: string = await hashWord(
+    entityType,
+    EnumCollisionStrength.ENTITY_LABEL,
+    ""
+  );
+
+  let parentRef = "";
+  if (parentId === null) {
+    parentRef = "00000000000000"; // for true root entities
+  } else if (parentId) {
+    parentRef = await hashWord(
+      parentId,
+      EnumCollisionStrength.PARENT_REF,
+      ""
+    );
+  }
+
+  return parentRef
+    ? `${entityPrefix}-${parentRef}-` // for nested entity searches
+    : `${entityPrefix}-`; // global entity type prefix
+}
+
 // Function to generate IDs dynamically with `publicSalt`
 export async function buildIdentifier(
   appName: string,
@@ -164,6 +191,33 @@ export async function buildIdentifier(
   }
 
   return `${appHash}-${entityPrefix}-${parentRef}-${entityUid}-${IDENTIFIER_BUILDER_VERSION}`;
+}
+
+export async function buildLooseIdentifier(
+  entityType: string,
+  parentId?: string | null
+): Promise<string> {
+  // 4-char hash for entity type
+  const entityPrefix: string = await hashWord(
+    entityType,
+    EnumCollisionStrength.ENTITY_LABEL,
+    ""
+  );
+
+  // Generate 8-12 character random uid (depends on uid.rnd() settings)
+  const entityUid = uid.rnd();
+
+  // Optional hashed parent ref
+  let parentRef = '';
+  if (parentId) {
+    parentRef = await hashWord(
+      parentId,
+      EnumCollisionStrength.PARENT_REF,
+      ""
+    );
+  }
+
+  return `${entityPrefix}${parentRef ? `-${parentRef}` : ''}-${entityUid}${IDENTIFIER_BUILDER_VERSION ? `-${IDENTIFIER_BUILDER_VERSION}` : ''}`;
 }
 
 export const createSymmetricKeyAndNonce = () => {

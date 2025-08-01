@@ -4,8 +4,10 @@ import { QortalGetMetadata, QortalMetadata } from "../types/interfaces/resources
 import { base64ToObject, retryTransaction } from "../utils/publish";
 import { useGlobal } from "../context/GlobalProvider";
 import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
+import { useCacheStore } from "../state/cache";
+import { useMultiplePublishStore, usePublishStatusStore } from "../state/multiplePublish";
+import { ResourceToPublish } from "../types/qortalRequests/types";
 
-const STORAGE_EXPIRY_DURATION = 5 * 60 * 1000;
 interface StoredPublish {
     qortalMetadata: QortalMetadata;
     data: any;
@@ -22,13 +24,14 @@ interface StoredPublish {
       resource: { qortalMetadata: QortalMetadata; data: any } | null;
       error: string | null;
     }>
-    fetchPublish: (metadataProp: QortalGetMetadata) => Promise<{
+    fetchPublish: (metadataProp: QortalGetMetadata, disableFetch?: boolean) => Promise<{
       hasResource: boolean | null;
       resource: { qortalMetadata: QortalMetadata; data: any } | null;
       error: string | null;
     }>;
     updatePublish: (publish: QortalGetMetadata, data: any) => Promise<void>;
     deletePublish: (publish: QortalGetMetadata) => Promise<boolean | undefined>;
+    publishMultipleResources: (resources: ResourceToPublish[])=> Promise<Error | QortalGetMetadata[]>
   };
   
   type UsePublishWithoutMetadata = {
@@ -39,12 +42,15 @@ interface StoredPublish {
     }>;
     updatePublish: (publish: QortalGetMetadata, data: any) => Promise<void>;
     deletePublish: (publish: QortalGetMetadata) => Promise<boolean | undefined>;
+    publishMultipleResources: (resources: ResourceToPublish[])=> Promise<Error | QortalGetMetadata[]>
+    
   };
 
   export function usePublish(
     maxFetchTries: number,
     returnType: ReturnType,
-    metadata: QortalGetMetadata
+    metadata: QortalGetMetadata,
+    disableFetch?: boolean
   ): UsePublishWithMetadata;
   
   export function usePublish(
@@ -57,7 +63,8 @@ interface StoredPublish {
   export function usePublish(
     maxFetchTries: number = 3,
     returnType: ReturnType = "JSON",
-    metadata?: QortalGetMetadata | null
+    metadata?: QortalGetMetadata | null,
+    disableFetch?: boolean
   ): UsePublishWithMetadata | UsePublishWithoutMetadata {
   const {auth, appInfo} = useGlobal()
   const username = auth?.name
@@ -68,7 +75,11 @@ interface StoredPublish {
   const publish = usePublishStore().getPublish(metadata || null, true);
   const setPublish = usePublishStore((state)=> state.setPublish)
   const getPublish = usePublishStore(state=> state.getPublish)
-
+  const setResourceCache = useCacheStore((s) => s.setResourceCache);
+  const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
+  const setPublishStatusByKey = usePublishStatusStore((s)=> s.setPublishStatusByKey)
+   const setPublishResources = useMultiplePublishStore((state) => state.setPublishResources);
+      const resetPublishResources = useMultiplePublishStore((state) => state.reset);
   const [hasResource, setHasResource] = useState<boolean | null>(null);
   const fetchRawData = useCallback(async (item: QortalGetMetadata) => {
     const url = `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`;
@@ -85,34 +96,12 @@ interface StoredPublish {
     return `qortal_publish_${username}_${appNameHashed}`;
   }, [username, appNameHashed]);
 
-  useEffect(() => {
-    if (!username || !appNameHashed) return;
-    
-    const storageKey = getStorageKey();
-    if (!storageKey) return;
 
-    const storedData: StoredPublish[]  = JSON.parse(localStorage.getItem(storageKey) || "[]");
-
-    if (Array.isArray(storedData) && storedData.length > 0) {
-      const now = Date.now();
-      const validPublishes = storedData.filter((item) => now - item.timestamp < STORAGE_EXPIRY_DURATION);
-
-      // ✅ Re-populate the Zustand store only with recent publishes
-      validPublishes.forEach((publishData) => {
-        setPublish(publishData.qortalMetadata, {
-            qortalMetadata: publishData.qortalMetadata,
-            data: publishData.data
-        }, Date.now() -  publishData.timestamp);
-      });
-
-      // ✅ Re-store only valid (non-expired) publishes
-      localStorage.setItem(storageKey, JSON.stringify(validPublishes));
-    }
-  }, [username, appNameHashed, getStorageKey, setPublish]);
 
   const fetchPublish = useCallback(
     async (
       metadataProp: QortalGetMetadata,
+      disableFetch?: boolean
     ) => {
       let hasResource = null;
       let resource = null;
@@ -121,8 +110,9 @@ interface StoredPublish {
         if (metadata) {
           setIsLoading(true);
         }
-        const hasCache = getPublish(metadataProp)
-    
+   
+        const hasCache =  getPublish(metadataProp)
+
         if(hasCache){
             if(hasCache?.qortalMetadata.size === 32){
                 if(metadata){
@@ -139,12 +129,20 @@ interface StoredPublish {
             if(metadata){
                 setHasResource(true)
                 setError(null)
+                setPublish(metadataProp, hasCache);
             }
             return {
                 resource: hasCache,
                 error: null,
                 hasResource: true
             }
+        }
+        if(metadata && disableFetch){
+          return {
+            resource: null,
+            error: null,
+            hasResource: null
+          }
         }
         const url = `/arbitrary/resources/search?mode=ALL&service=${metadataProp?.service}&limit=1&includemetadata=true&reverse=true&excludeblocked=true&name=${encodeURIComponent(metadataProp?.name)}&exactmatchnames=true&offset=0&identifier=${encodeURIComponent(metadataProp?.identifier)}`;
         const responseMetadata = await fetch(url, {
@@ -221,9 +219,9 @@ interface StoredPublish {
   useEffect(() => {
 
     if (metadata?.identifier && metadata?.name && metadata?.service) {
-      fetchPublish(metadata);
+      fetchPublish(metadata, disableFetch);
     }
-  }, [metadata?.identifier, metadata?.service, metadata?.identifier, returnType]);
+  }, [metadata?.identifier, metadata?.service, metadata?.identifier, returnType, disableFetch]);
 
   const refetchData =  useCallback(async ()=> {
     if(!metadata) throw new Error('usePublish is missing metadata')
@@ -240,30 +238,11 @@ interface StoredPublish {
     });
 
     if (res?.signature) {
-        const storageKey = getStorageKey();
-      if (storageKey) {
-        const existingPublishes = JSON.parse(localStorage.getItem(storageKey) || "[]");
-
-        // Remove any previous entries for the same identifier
-        const updatedPublishes = existingPublishes.filter(
-          (item: StoredPublish) => item.qortalMetadata.identifier !== publish.identifier && item.qortalMetadata.service !== publish.service && item.qortalMetadata.name !== publish.name
-        );
-
-        // Add the new one with timestamp
-        updatedPublishes.push({ qortalMetadata: {
-            ...publish,
-        created: Date.now(),
-        updated: Date.now(),
-        size: 32
-        }, data: "RA==", timestamp: Date.now() });
-
-        // Save back to storage
-        localStorage.setItem(storageKey, JSON.stringify(updatedPublishes));
-      }
       setPublish(publish, null);
       setError(null)
       setIsLoading(false)
       setHasResource(false)
+      markResourceAsDeleted(publish)
       return true;
     }
   }, [getStorageKey]);
@@ -279,35 +258,79 @@ interface StoredPublish {
         updated: Date.now(),
         size: 100
       }, data});
-
-      const storageKey = getStorageKey();
-      if (storageKey) {
-        const existingPublishes = JSON.parse(localStorage.getItem(storageKey) || "[]");
-
-        // Remove any previous entries for the same identifier
-        const updatedPublishes = existingPublishes.filter(
-          (item: StoredPublish) => item.qortalMetadata.identifier !== publish.identifier && item.qortalMetadata.service !== publish.service && item.qortalMetadata.name !== publish.name
-        );
-
-        // Add the new one with timestamp
-        updatedPublishes.push({ qortalMetadata: {
-            ...publish,
+ setResourceCache(
+          `${publish?.service}-${publish?.name}-${publish?.identifier}`,
+          {qortalMetadata: {
+        ...publish,
         created: Date.now(),
         updated: Date.now(),
         size: 100
-        }, data, timestamp: Date.now() });
+      }, data}
+        );
 
-        // Save back to storage
-        localStorage.setItem(storageKey, JSON.stringify(updatedPublishes));
-      }
     
   }, [getStorageKey, setPublish]);
+
+const publishMultipleResources = useCallback(async (resources: ResourceToPublish[]): Promise<Error | QortalGetMetadata[]> => {
+   return new Promise(async (resolve, reject) => {
+    const store = useMultiplePublishStore.getState();
+    const storeStatus = usePublishStatusStore.getState();
+
+    store.setPublishResources(resources);
+    store.setIsPublishing(true);
+    store.setCompletionResolver(resolve);
+    store.setRejectionResolver(reject);
+  try {
+    store.setIsLoading(true);
+    setPublishResources(resources);
+    store.setError(null)
+    store.setFailedPublishResources([])
+    const lengthOfResources = resources?.length;
+    const lengthOfTimeout = lengthOfResources * 1200000; // 20 minutes per resource
+    const result = await qortalRequestWithTimeout({
+      action: "PUBLISH_MULTIPLE_QDN_RESOURCES",
+      resources
+    }, lengthOfTimeout);
+   
+     store.complete(result);
+      store.reset()
+     storeStatus.reset()
+  } catch (error: any) {
+    const unPublished = error?.error?.unsuccessfulPublishes;
+    const failedPublishes: QortalGetMetadata[] = []
+    if (unPublished && Array.isArray(unPublished)) {
+      unPublished.forEach((item) => {
+        const key = `${item?.service}-${item?.name}-${item?.identifier}`;
+
+        setPublishStatusByKey(key, {
+          error: {
+            reason: item.reason
+          }
+        });
+         failedPublishes.push({
+        name: item?.name,
+        service: item?.service,
+        identifier: item?.identifier
+      })
+      });
+     store.setFailedPublishResources(failedPublishes)
+    } else  {
+       store.setError(error?.message || 'Error during publish')
+    }
+
+  } finally {
+    store.setIsLoading(false);
+  }
+})
+}, [setPublishResources]);
+
 
   if (!metadata)
     return {
       fetchPublish,
       updatePublish,
       deletePublish: deleteResource,
+      publishMultipleResources
     };
 
     return useMemo(() => ({
@@ -319,6 +342,7 @@ interface StoredPublish {
       fetchPublish,
       updatePublish,
       deletePublish: deleteResource,
+      publishMultipleResources
     }), [
       isLoading,
       error,
@@ -328,6 +352,7 @@ interface StoredPublish {
       fetchPublish,
       updatePublish,
       deleteResource,
+      publishMultipleResources
     ]);
     
 };

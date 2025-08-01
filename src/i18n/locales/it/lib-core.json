@@ -1,0 +1,69 @@
+{
+  "subtitle": {
+    "subtitles": "Sottotitoli",
+    "no_subtitles": "Nessun sottotitolo",
+    "load_community_subs": "Carica sottotitoli della comunità",
+    "off": "Disattivato",
+    "deleting_subtitle": "Eliminazione sottotitolo in corso...",
+    "deleted": "Sottotitolo eliminato",
+    "unable_delete": "Impossibile eliminare",
+    "publishing": "Pubblicazione dei sottotitoli in corso...",
+    "published": "Sottotitoli pubblicati",
+    "unable_publish": "Impossibile pubblicare",
+    "my_subtitles": "I miei sottotitoli",
+    "new": "Nuovo",
+    "existing": "Esistente",
+    "import_subtitles": "Importa sottotitoli"
+  },
+  "actions": {
+    "remove": "rimuovi",
+    "publish": "pubblica",
+    "delete": "elimina",
+    "publish_metadata": "pubblica metadati",
+    "publish_index": "pubblica indice",
+    "cancel": "annulla",
+    "continue": "continua",
+    "close": "chiudi",
+    "retry": "ripeti"
+  },
+  "video": {
+    "playback_speed": "Velocità di riproduzione",
+    "toggle_fullscreen": "Attiva/disattiva schermo intero (F)",
+    "video_speed": "Velocità video. Aumenta (+ o >), Diminuisci (- o <)",
+    "toggle_mute": "Attiva/disattiva audio (M), Alza volume (SU), Abbassa volume (GIÙ)",
+    "seek_video": "Vai avanti nel video a intervalli del 10% (0–9)",
+    "reload_video": "Ricarica video (R)",
+    "play_pause": "Riproduci/Pausa (Barra spaziatrice)"
+  },
+  "index": {
+    "title": "Gestore degli Indici",
+    "create_new_index": "Crea nuovo indice",
+    "add_metadata": "Aggiungi metadati",
+    "publishing_metadata": "Pubblicazione metadati in corso...",
+    "published_metadata": "Metadati pubblicati con successo",
+    "failed_metadata": "Errore nella pubblicazione dei metadati",
+    "example": "Esempio di come potrebbe apparire:",
+    "metadata_title": "Titolo",
+    "metadata_description": "Descrizione",
+    "metadata_title_placeholder": "Aggiungi un titolo per il link",
+    "metadata_description_placeholder": "Aggiungi una descrizione per il link",
+    "characters": "caratteri",
+    "publishing_index": "Pubblicazione indice in corso...",
+    "published_index": "Indice pubblicato con successo",
+    "failed_index": "Errore nella pubblicazione dell'indice",
+    "recommended_indices": "Indici consigliati",
+    "add_search_term": "Aggiungi termine di ricerca",
+    "search_terms": "termini di ricerca",
+    "recommendation_size": "Si consiglia di mantenere il numero di caratteri per termine inferiore a {{recommendedSize}} caratteri",
+    "multiple_title": "Aggiunta di indici multipli",
+    "multiple_description": "Indici successivi ridurranno le commissioni di pubblicazione, ma avranno meno rilevanza nei risultati di ricerca futuri."
+  },
+  "multi_publish": {
+    "title": "Stato della pubblicazione",
+    "publish_failed": "Pubblicazione fallita",
+    "file_chunk": "Frammento di file",
+    "file_processing": "Elaborazione file in corso",
+    "success": "Pubblicato con successo",
+    "attempt_retry": "Pubblicazione fallita. Tentativo di nuovo..."
+  }
+}

@@ -10,5 +10,6 @@ export default defineConfig({
     '@mui/system',
     '@emotion/react',
     '@emotion/styled',
+    'react-dom', 'react-router-dom'
   ],
 });

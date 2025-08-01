@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import {
   QortalGetMetadata,
   QortalMetadata,
+  QortalPreloadedParams,
   QortalSearchParams,
 } from "../types/interfaces/resources";
 import { ListItem, useCacheStore } from "../state/cache";
@@ -10,6 +11,7 @@ import { base64ToUint8Array, uint8ArrayToObject } from "../utils/base64";
 import { retryTransaction } from "../utils/publish";
 import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
 import { useListStore } from "../state/lists";
+import { usePublishStore } from "../state/publishes";
 
 export const requestQueueProductPublishes = new RequestQueueWithPromise(20);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
@@ -20,16 +22,24 @@ export interface Resource {
   qortalMetadata: QortalMetadata;
   data: any;
 }
-export const useResources = (retryAttempts: number = 2) => {
+export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
   const setSearchCache = useCacheStore((s) => s.setSearchCache);
+  const deleteSearchCache = useCacheStore((s)=> s.deleteSearchCache)
   const getSearchCache = useCacheStore((s) => s.getSearchCache);
   const getResourceCache = useCacheStore((s) => s.getResourceCache);
   const setResourceCache = useCacheStore((s) => s.setResourceCache);
   const addTemporaryResource = useCacheStore((s) => s.addTemporaryResource);
   const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
   const setSearchParamsForList = useCacheStore((s) => s.setSearchParamsForList);
+  const addList = useListStore((s) => s.addList);
+    const setPublish = usePublishStore((state)=> state.setPublish)
   
-  const deleteList = useListStore(state => state.deleteList)
+  const deleteListInStore = useListStore(state => state.deleteList)
+
+  const deleteList = useCallback((listName: string)=> {
+    deleteListInStore(listName)
+    deleteSearchCache(listName)
+  }, [])
   const requestControllers = new Map<string, AbortController>();
 
   const getArbitraryResource = async (
@@ -176,6 +186,7 @@ export const useResources = (retryAttempts: number = 2) => {
             `${item?.service}-${item?.name}-${item?.identifier}`,
             fullDataObject
           );
+          setPublish(fullDataObject?.qortalMetadata, fullDataObject);
           return fullDataObject;
         }
       } catch (error) {
@@ -204,7 +215,6 @@ export const useResources = (retryAttempts: number = 2) => {
       if (cancelRequests) {
         cancelAllRequests();
       }
-
       const cacheKey = generateCacheKey(params);
       const searchCache = getSearchCache(listName, cacheKey);
       if (searchCache) {
@@ -213,6 +223,7 @@ export const useResources = (retryAttempts: number = 2) => {
         delete copyParams.before
         delete copyParams.offset
         setSearchParamsForList(listName, JSON.stringify(copyParams))
+        fetchDataFromResults(searchCache, returnType);
         return searchCache;
       }
 
@@ -220,36 +231,82 @@ export const useResources = (retryAttempts: number = 2) => {
       let filteredResults: QortalMetadata[] = [];
       let lastCreated = params.before || undefined;
       const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
+      const isUnlimited = params.limit === 0;
 
-      while (filteredResults.length < targetLimit) {
+      while (isUnlimited || filteredResults.length < targetLimit) {
         const response = await qortalRequest({
           action: "SEARCH_QDN_RESOURCES",
           mode: "ALL",
           ...params,
           limit: targetLimit - filteredResults.length, // Adjust limit dynamically
           before: lastCreated,
+          excludeBlocked: true
         });
-
         if (!response || response.length === 0) {
           break; // No more data available
         }
 
         responseData = response;
-        const validResults = responseData.filter((item) => item.size !== 32);
+        const validResults = responseData.filter((item) => item.size !== 32 && item.size < maxSize);
         filteredResults = [...filteredResults, ...validResults];
 
-        if (filteredResults.length >= targetLimit) {
+        if (filteredResults.length >= targetLimit && !isUnlimited) {
           filteredResults = filteredResults.slice(0, targetLimit);
           break;
         }
 
         lastCreated = responseData[responseData.length - 1]?.created;
+        if (isUnlimited) break;
+
         if (!lastCreated) break;
       }
       const copyParams = {...params}
         delete copyParams.after
         delete copyParams.before
         delete copyParams.offset
+      setSearchCache(listName, cacheKey, filteredResults, cancelRequests ? JSON.stringify(copyParams) : null);
+      fetchDataFromResults(filteredResults, returnType);
+
+      return filteredResults;
+    },
+    [getSearchCache, setSearchCache, fetchDataFromResults]
+  );
+
+   const fetchPreloadedResources = useCallback(
+    async (
+      params: QortalPreloadedParams,
+      listOfResources: QortalMetadata[],
+      listName: string,
+      returnType: ReturnType = 'JSON',
+      cancelRequests?: boolean,
+    ): Promise<QortalMetadata[]> => {
+      if (cancelRequests) {
+        cancelAllRequests();
+      }
+
+      // const cacheKey = generateCacheKey(params);
+      const cacheKey = generatePreloadedCacheKey(params);
+      const searchCache = getSearchCache(listName, cacheKey);
+      if (searchCache) {
+        const copyParams = {...params}
+
+        setSearchParamsForList(listName, JSON.stringify(copyParams))
+        fetchDataFromResults(searchCache, returnType);
+        return searchCache;
+      }
+
+      let responseData: QortalMetadata[] = [];
+      let filteredResults: QortalMetadata[] = [];
+      const targetLimit = params.offset || 20; // Use `params.limit` if provided, else default to 20
+      const isUnlimited = params.limit === 0;
+
+      if(isUnlimited){
+        filteredResults = listOfResources
+      } else {
+        filteredResults = listOfResources?.slice(0, targetLimit)
+      }
+      const copyParams = {...params}
+     
       setSearchCache(listName, cacheKey, filteredResults, cancelRequests ? JSON.stringify(copyParams) : null);
       fetchDataFromResults(filteredResults, returnType);
 
@@ -266,15 +323,17 @@ export const useResources = (retryAttempts: number = 2) => {
       let responseData: QortalMetadata[] = [];
       let filteredResults: QortalMetadata[] = [];
       let lastCreated = params.before || undefined;
-      const targetLimit = params.limit ?? 20;
-  
-      while (filteredResults.length < targetLimit) {
+      const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
+      const isUnlimited = params.limit === 0;
+      while (isUnlimited || filteredResults.length < targetLimit) {
+
         const response = await qortalRequest({
           action: "SEARCH_QDN_RESOURCES",
           mode: "ALL",
           ...params,
           limit: targetLimit - filteredResults.length,
           before: lastCreated,
+          excludeBlocked: true
         });
   
         if (!response || response.length === 0) break;
@@ -283,12 +342,13 @@ export const useResources = (retryAttempts: number = 2) => {
         const validResults = responseData.filter((item) => item.size !== 32);
         filteredResults = [...filteredResults, ...validResults];
   
-        if (filteredResults.length >= targetLimit) {
+        if (filteredResults.length >= targetLimit && !isUnlimited) {
           filteredResults = filteredResults.slice(0, targetLimit);
           break;
         }
   
         lastCreated = responseData[responseData.length - 1]?.created;
+        if (isUnlimited) break;
         if (!lastCreated) break;
       }
   
@@ -300,7 +360,6 @@ export const useResources = (retryAttempts: number = 2) => {
 
   const addNewResources = useCallback(
     (listName: string, resources: Resource[]) => {
-
       addTemporaryResource(
         listName,
         resources.map((item) => item.qortalMetadata)
@@ -310,6 +369,7 @@ export const useResources = (retryAttempts: number = 2) => {
           `${temporaryResource?.qortalMetadata?.service}-${temporaryResource?.qortalMetadata?.name}-${temporaryResource?.qortalMetadata?.identifier}`,
           temporaryResource
         );
+        setPublish(temporaryResource?.qortalMetadata, temporaryResource);
       });
     },
     []
@@ -321,6 +381,7 @@ export const useResources = (retryAttempts: number = 2) => {
         `${temporaryResource?.qortalMetadata?.service}-${temporaryResource?.qortalMetadata?.name}-${temporaryResource?.qortalMetadata?.identifier}`,
         temporaryResource
       );
+        setPublish(temporaryResource?.qortalMetadata, temporaryResource);
     });
   }, []);
 
@@ -345,11 +406,11 @@ export const useResources = (retryAttempts: number = 2) => {
  }, 600000);
  resourcesToDelete.forEach((item)=> {
   markResourceAsDeleted(item);
+   setPublish(item, null);
  })
     return true;
   }, []);
 
-  
 
   return useMemo(() => ({
     fetchResources,
@@ -357,8 +418,10 @@ export const useResources = (retryAttempts: number = 2) => {
     updateNewResources,
     deleteResource,
     deleteList,
-    fetchResourcesResultsOnly
-  }), [fetchResources, addNewResources, updateNewResources, deleteResource, deleteList, fetchResourcesResultsOnly]);
+    addList,
+    fetchResourcesResultsOnly,
+    fetchPreloadedResources
+  }), [fetchResources, addNewResources, updateNewResources, deleteResource, deleteList, fetchResourcesResultsOnly, addList, fetchPreloadedResources]);
   
 };
 
@@ -407,6 +470,24 @@ export const generateCacheKey = (params: QortalSearchParams): string => {
     offset !== undefined && `o-${offset}`,
     reverse !== undefined && `r-${reverse}`,
     mode !== undefined && `mo-${mode}`,
+  ]
+    .filter(Boolean) // Remove undefined or empty values
+    .join("_"); // Join into a string
+
+  return keyParts;
+};
+
+
+export const generatePreloadedCacheKey = (params: QortalPreloadedParams): string => {
+  const {
+ limit,
+ offset
+  } = params;
+
+  const keyParts = [
+   
+    limit !== undefined && `l-${limit}`,
+     offset !== undefined && `o-${offset}`,
   ]
     .filter(Boolean) // Remove undefined or empty values
     .join("_"); // Join into a string

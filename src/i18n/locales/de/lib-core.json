@@ -1,0 +1,69 @@
+{
+  "subtitle": {
+    "subtitles": "Untertitel",
+    "no_subtitles": "Keine Untertitel",
+    "load_community_subs": "Community-Untertitel laden",
+    "off": "Aus",
+    "deleting_subtitle": "Untertitel wird gelöscht...",
+    "deleted": "Untertitel gelöscht",
+    "unable_delete": "Löschen nicht möglich",
+    "publishing": "Untertitel werden veröffentlicht...",
+    "published": "Untertitel veröffentlicht",
+    "unable_publish": "Veröffentlichung nicht möglich",
+    "my_subtitles": "Meine Untertitel",
+    "new": "Neu",
+    "existing": "Vorhanden",
+    "import_subtitles": "Untertitel importieren"
+  },
+  "actions": {
+    "remove": "entfernen",
+    "publish": "veröffentlichen",
+    "delete": "löschen",
+    "publish_metadata": "Metadaten veröffentlichen",
+    "publish_index": "Index veröffentlichen",
+    "cancel": "abbrechen",
+    "continue": "fortfahren",
+    "close": "schließen",
+    "retry": "wiederholen"
+  },
+  "video": {
+    "playback_speed": "Wiedergabegeschwindigkeit",
+    "toggle_fullscreen": "Vollbild umschalten (F)",
+    "video_speed": "Video-Geschwindigkeit. Erhöhen (+ oder >), Verringern (- oder <)",
+    "toggle_mute": "Stummschalten umschalten (M), Lauter (OBEN), Leiser (UNTEN)",
+    "seek_video": "Video in 10%-Schritten vorspulen (0–9)",
+    "reload_video": "Video neu laden (R)",
+    "play_pause": "Wiedergabe/Pause (Leertaste)"
+  },
+  "index": {
+    "title": "Index-Manager",
+    "create_new_index": "Neuen Index erstellen",
+    "add_metadata": "Metadaten hinzufügen",
+    "publishing_metadata": "Metadaten werden veröffentlicht...",
+    "published_metadata": "Metadaten erfolgreich veröffentlicht",
+    "failed_metadata": "Veröffentlichung der Metadaten fehlgeschlagen",
+    "example": "Beispiel, wie es aussehen könnte:",
+    "metadata_title": "Titel",
+    "metadata_description": "Beschreibung",
+    "metadata_title_placeholder": "Titel für den Link hinzufügen",
+    "metadata_description_placeholder": "Beschreibung für den Link hinzufügen",
+    "characters": "Zeichen",
+    "publishing_index": "Index wird veröffentlicht...",
+    "published_index": "Index erfolgreich veröffentlicht",
+    "failed_index": "Veröffentlichung des Index fehlgeschlagen",
+    "recommended_indices": "Empfohlene Indizes",
+    "add_search_term": "Suchbegriff hinzufügen",
+    "search_terms": "Suchbegriffe",
+    "recommendation_size": "Es wird empfohlen, die Zeichenanzahl pro Begriff unter {{recommendedSize}} Zeichen zu halten",
+    "multiple_title": "Mehrere Indizes hinzufügen",
+    "multiple_description": "Weitere Indizes senken die Veröffentlichungsgebühren, haben aber weniger Gewicht in zukünftigen Suchergebnissen."
+  },
+  "multi_publish": {
+    "title": "Veröffentlichungsstatus",
+    "publish_failed": "Veröffentlichung fehlgeschlagen",
+    "file_chunk": "Dateifragment",
+    "file_processing": "Datei wird verarbeitet",
+    "success": "Erfolgreich veröffentlicht",
+    "attempt_retry": "Veröffentlichung fehlgeschlagen. Erneuter Versuch..."
+  }
+}

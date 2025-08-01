@@ -83,7 +83,7 @@ interface BaseProps  {
   }
   onNewData?: (hasNewData: boolean) => void;
   ref?: any
-  scrollerRef?: React.RefObject<HTMLElement | null>
+  scrollerRef?: React.RefObject<HTMLElement | null> | null
 }
 
 const defaultStyles = {
@@ -160,7 +160,7 @@ const addItems = useListStore((s) => s.addItems);
 
 
 
-  const searchIntervalRef = useRef<null | number>(null)
+  const searchIntervalRef = useRef<any>(null)
   const lastItemTimestampRef = useRef<null | number>(null)
   const stringifiedEntityParams = useMemo(()=> {
     if(!entityParams) return null
@@ -366,6 +366,14 @@ const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheEx
     return listItem(item, index);
   }, [ listItem]);
 
+  const onLoadLess = useCallback((displayLimit: number)=> {
+removeFromList(listName, displayLimit)
+  }, [removeFromList])
+    const onLoadMore = useCallback((displayLimit: number)=> {
+getResourceMoreList(displayLimit)
+  }, [getResourceMoreList])
+
+
   return (
     <div ref={elementRef} style={{
       width: '100%',
@@ -417,9 +425,7 @@ const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheEx
           )}
           {disableVirtualization && direction === "HORIZONTAL" && (
             <>
-             <HorizontalPaginatedList defaultLoaderParams={defaultLoaderParams} disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={(displayLimit)=> {
-              removeFromList(listName, displayLimit)
-             }}  items={listToDisplay} listItem={renderListItem} onLoadMore={(displayLimit)=> getResourceMoreList(displayLimit)} gap={styles?.gap} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
+             <HorizontalPaginatedList defaultLoaderParams={defaultLoaderParams} disablePagination={disablePagination} limit={search?.limit || 20} onLoadLess={onLoadLess}  items={listToDisplay} listItem={renderListItem} onLoadMore={onLoadMore} gap={styles?.gap} minItemWidth={styles?.horizontalStyles?.minItemWidth} loaderItem={loaderItem} />
             </>
             
           )}
@@ -458,7 +464,6 @@ function arePropsEqual(
 
 export const ResourceListDisplay = React.memo(MemorizedComponent, arePropsEqual);
 
-
 interface ListItemWrapperProps {
   item: QortalMetadata;
   index: number;
@@ -474,13 +479,27 @@ export const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
   defaultLoaderParams,
   renderListItemLoader,
 }) => {
-  const getResourceCache = useCacheStore((s)=> s.getResourceCache)
+const resourceKey = `${item.service}-${item.name}-${item.identifier}`;
 
-  const findCachedResource = getResourceCache(
-    `${item.service}-${item.name}-${item.identifier}`,
-    true
-  );
-  if (findCachedResource === null && !renderListItemLoader)
+const entry = useCacheStore((s) => s.resourceCache[resourceKey]);
+const [validResource, setValidResource] = useState(entry?.data ?? null);
+
+useEffect(() => {
+  if (!entry) return setValidResource(null);
+
+  if (entry.expiry > Date.now()) {
+    setValidResource(entry.data);
+  } else {
+    useCacheStore.setState((s) => {
+      const newCache = { ...s.resourceCache };
+      delete newCache[resourceKey];
+      return { resourceCache: newCache };
+    });
+    setValidResource(null);
+  }
+}, [entry, resourceKey]);
+
+  if (validResource === null && !renderListItemLoader)
     return (
       <ItemCardWrapper height={60} isInCart={false}>
         <ResourceLoader
@@ -491,7 +510,7 @@ export const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
         />
       </ItemCardWrapper>
     );
-  if (findCachedResource === false && !renderListItemLoader)
+  if (validResource === false && !renderListItemLoader)
     return (
       <ItemCardWrapper height={60} isInCart={false}>
         <ResourceLoader
@@ -505,16 +524,16 @@ export const ListItemWrapper: React.FC<ListItemWrapperProps> = ({
     );
   if (
     renderListItemLoader &&
-    (findCachedResource === false || findCachedResource === null)
+    (validResource === false || validResource === null)
   ) {
     return renderListItemLoader(
-      findCachedResource === null ? "LOADING" : "ERROR"
+      validResource === null ? "LOADING" : "ERROR"
     );
   }
 
   // Example transformation (Modify item if needed)
-  const transformedItem = findCachedResource
-    ? findCachedResource
+  const transformedItem = validResource
+    ? validResource
     : { qortalMetadata: item, data: null };
 
   return <>{render(transformedItem, index)}</>;

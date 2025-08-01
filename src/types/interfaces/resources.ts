@@ -51,7 +51,7 @@ export type Service  =
 | "VOICE_PRIVATE"
 | "DOCUMENT_PRIVATE"
 | "MAIL_PRIVATE"
-| "MESSAGE_PRIVATE";
+| "MESSAGE_PRIVATE" | 'AUTO_UPDATE';
 
 
 export interface QortalMetadata {
@@ -98,5 +98,10 @@ export interface QortalMetadata {
     offset?: number;
     reverse?: boolean;
     mode?: 'ALL' | 'LATEST'
+  }
+
+   export interface QortalPreloadedParams {
+    limit: number
+    offset: number
   }
   
