@@ -71,77 +71,6 @@
         }
       }
     },
-    "en": {
-      "lib-core": {
-        "subtitle": {
-          "subtitles": "Subtitles",
-          "no_subtitles": "No subtitles",
-          "load_community_subs": "Load community subtitles",
-          "off": "Off",
-          "deleting_subtitle": "Deleting subtitle...",
-          "deleted": "Deleted subtitle",
-          "unable_delete": "unable to delete",
-          "publishing": "Publishing subtitles...",
-          "published": "Subtitles published",
-          "unable_publish": "Unable to publish",
-          "my_subtitles": "My Subtitles",
-          "new": "New",
-          "existing": "Existing",
-          "import_subtitles": "Import subtitles"
-        },
-        "actions": {
-          "remove": "remove",
-          "publish": "publish",
-          "delete": "delete",
-          "publish_metadata": "publish metadata",
-          "publish_index": "publish index",
-          "cancel": "cancel",
-          "continue": "continue",
-          "close": "close",
-          "retry": "retry"
-        },
-        "video": {
-          "playback_speed": "Playback speed",
-          "toggle_fullscreen": "Toggle Fullscreen (F)",
-          "video_speed": "Video Speed. Increase (+ or >), Decrease (- or <)",
-          "toggle_mute": "Toggle Mute (M), Raise (UP), Lower (DOWN)",
-          "seek_video": "Seek video in 10% increments (0-9)",
-          "reload_video": "Reload Video (R)",
-          "play_pause": "Pause/Play (Spacebar)"
-        },
-        "index": {
-          "title": "Index Manager",
-          "create_new_index": "Create new index",
-          "add_metadata": "Add metadata",
-          "publishing_metadata": "Publishing metadata...",
-          "published_metadata": "Successfully published metadata",
-          "failed_metadata": "Failed to publish metadata",
-          "example": "Example of how it could look like:",
-          "metadata_title": "Title",
-          "metadata_description": "Description",
-          "metadata_title_placeholder": "Add a title for the link",
-          "metadata_description_placeholder": "Add a description for the link",
-          "characters": "characters",
-          "publishing_index": "Publishing index...",
-          "published_index": "Successfully published index",
-          "failed_index": "Failed to publish index",
-          "recommended_indices": "Recommended Indices",
-          "add_search_term": "Add search term",
-          "search_terms": "search terms",
-          "recommendation_size": "It is recommended to keep your term character count below {{recommendedSize}} characters",
-          "multiple_title": "Adding multiple indices",
-          "multiple_description": "Subsequent indices will keep your publish fees lower, but they will have less strength in future search results."
-        },
-        "multi_publish": {
-          "title": "Publishing Status",
-          "publish_failed": "Publish Failed",
-          "file_chunk": "File Chunk",
-          "file_processing": "File Processing",
-          "success": "Published successfully",
-          "attempt_retry": "Publish failed. Attempting retry..."
-        }
-      }
-    },
     "de": {
       "lib-core": {
         "subtitle": {
@@ -281,6 +210,77 @@
           "file_processing": "Procesando archivo",
           "success": "Publicado con éxito",
           "attempt_retry": "Error en la publicación. Intentando reintentar..."
+        }
+      }
+    },
+    "en": {
+      "lib-core": {
+        "subtitle": {
+          "subtitles": "Subtitles",
+          "no_subtitles": "No subtitles",
+          "load_community_subs": "Load community subtitles",
+          "off": "Off",
+          "deleting_subtitle": "Deleting subtitle...",
+          "deleted": "Deleted subtitle",
+          "unable_delete": "unable to delete",
+          "publishing": "Publishing subtitles...",
+          "published": "Subtitles published",
+          "unable_publish": "Unable to publish",
+          "my_subtitles": "My Subtitles",
+          "new": "New",
+          "existing": "Existing",
+          "import_subtitles": "Import subtitles"
+        },
+        "actions": {
+          "remove": "remove",
+          "publish": "publish",
+          "delete": "delete",
+          "publish_metadata": "publish metadata",
+          "publish_index": "publish index",
+          "cancel": "cancel",
+          "continue": "continue",
+          "close": "close",
+          "retry": "retry"
+        },
+        "video": {
+          "playback_speed": "Playback speed",
+          "toggle_fullscreen": "Toggle Fullscreen (F)",
+          "video_speed": "Video Speed. Increase (+ or >), Decrease (- or <)",
+          "toggle_mute": "Toggle Mute (M), Raise (UP), Lower (DOWN)",
+          "seek_video": "Seek video in 10% increments (0-9)",
+          "reload_video": "Reload Video (R)",
+          "play_pause": "Pause/Play (Spacebar)"
+        },
+        "index": {
+          "title": "Index Manager",
+          "create_new_index": "Create new index",
+          "add_metadata": "Add metadata",
+          "publishing_metadata": "Publishing metadata...",
+          "published_metadata": "Successfully published metadata",
+          "failed_metadata": "Failed to publish metadata",
+          "example": "Example of how it could look like:",
+          "metadata_title": "Title",
+          "metadata_description": "Description",
+          "metadata_title_placeholder": "Add a title for the link",
+          "metadata_description_placeholder": "Add a description for the link",
+          "characters": "characters",
+          "publishing_index": "Publishing index...",
+          "published_index": "Successfully published index",
+          "failed_index": "Failed to publish index",
+          "recommended_indices": "Recommended Indices",
+          "add_search_term": "Add search term",
+          "search_terms": "search terms",
+          "recommendation_size": "It is recommended to keep your term character count below {{recommendedSize}} characters",
+          "multiple_title": "Adding multiple indices",
+          "multiple_description": "Subsequent indices will keep your publish fees lower, but they will have less strength in future search results."
+        },
+        "multi_publish": {
+          "title": "Publishing Status",
+          "publish_failed": "Publish Failed",
+          "file_chunk": "File Chunk",
+          "file_processing": "File Processing",
+          "success": "Published successfully",
+          "attempt_retry": "Publish failed. Attempting retry..."
         }
       }
     },
@@ -642,9 +642,9 @@
   },
   "supportedLanguages": [
     "ar",
-    "en",
     "de",
     "es",
+    "en",
     "fr",
     "it",
     "ja",

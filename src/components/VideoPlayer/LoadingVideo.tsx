@@ -86,6 +86,8 @@ export const LoadingVideo = ({
                 <>Download Completed: building video...</>
               ) : status === "FAILED_TO_DOWNLOAD" ? (
                 <>Unable to fetch video chunks from peers</>
+              ) : (!isStatusWrong && status === 'DOWNLOADED') ? (
+                <>Fetching status: please wait.</>
               ) : (
                 <>{getDownloadProgress(percentLoaded)}</>
               )}
