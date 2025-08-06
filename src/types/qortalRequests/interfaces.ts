@@ -364,24 +364,29 @@ export interface ListQdnResourcesQortalRequest extends BaseRequest {
 }
 
 export interface SearchQdnResourcesQortalRequest extends BaseRequest {
-    action: 'SEARCH_QDN_RESOURCES'
-    identifier?: string
-    service?:Service
-    default?: boolean
-    includeStatus?: boolean
-    includeMetadata?: boolean
-    followedOnly?: boolean
-    excludeBlocked?: boolean
-    limit?: number
-    offset?: number
-    before?: number
-    after?: number
-    reverse?: boolean
-    names?: string[]
-    keywords?: string[]
-    exactMatchNames?: boolean
-    mode?: 'ALL' | 'LATEST'
-    prefix?: boolean
+    action: 'SEARCH_QDN_RESOURCES';
+    service?: Service;
+    name?: string;
+    query?: string;
+    identifier?: string;
+    default?: boolean;
+    includeStatus?: boolean;
+    includeMetadata?: boolean;
+    followedOnly?: boolean;
+    excludeBlocked?: boolean;
+    limit?: number;
+    offset?: number;
+    before?: number;
+    after?: number;
+    reverse?: boolean;
+    names?: string[];
+    keywords?: string[];
+    exactMatchNames?: boolean;
+    mode?: 'ALL' | 'LATEST';
+    nameListFilter?: string;
+    title?: string;
+    description?: string;
+    prefix?: boolean;
   }
   
 
