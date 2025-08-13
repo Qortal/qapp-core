@@ -223,6 +223,7 @@ export interface DeleteListItemQortalRequest extends BaseRequest {
 export interface DecryptDataQortalRequest extends BaseRequest {
   action: "DECRYPT_DATA";
   encryptedData: string;
+  publicKey: string;
 }
 
 export type PublishMultipleQdnResourcesQortalRequest =
