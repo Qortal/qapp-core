@@ -274,33 +274,33 @@ export type EncryptDataQortalRequest =
   | {
       action: "ENCRYPT_DATA";
       file: File;
-      publicKeys: string[];
+      publicKeys?: string[];
     }
   | {
       action: "ENCRYPT_DATA";
       base64: string;
-      publicKeys: string[];
+      publicKeys?: string[];
     };
 
 export interface DecryptQortalGroupDataQortalRequest extends BaseRequest {
   action: "DECRYPT_QORTAL_GROUP_DATA";
   base64: string;
-  isAdmins?: boolean;
   groupId: number;
+  isAdmins?: boolean;
 }
 
 export type EncryptQortalGroupDataQortalRequest =
   | {
       action: "ENCRYPT_QORTAL_GROUP_DATA";
       file: File;
-      isAdmins: boolean;
       groupId: number;
+      isAdmins?: boolean;
     }
   | {
       action: "ENCRYPT_QORTAL_GROUP_DATA";
       base64: string;
-      isAdmins: boolean;
       groupId: number;
+      isAdmins?: boolean;
     };
 
 export interface DecryptDataWithSharingKeyQortalRequest extends BaseRequest {
