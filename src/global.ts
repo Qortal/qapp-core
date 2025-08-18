@@ -1,4 +1,91 @@
-import { AddForeignServerQortalRequest, AddListItemsQortalRequest, BuyNameQortalRequest, CancelSellNameQortalRequest, CancelTradeSellOrderQortalRequest, CreatePollQortalRequest, CreateTradeBuyOrderQortalRequest, CreateTradeSellOrderQortalRequest, DecryptDataQortalRequest, DecryptDataWithSharingKeyQortalRequest, DecryptQortalGroupDataQortalRequest, DeleteHostedDataQortalRequest, DeleteListItemQortalRequest, EncryptDataQortalRequest, EncryptDataWithSharingKeyQortalRequest, EncryptQortalGroupDataQortalRequest, FetchQdnResourceQortalRequest, GetAccountDataQortalRequest, GetAccountNamesQortalRequest, GetBalanceQortalRequest, GetCrosschainServerInfoQortalRequest, GetDaySummaryQortalRequest, GetForeignFeeQortalRequest, GetHostedDataQortalRequest, GetListItemsQortalRequest, GetNameDataQortalRequest, GetPriceQortalRequest, GetQdnResourceMetadataQortalRequest, GetQdnResourcePropertiesQortalRequest, GetQdnResourceStatusQortalRequest, GetQdnResourceUrlQortalRequest, GetServerConnectionHistoryQortalRequest, GetTxActivitySummaryQortalRequest, GetUserAccountQortalRequest, GetUserWalletInfoQortalRequest, GetUserWalletQortalRequest, GetWalletBalanceQortalRequest, LinkToQdnResourceQortalRequest, ListQdnResourcesQortalRequest, PublishMultipleQdnResourcesQortalRequest, PublishQdnResourceQortalRequest, RegisterNameQortalRequest, RemoveForeignServerQortalRequest, SearchNamesQortalRequest, SearchQdnResourcesQortalRequest, SellNameQortalRequest, SendCoinQortalRequest, SetCurrentForeignServerQortalRequest, UpdateForeignFeeQortalRequest, UpdateNameQortalRequest, VoteOnPollQortalRequest, SendChatMessageQortalRequest, SearchChatMessagesQortalRequest, JoinGroupQortalRequest, AddGroupAdminQortalRequest, UpdateGroupQortalRequest, ListGroupsQortalRequest, CreateGroupQortalRequest, RemoveGroupAdminQortalRequest, BanFromGroupQortalRequest, CancelGroupBanQortalRequest, KickFromGroupQortalRequest, InviteToGroupQortalRequest, CancelGroupInviteQortalRequest, LeaveGroupQortalRequest, DeployAtQortalRequest, GetAtQortalRequest, GetAtDataQortalRequest, ListAtsQortalRequest, FetchBlockQortalRequest, FetchBlockRangeQortalRequest, SearchTransactionsQortalRequest, IsUsingPublicNodeQortalRequest, AdminActionQortalRequest, OpenNewTabQortalRequest, ShowActionsQortalRequest, SignTransactionQortalRequest, CreateAndCopyEmbedLinkQortalRequest, TransferAssetQortalRequest, ShowPdfReaderQortalRequest, SaveFileQortalRequest, GetPrimaryNameQortalRequest, ScreenOrientation, GetNodeStatusQortalRequest, GetNodeInfoQortalRequest,  } from "./types/qortalRequests/interfaces"
+import {
+  AddForeignServerQortalRequest,
+  AddListItemsQortalRequest,
+  BuyNameQortalRequest,
+  CancelSellNameQortalRequest,
+  CancelTradeSellOrderQortalRequest,
+  CreatePollQortalRequest,
+  CreateTradeBuyOrderQortalRequest,
+  CreateTradeSellOrderQortalRequest,
+  DecryptDataQortalRequest,
+  DecryptDataWithSharingKeyQortalRequest,
+  DecryptQortalGroupDataQortalRequest,
+  DeleteHostedDataQortalRequest,
+  DeleteListItemQortalRequest,
+  EncryptDataQortalRequest,
+  EncryptDataWithSharingKeyQortalRequest,
+  EncryptQortalGroupDataQortalRequest,
+  FetchQdnResourceQortalRequest,
+  GetAccountDataQortalRequest,
+  GetAccountNamesQortalRequest,
+  GetBalanceQortalRequest,
+  GetCrosschainServerInfoQortalRequest,
+  GetDaySummaryQortalRequest,
+  GetForeignFeeQortalRequest,
+  GetHostedDataQortalRequest,
+  GetListItemsQortalRequest,
+  GetNameDataQortalRequest,
+  GetPriceQortalRequest,
+  GetQdnResourceMetadataQortalRequest,
+  GetQdnResourcePropertiesQortalRequest,
+  GetQdnResourceStatusQortalRequest,
+  GetQdnResourceUrlQortalRequest,
+  GetServerConnectionHistoryQortalRequest,
+  GetTxActivitySummaryQortalRequest,
+  GetUserAccountQortalRequest,
+  GetUserWalletInfoQortalRequest,
+  GetUserWalletQortalRequest,
+  GetWalletBalanceQortalRequest,
+  LinkToQdnResourceQortalRequest,
+  ListQdnResourcesQortalRequest,
+  PublishMultipleQdnResourcesQortalRequest,
+  PublishQdnResourceQortalRequest,
+  RegisterNameQortalRequest,
+  RemoveForeignServerQortalRequest,
+  SearchNamesQortalRequest,
+  SearchQdnResourcesQortalRequest,
+  SellNameQortalRequest,
+  SendCoinQortalRequest,
+  SetCurrentForeignServerQortalRequest,
+  UpdateForeignFeeQortalRequest,
+  UpdateNameQortalRequest,
+  VoteOnPollQortalRequest,
+  SendChatMessageQortalRequest,
+  SearchChatMessagesQortalRequest,
+  JoinGroupQortalRequest,
+  AddGroupAdminQortalRequest,
+  UpdateGroupQortalRequest,
+  ListGroupsQortalRequest,
+  CreateGroupQortalRequest,
+  RemoveGroupAdminQortalRequest,
+  BanFromGroupQortalRequest,
+  CancelGroupBanQortalRequest,
+  KickFromGroupQortalRequest,
+  InviteToGroupQortalRequest,
+  CancelGroupInviteQortalRequest,
+  LeaveGroupQortalRequest,
+  DeployAtQortalRequest,
+  GetAtQortalRequest,
+  GetAtDataQortalRequest,
+  ListAtsQortalRequest,
+  FetchBlockQortalRequest,
+  FetchBlockRangeQortalRequest,
+  SearchTransactionsQortalRequest,
+  IsUsingPublicNodeQortalRequest,
+  AdminActionQortalRequest,
+  OpenNewTabQortalRequest,
+  ShowActionsQortalRequest,
+  SignTransactionQortalRequest,
+  CreateAndCopyEmbedLinkQortalRequest,
+  TransferAssetQortalRequest,
+  ShowPdfReaderQortalRequest,
+  SaveFileQortalRequest,
+  GetPrimaryNameQortalRequest,
+  ScreenOrientation,
+  GetNodeStatusQortalRequest,
+  GetNodeInfoQortalRequest,
+  MultiAssetPaymentWithPrivateData,
+} from "./types/qortalRequests/interfaces"
 
 
 declare global {
@@ -84,7 +171,12 @@ declare global {
   CreateAndCopyEmbedLinkQortalRequest |
   TransferAssetQortalRequest |
   ShowPdfReaderQortalRequest |
-  SaveFileQortalRequest | GetPrimaryNameQortalRequest | ScreenOrientation | GetNodeStatusQortalRequest | GetNodeInfoQortalRequest;
+  MultiAssetPaymentWithPrivateData |
+  SaveFileQortalRequest |
+  GetPrimaryNameQortalRequest |
+  ScreenOrientation |
+  GetNodeStatusQortalRequest |
+  GetNodeInfoQortalRequest;
 
 
   function qortalRequest(options: QortalRequestOptions): Promise<any>

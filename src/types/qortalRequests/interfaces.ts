@@ -666,6 +666,14 @@ export interface ShowPdfReaderQortalRequest extends BaseRequest {
   blob: Blob | File
 }
 
+export type Payment = {amount: number, recipient: string, arbitraryTxs: ResourceToPublish[]}
+
+export interface MultiAssetPaymentWithPrivateData extends BaseRequest {
+  action: 'MULTI_ASSET_PAYMENT_WITH_PRIVATE_DATA'
+  payments: Payment[];
+  assetId: number;
+}
+
 export type SaveFileQortalRequest =
   | ({
       action: 'SAVE_FILE';
