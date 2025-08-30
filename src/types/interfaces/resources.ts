@@ -1,57 +1,58 @@
 export type Service  =
+| "APP"
 | "ARBITRARY_DATA"
-| "QCHAT_ATTACHMENT"
 | "ATTACHMENT"
+| "AUDIO"
+| "BLOG_COMMENT"
+| "BLOG_POST"
+| "BLOG"
+| "CHAIN_COMMENT"
+| "CHAIN_DATA"
+| "CODE"
+| "COMMENT"
+| "COUPON"
+| "DATABASE"
+| "DOCUMENT"
+| "EXTENSION"
 | "FILE"
 | "FILES"
-| "CHAIN_DATA"
-| "WEBSITE"
-| "IMAGE"
-| "THUMBNAIL"
-| "QCHAT_IMAGE"
-| "VIDEO"
-| "AUDIO"
-| "QCHAT_AUDIO"
-| "QCHAT_VOICE"
-| "VOICE"
-| "PODCAST"
-| "BLOG"
-| "BLOG_POST"
-| "BLOG_COMMENT"
-| "DOCUMENT"
-| "LIST"
-| "PLAYLIST"
-| "APP"
-| "METADATA"
-| "JSON"
-| "GIF_REPOSITORY"
-| "STORE"
-| "PRODUCT"
-| "OFFER"
-| "COUPON"
-| "CODE"
-| "PLUGIN"
-| "EXTENSION"
 | "GAME"
+| "GIF_REPOSITORY"
+| "IMAGE"
 | "ITEM"
-| "NFT"
-| "DATABASE"
-| "SNAPSHOT"
-| "COMMENT"
-| "CHAIN_COMMENT"
+| "JSON"
+| "LIST"
 | "MAIL"
 | "MESSAGE"
+| "METADATA"
+| "NFT"
+| "OFFER"
+| "PLAYLIST"
+| "PLUGIN"
+| "PODCAST"
+| "PRODUCT"
+| "QCHAT_ATTACHMENT"
+| "QCHAT_AUDIO"
+| "QCHAT_IMAGE"
+| "QCHAT_VOICE"
+| "SNAPSHOT"
+| "STORE"
+| "THUMBNAIL"
+| "VIDEO"
+| "VOICE"
+| "WEBSITE"
 // Newly added private types
-| "QCHAT_ATTACHMENT_PRIVATE"
+| 'AUTO_UPDATE'
 | "ATTACHMENT_PRIVATE"
+| "AUDIO_PRIVATE"
+| "DOCUMENT_PRIVATE"
 | "FILE_PRIVATE"
 | "IMAGE_PRIVATE"
-| "VIDEO_PRIVATE"
-| "AUDIO_PRIVATE"
-| "VOICE_PRIVATE"
-| "DOCUMENT_PRIVATE"
 | "MAIL_PRIVATE"
-| "MESSAGE_PRIVATE" | 'AUTO_UPDATE';
+| "MESSAGE_PRIVATE" 
+| "QCHAT_ATTACHMENT_PRIVATE"
+| "VIDEO_PRIVATE"
+| "VOICE_PRIVATE";
 
 
 export interface QortalMetadata {
@@ -77,27 +78,27 @@ export interface QortalMetadata {
   }
 
  export interface QortalSearchParams {
-    identifier: string;
-    service: Service;
-    query?: string;
-    name?: string;
-    names?: string[];
-    keywords?: string[];
-    title?: string;
-    description?: string;
-    prefix?: boolean;
-    includemetadata?: boolean;
-    exactMatchNames?: boolean;
-    minLevel?: number;
-    nameListFilter?: string;
-    followedOnly?: boolean;
-    excludeBlocked?: boolean;
-    before?: number; 
     after?: number;  
+    before?: number; 
+    description?: string;
+    exactMatchNames?: boolean;
+    excludeBlocked?: boolean;
+    followedOnly?: boolean;
+    identifier: string;
+    includemetadata?: boolean;
+    keywords?: string[];
     limit?: number;
-    offset?: number;
-    reverse?: boolean;
+    minLevel?: number;
     mode?: 'ALL' | 'LATEST'
+    name?: string;
+    nameListFilter?: string;
+    names?: string[];
+    offset?: number;
+    prefix?: boolean;
+    query?: string;
+    reverse?: boolean;
+    service: Service;
+    title?: string;
   }
 
    export interface QortalPreloadedParams {

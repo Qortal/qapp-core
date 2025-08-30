@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { useAuthStore } from "../state/auth";
+import { useCallback, useEffect, useMemo } from "react";
 import { useAppStore } from "../state/app";
 import { EnumCollisionStrength, hashWord } from "../utils/encryption";
 

@@ -1,5 +1,5 @@
 import { toast } from "react-hot-toast";
-import React from "react";
+
 export const showSuccess = (message: string, duration = 4000) => {
   toast.success(message, {
     duration,

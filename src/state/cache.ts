@@ -1,9 +1,8 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   QortalGetMetadata,
   QortalMetadata,
-} from "../types/interfaces/resources";
-import { persist } from "zustand/middleware";
+} from '../types/interfaces/resources';
 
 interface SearchCache {
   [listName: string]: {

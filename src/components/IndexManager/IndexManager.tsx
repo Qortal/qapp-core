@@ -40,7 +40,6 @@ import { createAvatarLink } from "../../utils/qortal";
 import { extractComponents } from "../../utils/text";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { useLibTranslation } from "../../hooks/useLibTranslation";
-import { t } from "i18next";
 
 const uid = new ShortUniqueId({ length: 10, dictionary: "alphanum" });
 
