@@ -590,14 +590,15 @@ export interface IsUsingPublicNodeQortalRequest extends BaseRequest {
 }
 
 export type AdminActionType =
-  | 'stop'
-  | 'restart'
-  | 'bootstrap'
   | 'addmintingaccount'
-  | 'removemintingaccount'
-  | 'forcesync'
   | 'addpeer'
-  | 'removepeer';
+  | 'bootstrap'
+  | 'forcesync'
+  | 'getmintingaccounts'
+  | 'removemintingaccount'
+  | 'removepeer'
+  | 'restart'
+  | 'stop';
 
 export interface AdminActionQortalRequest extends BaseRequest {
   action: 'ADMIN_ACTION';
