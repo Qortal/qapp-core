@@ -1,37 +1,35 @@
-import { Card, CardContent } from "@mui/material";
-import React, { ReactNode } from "react";
+import { Card, CardContent } from '@mui/material';
+import { ReactNode } from 'react';
 
 interface PropsCardWrapper {
-    isInCart: boolean;
-    children: ReactNode | ReactNode[];
-    height?: number;
-  }
+  isInCart: boolean;
+  children: ReactNode | ReactNode[];
+  height?: number;
+}
 export const ItemCardWrapper = ({
-    children,
-    isInCart,
-    height,
-  }: PropsCardWrapper) => {
-  
-    return (
-      <Card
+  children,
+  isInCart,
+  height,
+}: PropsCardWrapper) => {
+  return (
+    <Card
+      sx={{
+        width: '100%',
+        height: height || 'auto',
+      }}
+    >
+      <CardContent
         sx={{
-          width: "100%",
-          height: height || "auto",
-          
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          p: 1,
+          '&:last-child': { pb: 1 },
         }}
       >
-        <CardContent
-          sx={{
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            p: 1,
-            "&:last-child": { pb: 1 },
-          }}
-        >
-          {children}
-        </CardContent>
-      </Card>
-    );
-  };
+        {children}
+      </CardContent>
+    </Card>
+  );
+};

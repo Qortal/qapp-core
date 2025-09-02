@@ -1,21 +1,13 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import DynamicGrid from "./DynamicGrid";
-import LazyLoad from "../../common/LazyLoad";
-import { ListItem } from "../../state/cache";
-import { QortalMetadata } from "../../types/interfaces/resources";
-import { DefaultLoaderParams, ListItemWrapper } from "./ResourceListDisplay";
-import { Button } from "@mui/material";
+import React, { useRef } from 'react';
+import LazyLoad from '../../common/LazyLoad';
+import { ListItem } from '../../state/cache';
+import { QortalMetadata } from '../../types/interfaces/resources';
+import { DefaultLoaderParams, ListItemWrapper } from './ResourceListDisplay';
 
 interface VerticalPaginatedListProps {
   items: QortalMetadata[];
   listItem: (item: ListItem, index: number) => React.ReactNode;
-  loaderItem?: (status: "LOADING" | "ERROR") => React.ReactNode;
+  loaderItem?: (status: 'LOADING' | 'ERROR') => React.ReactNode;
   onLoadMore: (limit: number) => void;
   onLoadLess: (limit: number) => void;
   limit: number;
@@ -23,7 +15,7 @@ interface VerticalPaginatedListProps {
   defaultLoaderParams?: DefaultLoaderParams;
 }
 
- const MemorizedComponent = ({
+const MemorizedComponent = ({
   items,
   listItem,
   loaderItem,
@@ -40,8 +32,9 @@ interface VerticalPaginatedListProps {
 
   const displayedItems = disablePagination
     ? items
-    : items?.length < (displayedLimit * 3) ? items?.slice(0, displayedLimit * 3) : items.slice(- (displayedLimit * 3));
-
+    : items?.length < displayedLimit * 3
+      ? items?.slice(0, displayedLimit * 3)
+      : items.slice(-(displayedLimit * 3));
 
   return (
     <>
@@ -50,34 +43,36 @@ interface VerticalPaginatedListProps {
           onLoadMore={async () => {
             await onLoadLess(displayedLimit);
             lastItemRef2.current.scrollIntoView({
-              behavior: "auto",
-              block: "start",
+              behavior: 'auto',
+              block: 'start',
             });
             setTimeout(() => {
-              window.scrollBy({ top: -50, behavior: "instant" }); // 'smooth' if needed
+              window.scrollBy({ top: -50, behavior: 'instant' }); // 'smooth' if needed
             }, 0);
           }}
         />
       )}
 
       {displayedItems?.map((item, index, list) => {
-   
         return (
           <React.Fragment
             key={`${item?.name}-${item?.service}-${item?.identifier}`}
           >
             <div
               style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
               }}
               ref={
                 index === displayedLimit
                   ? lastItemRef2
-                  : index === (list.length - displayedLimit - 1 < displayedLimit ? displayedLimit - 1 : list.length - displayedLimit - 1 )
-                  ? lastItemRef
-                  : null
+                  : index ===
+                      (list.length - displayedLimit - 1 < displayedLimit
+                        ? displayedLimit - 1
+                        : list.length - displayedLimit - 1)
+                    ? lastItemRef
+                    : null
               }
             >
               <ListItemWrapper
@@ -91,20 +86,23 @@ interface VerticalPaginatedListProps {
           </React.Fragment>
         );
       })}
-       {(disablePagination || (!disablePagination && displayedItems?.length >= limit)) && (
+      {(disablePagination ||
+        (!disablePagination && displayedItems?.length >= limit)) && (
         <LazyLoad
           onLoadMore={async () => {
             await onLoadMore(displayedLimit);
-            if(!disablePagination && (displayedItems?.length === displayedLimit * 3)){
+            if (
+              !disablePagination &&
+              displayedItems?.length === displayedLimit * 3
+            ) {
               lastItemRef.current.scrollIntoView({
-                behavior: "auto",
-                block: "end",
+                behavior: 'auto',
+                block: 'end',
               });
               setTimeout(() => {
-                window.scrollBy({ top: 50, behavior: "instant" }); // 'smooth' if needed
+                window.scrollBy({ top: 50, behavior: 'instant' }); // 'smooth' if needed
               }, 0);
             }
-            
           }}
         />
       )}

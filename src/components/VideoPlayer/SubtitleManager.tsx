@@ -4,12 +4,12 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react';
 import {
   QortalGetMetadata,
   QortalMetadata,
   Service,
-} from "../../types/interfaces/resources";
+} from '../../types/interfaces/resources';
 import {
   alpha,
   Box,
@@ -22,46 +22,43 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Fade,
   IconButton,
-  Popover,
   Skeleton,
   Tab,
   Tabs,
   Typography,
   useTheme,
-} from "@mui/material";
-import CheckIcon from "@mui/icons-material/Check";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import ModeEditIcon from "@mui/icons-material/ModeEdit";
-import CloseIcon from "@mui/icons-material/Close";
-import { useListStore } from "../../state/lists";
-import { Resource, useResources } from "../../hooks/useResources";
-import { useGlobal } from "../../context/GlobalProvider";
-import { ENTITY_SUBTITLE, SERVICE_SUBTITLE } from "./video-player-constants";
-import ISO6391, { LanguageCode } from "iso-639-1";
-import LanguageSelect from "./LanguageSelect";
-import DownloadIcon from "@mui/icons-material/Download";
-import DownloadingIcon from "@mui/icons-material/Downloading";
+} from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import CloseIcon from '@mui/icons-material/Close';
+import { useResources } from '../../hooks/useResources';
+import { useGlobal } from '../../context/GlobalProvider';
+import { ENTITY_SUBTITLE, SERVICE_SUBTITLE } from './video-player-constants';
+import ISO6391 from 'iso-639-1';
+import LanguageSelect from './LanguageSelect';
+import DownloadIcon from '@mui/icons-material/Download';
+import DownloadingIcon from '@mui/icons-material/Downloading';
 import {
   useDropzone,
   DropzoneRootProps,
   DropzoneInputProps,
-} from "react-dropzone";
-import { fileToBase64, objectToBase64 } from "../../utils/base64";
-import { ResourceToPublish } from "../../types/qortalRequests/types";
-import { useListReturn } from "../../hooks/useListData";
-import { usePublish } from "../../hooks/usePublish";
-import { Spacer } from "../../common/Spacer";
+} from 'react-dropzone';
+import { fileToBase64, objectToBase64 } from '../../utils/base64';
+import { ResourceToPublish } from '../../types/qortalRequests/types';
+import { useListReturn } from '../../hooks/useListData';
+import { usePublish } from '../../hooks/usePublish';
+import { Spacer } from '../../common/Spacer';
 import {
   dismissToast,
   showError,
   showLoading,
   showSuccess,
-} from "../../utils/toast";
-import { RequestQueueWithPromise } from "../../utils/queue";
-import { useLibTranslation } from "../../hooks/useLibTranslation";
+} from '../../utils/toast';
+import { RequestQueueWithPromise } from '../../utils/queue';
+import { useLibTranslation } from '../../hooks/useLibTranslation';
 
 export const requestQueueGetStatus = new RequestQueueWithPromise(1);
 
@@ -100,7 +97,7 @@ export const languageOptions = ISO6391.getAllCodes().map((code) => ({
 function a11yProps(index: number) {
   return {
     id: `subtitle-tab-${index}`,
-    "aria-controls": `subtitle-tabpanel-${index}`,
+    'aria-controls': `subtitle-tabpanel-${index}`,
   };
 }
 
@@ -244,7 +241,7 @@ const SubtitleManagerComponent = ({
       }
 
       await qortalRequest({
-        action: "PUBLISH_MULTIPLE_QDN_RESOURCES",
+        action: 'PUBLISH_MULTIPLE_QDN_RESOURCES',
         resources,
       });
 
@@ -267,48 +264,48 @@ const SubtitleManagerComponent = ({
   if (!open) return null;
   return (
     <>
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9, // one layer below MUI drawer
-      }}
-      onClick={(e) => e.stopPropagation()}
-    />
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9, // one layer below MUI drawer
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
       <Box
         ref={ref}
         tabIndex={-1}
         onBlur={handleBlur}
-        bgcolor={alpha("#181818", 0.98)}
+        bgcolor={alpha('#181818', 0.98)}
         sx={{
-          position: isFromDrawer ? "relative" : "absolute",
-          bottom: isFromDrawer ? "unset" : 60,
-          right: isFromDrawer ? "unset" : 5,
-          color: "white",
+          position: isFromDrawer ? 'relative' : 'absolute',
+          bottom: isFromDrawer ? 'unset' : 60,
+          right: isFromDrawer ? 'unset' : 5,
+          color: 'white',
           opacity: 0.9,
           borderRadius: 2,
-          boxShadow: isFromDrawer ? "unset" : 5,
+          boxShadow: isFromDrawer ? 'unset' : 5,
           p: 1,
           minWidth: 225,
           height: 300,
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
           zIndex: 10,
         }}
       >
         <Box
           sx={{
-            padding: "5px 0px 10px 0px",
-            display: "flex",
-            gap: "10px",
-            width: "100%",
+            padding: '5px 0px 10px 0px',
+            display: 'flex',
+            gap: '10px',
+            width: '100%',
           }}
         >
           <ButtonBase onClick={onBack}>
             <ArrowBackIosIcon
               sx={{
-                fontSize: "1.15em",
+                fontSize: '1.15em',
               }}
             />
           </ButtonBase>
@@ -316,15 +313,15 @@ const SubtitleManagerComponent = ({
             <Typography
               onClick={onBack}
               sx={{
-                fontSize: "0.85rem",
+                fontSize: '0.85rem',
               }}
             >
-              {t("subtitle.subtitles")}
+              {t('subtitle.subtitles')}
             </Typography>
           </ButtonBase>
           <ButtonBase
             sx={{
-              marginLeft: "auto",
+              marginLeft: 'auto',
             }}
             onClick={() => {
               setIsOpenPublish(true);
@@ -332,7 +329,7 @@ const SubtitleManagerComponent = ({
           >
             <ModeEditIcon
               sx={{
-                fontSize: "1.15rem",
+                fontSize: '1.15rem',
               }}
             />
           </ButtonBase>
@@ -340,28 +337,28 @@ const SubtitleManagerComponent = ({
         <Divider />
         <Box
           sx={{
-            display: "flex",
-            flexDirection: "column",
+            display: 'flex',
+            flexDirection: 'column',
             flexGrow: 1,
-            overflow: "auto",
-            "::-webkit-scrollbar-track": {
-              backgroundColor: "transparent",
+            overflow: 'auto',
+            '::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent',
             },
 
-            "::-webkit-scrollbar": {
-              width: "16px",
-              height: "10px",
+            '::-webkit-scrollbar': {
+              width: '16px',
+              height: '10px',
             },
 
-            "::-webkit-scrollbar-thumb": {
+            '::-webkit-scrollbar-thumb': {
               backgroundColor: theme.palette.primary.main,
-              borderRadius: "8px",
-              backgroundClip: "content-box",
-              border: "4px solid transparent",
-              transition: "0.3s background-color",
+              borderRadius: '8px',
+              backgroundClip: 'content-box',
+              border: '4px solid transparent',
+              transition: '0.3s background-color',
             },
 
-            "::-webkit-scrollbar-thumb:hover": {
+            '::-webkit-scrollbar-thumb:hover': {
               backgroundColor: theme.palette.primary.dark,
             },
           }}
@@ -370,13 +367,13 @@ const SubtitleManagerComponent = ({
           {!isLoading && subtitles?.length === 0 && (
             <Typography
               sx={{
-                fontSize: "1rem",
-                width: "100%",
-                textAlign: "center",
-                marginTop: "20px",
+                fontSize: '1rem',
+                width: '100%',
+                textAlign: 'center',
+                marginTop: '20px',
               }}
             >
-              {t("subtitle.no_subtitles")}
+              {t('subtitle.no_subtitles')}
             </Typography>
           )}
 
@@ -393,9 +390,9 @@ const SubtitleManagerComponent = ({
         </Box>
         <Box
           sx={{
-            display: "flex",
-            width: "100%",
-            justifyContent: "center",
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'center',
           }}
         >
           <Button
@@ -404,7 +401,7 @@ const SubtitleManagerComponent = ({
             disabled={showAll}
             onClick={() => setShowAll(true)}
           >
-            {t("subtitle.load_community_subs")}
+            {t('subtitle.load_community_subs')}
           </Button>
         </Box>
       </Box>
@@ -445,14 +442,14 @@ const PublisherSubtitles = ({
         sx={{
           px: 2,
           py: 1,
-          "&:hover": {
-            backgroundColor: "rgba(255, 255, 255, 0.1)",
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
           },
-          width: "100%",
-          justifyContent: "space-between",
+          width: '100%',
+          justifyContent: 'space-between',
         }}
       >
-        <Typography>{t("subtitle.off")}</Typography>
+        <Typography>{t('subtitle.off')}</Typography>
         {!currentSubTrack ? <CheckIcon /> : <ArrowForwardIosIcon />}
       </ButtonBase>
 
@@ -503,7 +500,7 @@ const PublishSubtitles = ({
         };
         newSubtitles.push(newSubtitle);
       } catch (error) {
-        console.error("Failed to convert to base64:", error);
+        console.error('Failed to convert to base64:', error);
       }
     }
     setSubtitles((prev) => [...newSubtitles, ...prev]);
@@ -518,8 +515,8 @@ const PublishSubtitles = ({
   } = useDropzone({
     onDrop,
     accept: {
-      "application/x-subrip": [".srt"], // SRT subtitles
-      "text/vtt": [".vtt"], // WebVTT subtitles
+      'application/x-subrip': ['.srt'], // SRT subtitles
+      'text/vtt': ['.vtt'], // WebVTT subtitles
     },
     multiple: true,
     maxSize: 2 * 1024 * 1024, // 2MB
@@ -553,12 +550,12 @@ const PublishSubtitles = ({
     let loadId;
     try {
       setIsPublishing(true);
-      loadId = showLoading(t("subtitle.deleting_subtitle"));
+      loadId = showLoading(t('subtitle.deleting_subtitle'));
       await lists.deleteResource([sub]);
-      showSuccess(t("subtitle.deleted"));
+      showSuccess(t('subtitle.deleted'));
     } catch (error) {
       showError(
-        error instanceof Error ? error.message : t("subtitle.unable_delete")
+        error instanceof Error ? error.message : t('subtitle.unable_delete')
       );
     } finally {
       setIsPublishing(false);
@@ -570,13 +567,13 @@ const PublishSubtitles = ({
     let loadId;
     try {
       setIsPublishing(true);
-      loadId = showLoading(t("subtitle.publishing"));
+      loadId = showLoading(t('subtitle.publishing'));
       await publishHandler(subtitles);
-      showSuccess(t("subtitle.published"));
+      showSuccess(t('subtitle.published'));
       setSubtitles([]);
     } catch (error) {
       showError(
-        error instanceof Error ? error.message : t("subtitle.unable_publish")
+        error instanceof Error ? error.message : t('subtitle.unable_publish')
       );
     } finally {
       dismissToast(loadId);
@@ -591,7 +588,7 @@ const PublishSubtitles = ({
     <Dialog
       open={isOpen}
       fullWidth={true}
-      maxWidth={"md"}
+      maxWidth={'md'}
       disablePortal={true}
       sx={{
         zIndex: 999990,
@@ -600,18 +597,18 @@ const PublishSubtitles = ({
         paper: {
           elevation: 0,
           sx: {
-            height: "600px",
-            maxHeight: "100vh",
+            height: '600px',
+            maxHeight: '100vh',
           },
         },
       }}
     >
-      <DialogTitle>{t("subtitle.my_subtitles")}</DialogTitle>
+      <DialogTitle>{t('subtitle.my_subtitles')}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={handleClose}
         sx={(theme) => ({
-          position: "absolute",
+          position: 'absolute',
           right: 8,
           top: 8,
         })}
@@ -620,33 +617,33 @@ const PublishSubtitles = ({
       </IconButton>
       <DialogContent
         sx={{
-          "::-webkit-scrollbar": {
-            width: "16px",
-            height: "10px",
+          '::-webkit-scrollbar': {
+            width: '16px',
+            height: '10px',
           },
 
-          "::-webkit-scrollbar-thumb": {
+          '::-webkit-scrollbar-thumb': {
             backgroundColor: theme.palette.primary.main,
-            borderRadius: "8px",
-            backgroundClip: "content-box",
-            border: "4px solid transparent",
-            transition: "0.3s background-color",
+            borderRadius: '8px',
+            backgroundClip: 'content-box',
+            border: '4px solid transparent',
+            transition: '0.3s background-color',
           },
 
-          "::-webkit-scrollbar-thumb:hover": {
+          '::-webkit-scrollbar-thumb:hover': {
             backgroundColor: theme.palette.primary.dark,
           },
         }}
       >
-        <Box sx={{ width: "100%" }}>
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Box sx={{ width: '100%' }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               value={value}
               onChange={handleChange}
               aria-label="basic tabs example"
             >
-              <Tab label={t("subtitle.new")} {...a11yProps(0)} />
-              <Tab label={t("subtitle.existing")} {...a11yProps(1)} />
+              <Tab label={t('subtitle.new')} {...a11yProps(0)} />
+              <Tab label={t('subtitle.existing')} {...a11yProps(1)} />
             </Tabs>
           </Box>
         </Box>
@@ -654,37 +651,37 @@ const PublishSubtitles = ({
         {value === 0 && (
           <Box
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-              width: "100%",
-              alignItems: "center",
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+              width: '100%',
+              alignItems: 'center',
             }}
           >
             <Box {...getRootProps()}>
               <Button
                 sx={{
-                  display: "flex",
-                  gap: "10px",
+                  display: 'flex',
+                  gap: '10px',
                 }}
                 variant="contained"
               >
                 <input {...getInputProps()} />
-                {t("subtitle.import_subtitles")}
+                {t('subtitle.import_subtitles')}
               </Button>
             </Box>
             {subtitles?.map((sub, i) => {
               return (
                 <Card
                   sx={{
-                    padding: "10px",
-                    width: "500px",
-                    maxWidth: "100%",
+                    padding: '10px',
+                    width: '500px',
+                    maxWidth: '100%',
                   }}
                 >
                   <Typography
                     sx={{
-                      fontSize: "1rem",
+                      fontSize: '1rem',
                     }}
                   >
                     {sub.filename}
@@ -693,15 +690,15 @@ const PublishSubtitles = ({
                   <LanguageSelect
                     value={sub.language}
                     onChange={(val: string | null) =>
-                      onChangeValue("language", val, i)
+                      onChangeValue('language', val, i)
                     }
                   />
                   <Spacer height="10px" />
                   <Box
                     sx={{
-                      justifyContent: "flex-end",
-                      width: "100%",
-                      display: "flex",
+                      justifyContent: 'flex-end',
+                      width: '100%',
+                      display: 'flex',
                     }}
                   >
                     <Button
@@ -716,7 +713,7 @@ const PublishSubtitles = ({
                       size="small"
                       color="secondary"
                     >
-                      {t("actions.remove")}
+                      {t('actions.remove')}
                     </Button>
                   </Box>
                 </Card>
@@ -727,11 +724,11 @@ const PublishSubtitles = ({
         {value === 1 && (
           <Box
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-              width: "100%",
-              alignItems: "center",
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+              width: '100%',
+              alignItems: 'center',
             }}
           >
             {mySubtitles?.map((sub, i) => {
@@ -739,9 +736,9 @@ const PublishSubtitles = ({
                 <Card
                   key={i}
                   sx={{
-                    padding: "10px",
-                    width: "500px",
-                    maxWidth: "100%",
+                    padding: '10px',
+                    width: '500px',
+                    maxWidth: '100%',
                   }}
                 >
                   <MySubtitle onDelete={onDelete} sub={sub} />
@@ -758,7 +755,7 @@ const PublishSubtitles = ({
             disabled={disableButton}
             variant="contained"
           >
-            {t("actions.publish")}
+            {t('actions.publish')}
           </Button>
         )}
       </DialogActions>
@@ -777,7 +774,7 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
   const [isReady, setIsReady] = useState(false);
   const { resource, isLoading, error, refetch } = usePublish(
     2,
-    "JSON",
+    'JSON',
     sub,
     true
   );
@@ -796,7 +793,7 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
         const response = await requestQueueGetStatus.enqueue(
           (): Promise<string> => {
             return qortalRequest({
-              action: "GET_QDN_RESOURCE_STATUS",
+              action: 'GET_QDN_RESOURCE_STATUS',
               identifier,
               service,
               name,
@@ -804,7 +801,7 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
             });
           }
         );
-        if (response?.status === "READY") {
+        if (response?.status === 'READY') {
           setIsReady(true);
           subtitlesStatus[`${service}-${name}-${identifier}`] = true;
           refetch();
@@ -835,15 +832,15 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
       sx={{
         px: 2,
         py: 1,
-        "&:hover": {
-          backgroundColor: "rgba(255, 255, 255, 0.1)",
+        '&:hover': {
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
         },
-        width: "100%",
-        justifyContent: "space-between",
+        width: '100%',
+        justifyContent: 'space-between',
       }}
     >
       {isGettingStatus && (
-        <Skeleton variant="text" sx={{ fontSize: "1.25rem", width: "100%" }} />
+        <Skeleton variant="text" sx={{ fontSize: '1.25rem', width: '100%' }} />
       )}
       {!isGettingStatus && (
         <>
@@ -870,18 +867,18 @@ interface MySubtitleProps {
 const MySubtitle = ({ sub, onDelete }: MySubtitleProps) => {
   const { t } = useLibTranslation();
 
-  const { resource, isLoading, error } = usePublish(2, "JSON", sub);
+  const { resource, isLoading, error } = usePublish(2, 'JSON', sub);
   return (
     <Card
       sx={{
-        padding: "10px",
-        width: "500px",
-        maxWidth: "100%",
+        padding: '10px',
+        width: '500px',
+        maxWidth: '100%',
       }}
     >
       <Typography
         sx={{
-          fontSize: "1rem",
+          fontSize: '1rem',
         }}
       >
         {resource?.data?.filename}
@@ -889,7 +886,7 @@ const MySubtitle = ({ sub, onDelete }: MySubtitleProps) => {
       <Spacer height="10px" />
       <Typography
         sx={{
-          fontSize: "1rem",
+          fontSize: '1rem',
         }}
       >
         {resource?.data?.language}
@@ -897,9 +894,9 @@ const MySubtitle = ({ sub, onDelete }: MySubtitleProps) => {
       <Spacer height="10px" />
       <Box
         sx={{
-          justifyContent: "flex-end",
-          width: "100%",
-          display: "flex",
+          justifyContent: 'flex-end',
+          width: '100%',
+          display: 'flex',
         }}
       >
         <Button
@@ -908,7 +905,7 @@ const MySubtitle = ({ sub, onDelete }: MySubtitleProps) => {
           size="small"
           color="secondary"
         >
-          {t("actions.delete")}
+          {t('actions.delete')}
         </Button>
       </Box>
     </Card>
