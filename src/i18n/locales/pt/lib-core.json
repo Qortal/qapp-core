@@ -1,0 +1,69 @@
+{
+  "subtitle": {
+    "subtitles": "Legendas",
+    "no_subtitles": "Sem legendas",
+    "load_community_subs": "Carregar legendas da comunidade",
+    "off": "Desligado",
+    "deleting_subtitle": "Excluindo legenda...",
+    "deleted": "Legenda excluída",
+    "unable_delete": "não foi possível excluir",
+    "publishing": "Publicando legendas...",
+    "published": "Legendas publicadas",
+    "unable_publish": "Não foi possível publicar",
+    "my_subtitles": "Minhas legendas",
+    "new": "Novo",
+    "existing": "Existente",
+    "import_subtitles": "Importar legendas"
+  },
+  "actions": {
+    "remove": "remover",
+    "publish": "publicar",
+    "delete": "excluir",
+    "publish_metadata": "publicar metadados",
+    "publish_index": "publicar índice",
+    "cancel": "cancelar",
+    "continue": "continuar",
+    "close": "fechar",
+    "retry": "tentar novamente"
+  },
+  "video": {
+    "playback_speed": "Velocidade de reprodução",
+    "toggle_fullscreen": "Alternar tela cheia (F)",
+    "video_speed": "Velocidade do vídeo. Aumentar (+ ou >), Diminuir (- ou <)",
+    "toggle_mute": "Alternar mudo (M), Aumentar (CIMA), Diminuir (BAIXO)",
+    "seek_video": "Avançar/retroceder vídeo em incrementos de 10% (0-9)",
+    "reload_video": "Recarregar vídeo (R)",
+    "play_pause": "Pausar/Reproduzir (Barra de espaço)"
+  },
+  "index": {
+    "title": "Gerenciador de Índices",
+    "create_new_index": "Criar novo índice",
+    "add_metadata": "Adicionar metadados",
+    "publishing_metadata": "Publicando metadados...",
+    "published_metadata": "Metadados publicados com sucesso",
+    "failed_metadata": "Falha ao publicar metadados",
+    "example": "Exemplo de como pode parecer:",
+    "metadata_title": "Título",
+    "metadata_description": "Descrição",
+    "metadata_title_placeholder": "Adicionar um título para o link",
+    "metadata_description_placeholder": "Adicionar uma descrição para o link",
+    "characters": "caracteres",
+    "publishing_index": "Publicando índice...",
+    "published_index": "Índice publicado com sucesso",
+    "failed_index": "Falha ao publicar índice",
+    "recommended_indices": "Índices recomendados",
+    "add_search_term": "Adicionar termo de pesquisa",
+    "search_terms": "termos de pesquisa",
+    "recommendation_size": "Recomenda-se manter o número de caracteres do termo abaixo de {{recommendedSize}} caracteres",
+    "multiple_title": "Adicionando múltiplos índices",
+    "multiple_description": "Índices subsequentes manterão suas taxas de publicação mais baixas, mas terão menos relevância em resultados de pesquisa futuros."
+  },
+  "multi_publish": {
+    "title": "Status da Publicação",
+    "publish_failed": "Falha na publicação",
+    "file_chunk": "Parte do arquivo",
+    "file_processing": "Processando arquivo",
+    "success": "Publicado com sucesso",
+    "attempt_retry": "Publicação falhou. Tentando novamente..."
+  }
+}

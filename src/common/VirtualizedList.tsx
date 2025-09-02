@@ -1,25 +1,23 @@
-import React, {
-  CSSProperties,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import React, { ReactNode, useCallback, useEffect, useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useInView } from "react-intersection-observer";
 import { QortalMetadata } from "../types/interfaces/resources";
 import { useScrollTrackerRef } from "./useScrollTrackerRef";
-import { useMergeRefs } from "../hooks/useMergeRefs";
 
 interface PropsVirtualizedList {
   list: any[];
   children: (item: any, index: number) => React.ReactNode;
-  onSeenLastItem?: (item: QortalMetadata)=> void;
-  listName: string
+  onSeenLastItem?: (item: QortalMetadata) => void;
+  listName: string;
 }
-export const VirtualizedList = ({ list, children, onSeenLastItem, listName }: PropsVirtualizedList) => {
+export const VirtualizedList = ({
+  list,
+  children,
+  onSeenLastItem,
+  listName,
+}: PropsVirtualizedList) => {
   const parentRef = useRef(null);
-  useScrollTrackerRef(listName, list?.length > 0, parentRef)
+  useScrollTrackerRef(listName, list?.length > 0, parentRef);
 
   const rowVirtualizer = useVirtualizer({
     count: list.length,
@@ -36,10 +34,9 @@ export const VirtualizedList = ({ list, children, onSeenLastItem, listName }: Pr
   });
 
   const onSeenLastItemFunc = (lastItem: QortalMetadata) => {
-    if(onSeenLastItem){
-      onSeenLastItem(lastItem)
+    if (onSeenLastItem) {
+      onSeenLastItem(lastItem);
     }
-    
   };
 
   return (

@@ -29,7 +29,10 @@ export class RequestQueueWithPromise<T = any> {
     // Process requests only if the queue is not paused
     if (this.isPaused) return;
 
-    while (this.queue.length > 0 && this.currentlyProcessing < this.maxConcurrent) {
+    while (
+      this.queue.length > 0 &&
+      this.currentlyProcessing < this.maxConcurrent
+    ) {
       this.currentlyProcessing++;
 
       const { request, resolve, reject } = this.queue.shift()!; // Non-null assertion because length > 0
@@ -63,11 +66,10 @@ export class RequestQueueWithPromise<T = any> {
   }
 }
 
-
 export async function retryTransaction<T>(
-  fn: (...args: any[]) => Promise<T>, 
-  args: any[], 
-  throwError: boolean, 
+  fn: (...args: any[]) => Promise<T>,
+  args: any[],
+  throwError: boolean,
   retries: number
 ): Promise<T | null> {
   let attempt = 0;
@@ -85,7 +87,11 @@ export async function retryTransaction<T>(
       if (attempt === retries) {
         console.error("Max retries reached. Skipping transaction.");
         if (throwError) {
-          throw new Error(error instanceof Error ? error.message : "Unable to process transaction");
+          throw new Error(
+            error instanceof Error
+              ? error.message
+              : "Unable to process transaction"
+          );
         } else {
           return null;
         }
@@ -95,4 +101,3 @@ export async function retryTransaction<T>(
   }
   return null;
 }
-

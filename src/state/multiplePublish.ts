@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { ResourceToPublish } from '../types/qortalRequests/types';
 import { QortalGetMetadata, Service } from '../types/interfaces/resources';
 
-
 interface MultiplePublishState {
   resources: ResourceToPublish[];
   failedResources: QortalGetMetadata[];
@@ -13,15 +12,17 @@ interface MultiplePublishState {
   setPublishResources: (resources: ResourceToPublish[]) => void;
   setFailedPublishResources: (resources: QortalGetMetadata[]) => void;
   setIsPublishing: (value: boolean) => void;
-  setCompletionResolver: (resolver: (result: QortalGetMetadata[]) => void) => void;
+  setCompletionResolver: (
+    resolver: (result: QortalGetMetadata[]) => void
+  ) => void;
   setRejectionResolver: (resolver: (reject: Error) => void) => void;
   complete: (result: any) => void;
   reject: (Error: Error) => void;
   reset: () => void;
-  setError: (message: string | null)=> void
-  error: string | null
-  isLoading: boolean
-  setIsLoading: (val: boolean)=> void
+  setError: (message: string | null) => void;
+  error: string | null;
+  isLoading: boolean;
+  setIsLoading: (val: boolean) => void;
 }
 
 const initialState = {
@@ -30,47 +31,49 @@ const initialState = {
   isPublishing: false,
   resolveCallback: undefined,
   rejectCallback: undefined,
-  error: "",
-  isLoading: false
+  error: '',
+  isLoading: false,
 };
 
-export const useMultiplePublishStore = create<MultiplePublishState>((set, get) => ({
-  ...initialState,
+export const useMultiplePublishStore = create<MultiplePublishState>(
+  (set, get) => ({
+    ...initialState,
 
-  setPublishResources: (resources) => {
-    set({ resources, isPublishing: true });
-  },
- setFailedPublishResources: (resources) => {
-    set({ failedResources: resources });
-  },
-  setIsPublishing: (value) => {
-    set({ isPublishing: value });
-  },
-  setIsLoading: (value) => {
-    set({ isLoading: value });
-  },
-  setCompletionResolver: (resolver) => {
-    set({ resolveCallback: resolver });
-  },
-setRejectionResolver: (reject) => {
-    set({ rejectCallback: reject });
-  },
-  complete: (result) => {
-    const resolver = get().resolveCallback;
-    if (resolver) resolver(result);
-    set({ resolveCallback: undefined, isPublishing: false });
-  },
+    setPublishResources: (resources) => {
+      set({ resources, isPublishing: true });
+    },
+    setFailedPublishResources: (resources) => {
+      set({ failedResources: resources });
+    },
+    setIsPublishing: (value) => {
+      set({ isPublishing: value });
+    },
+    setIsLoading: (value) => {
+      set({ isLoading: value });
+    },
+    setCompletionResolver: (resolver) => {
+      set({ resolveCallback: resolver });
+    },
+    setRejectionResolver: (reject) => {
+      set({ rejectCallback: reject });
+    },
+    complete: (result) => {
+      const resolver = get().resolveCallback;
+      if (resolver) resolver(result);
+      set({ resolveCallback: undefined, isPublishing: false });
+    },
     reject: (result) => {
-    const resolver = get().rejectCallback;
-    if (resolver) resolver(result);
-    set({ resolveCallback: undefined, isPublishing: false });
-  },
-  setError: (message) => {
-    set({ error: message });
-  },
+      const resolver = get().rejectCallback;
+      if (resolver) resolver(result);
+      set({ resolveCallback: undefined, isPublishing: false });
+    },
+    setError: (message) => {
+      set({ error: message });
+    },
 
-  reset: () => set(initialState),
-}));
+    reset: () => set(initialState),
+  })
+);
 
 export type PublishLocation = {
   name: string;
@@ -84,10 +87,10 @@ export type PublishStatus = {
   totalChunks: number;
   processed: boolean;
   error?: {
-    reason: string
-  }
-  retry: boolean
-  filename: string
+    reason: string;
+  };
+  retry: boolean;
+  filename: string;
 };
 
 type PublishStatusStore = {
@@ -115,7 +118,7 @@ export const usePublishStatusStore = create<PublishStatusStore>((set, get) => ({
       chunks: 0,
       totalChunks: 0,
       processed: false,
-      retry: false
+      retry: false,
     };
 
     const newStatus: PublishStatus = {
@@ -135,5 +138,5 @@ export const usePublishStatusStore = create<PublishStatusStore>((set, get) => ({
     });
   },
 
-  reset: () => set({ publishStatus: {} })
+  reset: () => set({ publishStatus: {} }),
 }));
