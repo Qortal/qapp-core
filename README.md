@@ -1,9 +1,13 @@
 # qapp-core
 
-`qapp-core` is a library designed to provide core functionalities for Qortal Apps development.
+`qapp-core` is an npm library designed to simplify the development of Qortal applications (q-apps).
 
-Its main features include:
+It provides a set of high-level helper functions and reusable components that streamline common tasks when building on QDN (Qortal Data Network):
 
-- support for I18N internationalization
-- provision of several hooks for authentication, balance, ...
-- ...
+- seamless authentication and automatic user info management
+
+- simplified CRUD operations for interacting with QDN data
+
+- easy tools to display and manage QDN resource lists
+
+- a growing set of utility functions to accelerate development
