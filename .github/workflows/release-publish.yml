@@ -26,7 +26,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: qapp-core
+        working-directory: .
 
     steps:
       - name: Checkout
