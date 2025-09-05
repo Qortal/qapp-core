@@ -18,7 +18,7 @@
     "dist"
   ],
   "scripts": {
-    "generate-i18n": "./scripts/generate_locales.js",
+    "generate-i18n": "node ./scripts/generate_locales.js",
     "build": "npm run generate-i18n && tsup",
     "prepare": "npm run build",
     "clean": "rm -rf dist"
