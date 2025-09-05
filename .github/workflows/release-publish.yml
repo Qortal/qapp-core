@@ -45,7 +45,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-          registry-url: ${{ vars.REGISTRY_URL }}
+          registry-url: ${{ env.REGISTRY_URL }}
           cache: "npm"
           cache-dependency-path: package-lock.json
 
@@ -71,3 +71,5 @@ jobs:
         run: |
           # If your package is public, keep --access public. Remove it for scoped private packages.
           npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
