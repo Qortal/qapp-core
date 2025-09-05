@@ -64,12 +64,13 @@ jobs:
             exit 1
           fi
 
+      - name: Install missing build deps
+        run: npm i --no-save fast-glob
+
       - name: Build
         run: npm run build
 
       - name: Publish to npm
-        run: |
-          # If your package is public, keep --access public. Remove it for scoped private packages.
-          npm publish --access public
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
