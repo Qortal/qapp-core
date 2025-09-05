@@ -3,7 +3,12 @@ name: Release → Build & Publish core
 on:
   release:
     types: [published] # runs when a release is published (not just created as a draft)
-  workflow_dispatch: # allow manual runs if needed
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g. v1.2.3)"
+        required: true
+        type: string
 
 concurrency:
   group: publish-core-${{ github.ref }}
@@ -20,9 +25,12 @@ jobs:
       id-token: write
 
     environment: production
+
     env:
+      PUBLISH_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       NODE_OPTIONS: --max-old-space-size=4096
+      REGISTRY_URL: ${{ vars.REGISTRY_URL }}
 
     defaults:
       run:
