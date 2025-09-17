@@ -38,7 +38,12 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
 
     if (isTypingOrInteractive) return;
 
-    if (e.ctrlKey || e.metaKey) return
+   // Allow system shortcuts
+  if (e.ctrlKey || e.metaKey) {
+    const systemCombos = ["c", "v", "x", "a", "f", "z", "y"];
+    if (systemCombos.includes(e.key.toLowerCase())) return;
+  }
+
     e.preventDefault();
     const key = e.key;
     const mod = (s: number) => setProgressRelative(s);

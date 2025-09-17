@@ -213,77 +213,6 @@
         }
       }
     },
-    "es": {
-      "lib-core": {
-        "subtitle": {
-          "subtitles": "Subtítulos",
-          "no_subtitles": "Sin subtítulos",
-          "load_community_subs": "Cargar subtítulos de la comunidad",
-          "off": "Desactivado",
-          "deleting_subtitle": "Eliminando subtítulo...",
-          "deleted": "Subtítulo eliminado",
-          "unable_delete": "No se pudo eliminar",
-          "publishing": "Publicando subtítulos...",
-          "published": "Subtítulos publicados",
-          "unable_publish": "No se pudo publicar",
-          "my_subtitles": "Mis subtítulos",
-          "new": "Nuevo",
-          "existing": "Existente",
-          "import_subtitles": "Importar subtítulos"
-        },
-        "actions": {
-          "remove": "eliminar",
-          "publish": "publicar",
-          "delete": "borrar",
-          "publish_metadata": "publicar metadatos",
-          "publish_index": "publicar índice",
-          "cancel": "cancelar",
-          "continue": "continuar",
-          "close": "cerrar",
-          "retry": "reintentar"
-        },
-        "video": {
-          "playback_speed": "Velocidad de reproducción",
-          "toggle_fullscreen": "Alternar pantalla completa (F)",
-          "video_speed": "Velocidad del video. Aumentar (+ o >), Disminuir (- o <)",
-          "toggle_mute": "Alternar silencio (M), Subir volumen (ARRIBA), Bajar volumen (ABAJO)",
-          "seek_video": "Buscar en el video en incrementos del 10% (0-9)",
-          "reload_video": "Recargar video (R)",
-          "play_pause": "Pausar/Reproducir (Barra espaciadora)"
-        },
-        "index": {
-          "title": "Gestor de Índices",
-          "create_new_index": "Crear nuevo índice",
-          "add_metadata": "Agregar metadatos",
-          "publishing_metadata": "Publicando metadatos...",
-          "published_metadata": "Metadatos publicados correctamente",
-          "failed_metadata": "Error al publicar metadatos",
-          "example": "Ejemplo de cómo podría verse:",
-          "metadata_title": "Título",
-          "metadata_description": "Descripción",
-          "metadata_title_placeholder": "Agregar un título para el enlace",
-          "metadata_description_placeholder": "Agregar una descripción para el enlace",
-          "characters": "caracteres",
-          "publishing_index": "Publicando índice...",
-          "published_index": "Índice publicado correctamente",
-          "failed_index": "Error al publicar el índice",
-          "recommended_indices": "Índices recomendados",
-          "add_search_term": "Agregar término de búsqueda",
-          "search_terms": "términos de búsqueda",
-          "recommendation_size": "Se recomienda mantener el número de caracteres por término por debajo de {{recommendedSize}} caracteres",
-          "multiple_title": "Agregando múltiples índices",
-          "multiple_description": "Los índices subsiguientes mantendrán más bajos los costos de publicación, pero tendrán menos peso en los resultados de búsqueda futuros."
-        },
-        "multi_publish": {
-          "title": "Estado de Publicación",
-          "publish_failed": "Fallo en la publicación",
-          "file_chunk": "Fragmento de archivo",
-          "file_processing": "Procesando archivo",
-          "success": "Publicado con éxito",
-          "attempt_retry": "Error en la publicación. Intentando reintentar..."
-        }
-      }
-    },
     "fr": {
       "lib-core": {
         "subtitle": {
@@ -352,6 +281,77 @@
           "file_processing": "Traitement du fichier",
           "success": "Publié avec succès",
           "attempt_retry": "Échec de la publication. Nouvelle tentative..."
+        }
+      }
+    },
+    "es": {
+      "lib-core": {
+        "subtitle": {
+          "subtitles": "Subtítulos",
+          "no_subtitles": "Sin subtítulos",
+          "load_community_subs": "Cargar subtítulos de la comunidad",
+          "off": "Desactivado",
+          "deleting_subtitle": "Eliminando subtítulo...",
+          "deleted": "Subtítulo eliminado",
+          "unable_delete": "No se pudo eliminar",
+          "publishing": "Publicando subtítulos...",
+          "published": "Subtítulos publicados",
+          "unable_publish": "No se pudo publicar",
+          "my_subtitles": "Mis subtítulos",
+          "new": "Nuevo",
+          "existing": "Existente",
+          "import_subtitles": "Importar subtítulos"
+        },
+        "actions": {
+          "remove": "eliminar",
+          "publish": "publicar",
+          "delete": "borrar",
+          "publish_metadata": "publicar metadatos",
+          "publish_index": "publicar índice",
+          "cancel": "cancelar",
+          "continue": "continuar",
+          "close": "cerrar",
+          "retry": "reintentar"
+        },
+        "video": {
+          "playback_speed": "Velocidad de reproducción",
+          "toggle_fullscreen": "Alternar pantalla completa (F)",
+          "video_speed": "Velocidad del video. Aumentar (+ o >), Disminuir (- o <)",
+          "toggle_mute": "Alternar silencio (M), Subir volumen (ARRIBA), Bajar volumen (ABAJO)",
+          "seek_video": "Buscar en el video en incrementos del 10% (0-9)",
+          "reload_video": "Recargar video (R)",
+          "play_pause": "Pausar/Reproducir (Barra espaciadora)"
+        },
+        "index": {
+          "title": "Gestor de Índices",
+          "create_new_index": "Crear nuevo índice",
+          "add_metadata": "Agregar metadatos",
+          "publishing_metadata": "Publicando metadatos...",
+          "published_metadata": "Metadatos publicados correctamente",
+          "failed_metadata": "Error al publicar metadatos",
+          "example": "Ejemplo de cómo podría verse:",
+          "metadata_title": "Título",
+          "metadata_description": "Descripción",
+          "metadata_title_placeholder": "Agregar un título para el enlace",
+          "metadata_description_placeholder": "Agregar una descripción para el enlace",
+          "characters": "caracteres",
+          "publishing_index": "Publicando índice...",
+          "published_index": "Índice publicado correctamente",
+          "failed_index": "Error al publicar el índice",
+          "recommended_indices": "Índices recomendados",
+          "add_search_term": "Agregar término de búsqueda",
+          "search_terms": "términos de búsqueda",
+          "recommendation_size": "Se recomienda mantener el número de caracteres por término por debajo de {{recommendedSize}} caracteres",
+          "multiple_title": "Agregando múltiples índices",
+          "multiple_description": "Los índices subsiguientes mantendrán más bajos los costos de publicación, pero tendrán menos peso en los resultados de búsqueda futuros."
+        },
+        "multi_publish": {
+          "title": "Estado de Publicación",
+          "publish_failed": "Fallo en la publicación",
+          "file_chunk": "Fragmento de archivo",
+          "file_processing": "Procesando archivo",
+          "success": "Publicado con éxito",
+          "attempt_retry": "Error en la publicación. Intentando reintentar..."
         }
       }
     },
@@ -644,8 +644,8 @@
     "ar",
     "de",
     "en",
-    "es",
     "fr",
+    "es",
     "it",
     "ja",
     "ru",

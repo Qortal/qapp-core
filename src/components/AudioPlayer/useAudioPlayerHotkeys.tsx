@@ -14,7 +14,12 @@ export const useAudioPlayerHotkeys = (
         tag === 'TEXTAREA' ||
         (e.target as HTMLElement)?.isContentEditable;
       if (isTyping) return;
-      if (e.ctrlKey || e.metaKey) return
+      // Allow system shortcuts
+  if (e.ctrlKey || e.metaKey) {
+    const systemCombos = ["c", "v", "x", "a", "f", "z", "y"];
+    if (systemCombos.includes(e.key.toLowerCase())) return;
+  }
+
       const audio = ref.current;
 
       switch (e.key) {
