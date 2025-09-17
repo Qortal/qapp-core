@@ -37,6 +37,8 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
       role === "button";
 
     if (isTypingOrInteractive) return;
+
+    if (e.ctrlKey || e.metaKey) return
     e.preventDefault();
     const key = e.key;
     const mod = (s: number) => setProgressRelative(s);

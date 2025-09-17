@@ -14,7 +14,7 @@ export const useAudioPlayerHotkeys = (
         tag === 'TEXTAREA' ||
         (e.target as HTMLElement)?.isContentEditable;
       if (isTyping) return;
-
+      if (e.ctrlKey || e.metaKey) return
       const audio = ref.current;
 
       switch (e.key) {
