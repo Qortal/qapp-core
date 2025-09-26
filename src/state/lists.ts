@@ -1,6 +1,5 @@
-import { create } from "zustand";
-import { QortalMetadata } from "../types/interfaces/resources";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { QortalMetadata } from '../types/interfaces/resources';
 
 interface ListsState {
   [listName: string]: {
@@ -102,7 +101,7 @@ export const useListStore = create<ListStore>((set, get) => ({
 
       if (newItems.length === 0) {
         console.warn(
-          "No new items were added because they were all considered duplicates."
+          'No new items were added because they were all considered duplicates.'
         );
         return state; // ✅ Prevent unnecessary re-renders if no changes
       }

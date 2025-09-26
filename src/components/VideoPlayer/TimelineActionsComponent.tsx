@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { TimelineAction } from "./VideoPlayer";
-import { alpha, ButtonBase, Typography } from "@mui/material";
+import React, { useCallback, useMemo, useState } from 'react';
+import { TimelineAction } from './VideoPlayer';
+import { alpha, ButtonBase, Typography } from '@mui/material';
 
 interface TimelineActionsComponentProps {
   timelineActions: TimelineAction[];
@@ -11,13 +11,13 @@ interface TimelineActionsComponentProps {
 }
 
 const placementStyles: Record<
-  NonNullable<TimelineAction["placement"]>,
+  NonNullable<TimelineAction['placement']>,
   React.CSSProperties
 > = {
-  "TOP-RIGHT": { top: 16, right: 16 },
-  "TOP-LEFT": { top: 16, left: 16 },
-  "BOTTOM-LEFT": { bottom: 60, left: 16 },
-  "BOTTOM-RIGHT": { bottom: 60, right: 16 },
+  'TOP-RIGHT': { top: 16, right: 16 },
+  'TOP-LEFT': { top: 16, left: 16 },
+  'BOTTOM-LEFT': { bottom: 60, left: 16 },
+  'BOTTOM-RIGHT': { bottom: 60, right: 16 },
 };
 
 export const TimelineActionsComponent = ({
@@ -30,10 +30,10 @@ export const TimelineActionsComponent = ({
   const [isOpen, setIsOpen] = useState(true);
 
   const handleClick = useCallback((action: TimelineAction) => {
-    if (action?.type === "SEEK") {
+    if (action?.type === 'SEEK') {
       if (!action?.seekToTime) return;
       seekTo(action.seekToTime);
-    } else if (action?.type === "CUSTOM") {
+    } else if (action?.type === 'CUSTOM') {
       if (action.onClick) {
         action.onClick();
       }
@@ -56,26 +56,26 @@ export const TimelineActionsComponent = ({
     <>
       {activeActions?.map((action, index) => {
         const placement = (action.placement ??
-          "TOP-RIGHT") as keyof typeof placementStyles;
+          'TOP-RIGHT') as keyof typeof placementStyles;
 
         return (
           <ButtonBase
             key={index}
             sx={{
-              position: "absolute",
-              bgcolor: alpha("#181818", 0.95),
+              position: 'absolute',
+              bgcolor: alpha('#181818', 0.95),
               p: 1,
               borderRadius: 1,
               boxShadow: 3,
               zIndex: 10,
-              outline: "1px solid white",
-              ...placementStyles[placement || "TOP-RIGHT"],
+              outline: '1px solid white',
+              ...placementStyles[placement || 'TOP-RIGHT'],
             }}
           >
             <Typography
               key={index}
               sx={{
-                fontSize: isVideoPlayerSmall ? "16px" : "18px",
+                fontSize: isVideoPlayerSmall ? '16px' : '18px',
               }}
               onClick={() => handleClick(action)}
             >

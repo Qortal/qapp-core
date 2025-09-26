@@ -1,0 +1,69 @@
+{
+  "subtitle": {
+    "subtitles": "Subtiitrid",
+    "no_subtitles": "Subtiitreid pole",
+    "load_community_subs": "Laadi kogukonna subtiitrid",
+    "off": "Väljas",
+    "deleting_subtitle": "Subtiitri kustutamine...",
+    "deleted": "Subtiiter kustutatud",
+    "unable_delete": "ei saa kustutada",
+    "publishing": "Subtiitrite avaldamine...",
+    "published": "Subtiitrid avaldatud",
+    "unable_publish": "Ei saa avaldada",
+    "my_subtitles": "Minu subtiitrid",
+    "new": "Uus",
+    "existing": "Olemasolev",
+    "import_subtitles": "Impordi subtiitrid"
+  },
+  "actions": {
+    "remove": "eemalda",
+    "publish": "avalda",
+    "delete": "kustuta",
+    "publish_metadata": "avalda metaandmed",
+    "publish_index": "avalda indeks",
+    "cancel": "tühista",
+    "continue": "jätka",
+    "close": "sulge",
+    "retry": "proovi uuesti"
+  },
+  "video": {
+    "playback_speed": "Taasesituse kiirus",
+    "toggle_fullscreen": "Lülita täisekraan (F)",
+    "video_speed": "Video kiirus. Suurenda (+ või >), Vähenda (- või <)",
+    "toggle_mute": "Lülita heli välja (M), Suurenda (ÜLES), Vähenda (ALLA)",
+    "seek_video": "Keri videot 10% kaupa (0-9)",
+    "reload_video": "Laadi video uuesti (R)",
+    "play_pause": "Paus/Esita (tühikuklahv)"
+  },
+  "index": {
+    "title": "Indeksi haldur",
+    "create_new_index": "Loo uus indeks",
+    "add_metadata": "Lisa metaandmed",
+    "publishing_metadata": "Metaandmete avaldamine...",
+    "published_metadata": "Metaandmed edukalt avaldatud",
+    "failed_metadata": "Metaandmete avaldamine ebaõnnestus",
+    "example": "Näide, kuidas see võiks välja näha:",
+    "metadata_title": "Pealkiri",
+    "metadata_description": "Kirjeldus",
+    "metadata_title_placeholder": "Lisa lingile pealkiri",
+    "metadata_description_placeholder": "Lisa lingile kirjeldus",
+    "characters": "märki",
+    "publishing_index": "Indeksi avaldamine...",
+    "published_index": "Indeks edukalt avaldatud",
+    "failed_index": "Indeksi avaldamine ebaõnnestus",
+    "recommended_indices": "Soovitatavad indeksid",
+    "add_search_term": "Lisa otsingutermin",
+    "search_terms": "otsinguterminid",
+    "recommendation_size": "Soovitatav on hoida termini pikkus alla {{recommendedSize}} märgi",
+    "multiple_title": "Mitme indeksi lisamine",
+    "multiple_description": "Järgnevad indeksid hoiavad avaldamistasud madalamal, kuid neil on tulevaste otsingutulemuste puhul väiksem kaal."
+  },
+  "multi_publish": {
+    "title": "Avaldamise olek",
+    "publish_failed": "Avaldamine ebaõnnestus",
+    "file_chunk": "Faili tükk",
+    "file_processing": "Faili töötlemine",
+    "success": "Edukalt avaldatud",
+    "attempt_retry": "Avaldamine ebaõnnestus. Proovin uuesti..."
+  }
+}

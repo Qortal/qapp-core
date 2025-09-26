@@ -68,7 +68,11 @@ export function OptionsManager({
           }}
           sx={{ width: "240px" }}
         />
-        <Button size="small" variant="contained" onClick={handleAddOrUpdateItem}>
+        <Button
+          size="small"
+          variant="contained"
+          onClick={handleAddOrUpdateItem}
+        >
           {editIndex !== null ? "Update" : "Add"}
         </Button>
       </Stack>

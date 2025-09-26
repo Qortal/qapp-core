@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { ResourceStatus, usePublishStore } from "../state/publishes";
-import { QortalGetMetadata } from "../types/interfaces/resources";
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { ResourceStatus, usePublishStore } from '../state/publishes';
+import { QortalGetMetadata } from '../types/interfaces/resources';
 
 interface PropsUseResourceStatus {
   resource: QortalGetMetadata | null;
@@ -45,7 +45,7 @@ export const useResourceStatus = ({
       isRecalling?: boolean
     ) => {
       try {
-        if (statusRef.current && statusRef.current?.status === "READY") {
+        if (statusRef.current && statusRef.current?.status === 'READY') {
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
           }
@@ -57,22 +57,21 @@ export const useResourceStatus = ({
           return;
         }
         if (!isRecalling) {
-          const id = `${service}-${name}-${identifier}`
-          const resourceStatus = getResourceStatus(id)
-          if(!resourceStatus){
+          const id = `${service}-${name}-${identifier}`;
+          const resourceStatus = getResourceStatus(id);
+          if (!resourceStatus) {
             setResourceStatus(
-            { service, name, identifier },
-            {
-              status: "SEARCHING",
-              localChunkCount: 0,
-              totalChunkCount: 0,
-              percentLoaded: 0,
-              path: path || "",
-              filename: filename || "",
-            }
-          );
+              { service, name, identifier },
+              {
+                status: 'SEARCHING',
+                localChunkCount: 0,
+                totalChunkCount: 0,
+                percentLoaded: 0,
+                path: path || '',
+                filename: filename || '',
+              }
+            );
           }
-          
         }
         let isCalling = false;
         let percentLoaded = 0;
@@ -86,7 +85,7 @@ export const useResourceStatus = ({
           let res;
           if (!build) {
             res = await qortalRequest({
-              action: "GET_QDN_RESOURCE_STATUS",
+              action: 'GET_QDN_RESOURCE_STATUS',
               name: name,
               service: service,
               identifier: identifier,
@@ -111,7 +110,7 @@ export const useResourceStatus = ({
                 { service, name, identifier },
                 {
                   ...res,
-                  status: "FAILED_TO_DOWNLOAD",
+                  status: 'FAILED_TO_DOWNLOAD',
                 }
               );
 
@@ -120,12 +119,12 @@ export const useResourceStatus = ({
             tries = tries + 1;
           }
 
-          if (build || (calledFirstTime === false && res?.status !== "READY")) {
+          if (build || (calledFirstTime === false && res?.status !== 'READY')) {
             const url = `/arbitrary/resource/properties/${service}/${name}/${identifier}?build=true`;
             const resCall = await fetch(url, {
-              method: "GET",
+              method: 'GET',
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
             });
             res = await resCall.json();
@@ -152,7 +151,7 @@ export const useResourceStatus = ({
                   { service, name, identifier },
                   {
                     ...res,
-                    status: "REFETCHING",
+                    status: 'REFETCHING',
                   }
                 );
 
@@ -175,7 +174,7 @@ export const useResourceStatus = ({
             );
           }
           // Check if progress is 100% and clear interval if true
-          if (res?.status === "READY") {
+          if (res?.status === 'READY') {
             if (intervalRef.current) {
               clearInterval(intervalRef.current);
             }
@@ -192,9 +191,9 @@ export const useResourceStatus = ({
             );
             return;
           }
-          if (res?.status === "DOWNLOADED") {
+          if (res?.status === 'DOWNLOADED') {
             res = await qortalRequest({
-              action: "GET_QDN_RESOURCE_STATUS",
+              action: 'GET_QDN_RESOURCE_STATUS',
               name: name,
               service: service,
               identifier: identifier,
@@ -208,7 +207,7 @@ export const useResourceStatus = ({
           intervalRef.current = setInterval(callFunction, 5000);
         }
       } catch (error) {
-        console.error("Error during resource fetch:", error);
+        console.error('Error during resource fetch:', error);
       }
       return () => {
         if (intervalRef.current) {
@@ -271,25 +270,25 @@ export const useResourceStatus = ({
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-        const id = `${resource?.service}-${resource?.name}-${resource?.identifier}`
-          const resourceStatus = getResourceStatus(id)
-          if(!resourceStatus){
-      setResourceStatus(
-        {
-          service: resource.service,
-          name: resource.name,
-          identifier: resource.identifier,
-        },
-        {
-          status: "SEARCHING",
-          localChunkCount: 0,
-          totalChunkCount: 0,
-          percentLoaded: 0,
-          path: path || "",
-          filename: filename || "",
-        }
-      );
-    }
+      const id = `${resource?.service}-${resource?.name}-${resource?.identifier}`;
+      const resourceStatus = getResourceStatus(id);
+      if (!resourceStatus) {
+        setResourceStatus(
+          {
+            service: resource.service,
+            name: resource.name,
+            identifier: resource.identifier,
+          },
+          {
+            status: 'SEARCHING',
+            localChunkCount: 0,
+            totalChunkCount: 0,
+            percentLoaded: 0,
+            path: path || '',
+            filename: filename || '',
+          }
+        );
+      }
       if (isGlobal) {
         const id = `${resource.service}-${resource.name}-${resource.identifier}`;
         stopGlobalDownload(id);
@@ -319,11 +318,11 @@ export const useResourceStatus = ({
 
   return useMemo(
     () => ({
-      status: status?.status || "INITIAL",
+      status: status?.status || 'INITIAL',
       localChunkCount: status?.localChunkCount || 0,
       totalChunkCount: status?.totalChunkCount || 0,
       percentLoaded: status?.percentLoaded || 0,
-      isReady: status?.status === "READY",
+      isReady: status?.status === 'READY',
       resourceUrl,
       downloadResource: handledownloadResource,
     }),

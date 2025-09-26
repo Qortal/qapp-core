@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { get as idbGet, set as idbSet, del as idbDel, keys as idbKeys } from 'idb-keyval';
+import {
+  get as idbGet,
+  set as idbSet,
+  del as idbDel,
+  keys as idbKeys,
+} from 'idb-keyval';
 
 const EXPIRY_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 const PROGRESS_UPDATE_INTERVAL = 5 * 1000;
@@ -19,7 +24,7 @@ const indexedDBWithExpiry = {
       typeof value.expiresAt === 'number' &&
       now > value.expiresAt;
 
-    return expired ? null : value.data ?? value;
+    return expired ? null : (value.data ?? value);
   },
   setItem: async (key: string, value: any) => {
     await idbSet(key, {
@@ -118,7 +123,6 @@ export const useProgressStore = create<ProgressStore>()(
     }
   )
 );
-
 
 interface IsPlayingState {
   isPlaying: boolean;
