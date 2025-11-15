@@ -5,19 +5,21 @@ export const useIndexes = () => {
   const setOpen = useIndexStore((state) => state.setOpen);
   const openPageIndexManager = useCallback(
     ({ link, name, category, rootName }: OpenIndex) => {
-        if(!link || !name || !category) return
+      if (!link || !name || !category) return;
       setOpen({
         name,
         link,
         category,
-        rootName
+        rootName,
       });
     },
-    [setOpen]
+    [setOpen],
   );
 
-
-  return useMemo(() => ({
-    openPageIndexManager
-  }), [openPageIndexManager]);
+  return useMemo(
+    () => ({
+      openPageIndexManager,
+    }),
+    [openPageIndexManager],
+  );
 };

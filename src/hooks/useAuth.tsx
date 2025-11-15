@@ -35,13 +35,13 @@ export const useAuth = () => {
         }
       } catch (error) {
         setErrorLoadingUser(
-          error instanceof Error ? error.message : "Unable to authenticate"
+          error instanceof Error ? error.message : "Unable to authenticate",
         );
       } finally {
         setIsLoadingUser(false);
       }
     },
-    [setErrorLoadingUser, setIsLoadingUser, setUser]
+    [setErrorLoadingUser, setIsLoadingUser, setUser],
   );
 
   const switchName = useCallback(
@@ -56,7 +56,7 @@ export const useAuth = () => {
         throw new Error(`This account does not own the name ${name}`);
       setName(name);
     },
-    [setName]
+    [setName],
   );
   return useMemo(
     () => ({
@@ -78,6 +78,6 @@ export const useAuth = () => {
       errorLoadingUser,
       authenticateUser,
       switchName,
-    ]
+    ],
   );
 };

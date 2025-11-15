@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo } from 'react';
+import { useRef, useState, useCallback, useMemo } from "react";
 
 interface State {
   isShow: boolean;
@@ -28,7 +28,7 @@ export const useModal = () => {
       hide();
       resolve?.(payload);
     },
-    [hide]
+    [hide],
   );
 
   const onCancel = useCallback(() => {
@@ -45,6 +45,6 @@ export const useModal = () => {
       isShow: state.isShow,
       data,
     }),
-    [show, onOk, onCancel, state.isShow, data]
+    [show, onOk, onCancel, state.isShow, data],
   );
 };

@@ -1,6 +1,11 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { get as idbGet, set as idbSet, del as idbDel, keys as idbKeys } from 'idb-keyval';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import {
+  get as idbGet,
+  set as idbSet,
+  del as idbDel,
+  keys as idbKeys,
+} from "idb-keyval";
 
 const EXPIRY_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 const PROGRESS_UPDATE_INTERVAL = 5 * 1000;
@@ -13,13 +18,13 @@ const indexedDBWithExpiry = {
 
     const now = Date.now();
     const expired =
-      typeof value === 'object' &&
+      typeof value === "object" &&
       value !== null &&
-      'expiresAt' in value &&
-      typeof value.expiresAt === 'number' &&
+      "expiresAt" in value &&
+      typeof value.expiresAt === "number" &&
       now > value.expiresAt;
 
-    return expired ? null : value.data ?? value;
+    return expired ? null : (value.data ?? value);
   },
   setItem: async (key: string, value: any) => {
     await idbSet(key, {
@@ -64,10 +69,10 @@ export const useVideoStore = create<PlaybackStore>()(
       getPersistedVolume: () => get().playbackSettings.volume,
     }),
     {
-      name: 'video-playback-settings',
+      name: "video-playback-settings",
       partialize: (state) => ({ playbackSettings: state.playbackSettings }),
-    }
-  )
+    },
+  ),
 );
 
 type ProgressStore = {
@@ -100,10 +105,10 @@ export const useProgressStore = create<ProgressStore>()(
         for (const key of allKeys) {
           const value = await idbGet(key as string);
           if (
-            typeof value === 'object' &&
+            typeof value === "object" &&
             value !== null &&
-            'expiresAt' in value &&
-            typeof value.expiresAt === 'number' &&
+            "expiresAt" in value &&
+            typeof value.expiresAt === "number" &&
             now > value.expiresAt
           ) {
             await idbDel(key as string);
@@ -112,13 +117,12 @@ export const useProgressStore = create<ProgressStore>()(
       },
     }),
     {
-      name: 'video-progress-map',
+      name: "video-progress-map",
       storage: indexedDBWithExpiry,
       partialize: (state) => ({ progressMap: state.progressMap }),
-    }
-  )
+    },
+  ),
 );
-
 
 interface IsPlayingState {
   isPlaying: boolean;

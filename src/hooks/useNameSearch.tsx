@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-
 interface NameListItem {
-    name: string
-    address: string
+  name: string;
+  address: string;
 }
 export const useNameSearch = (value: string, limit = 20) => {
   const [nameList, setNameList] = useState<NameListItem[]>([]);
@@ -11,28 +10,30 @@ export const useNameSearch = (value: string, limit = 20) => {
   const checkIfNameExisits = useCallback(
     async (name: string, listLimit: number) => {
       try {
-        if(!name){
-          setNameList([])
-          return
+        if (!name) {
+          setNameList([]);
+          return;
         }
-      
+
         const res = await fetch(
-          `/names/search?query=${name}&prefix=true&limit=${listLimit}`
+          `/names/search?query=${name}&prefix=true&limit=${listLimit}`,
         );
         const data = await res.json();
-        setNameList(data?.map((item: any)=> {
+        setNameList(
+          data?.map((item: any) => {
             return {
-                name: item.name,
-                address: item.owner
-            }
-        }));
+              name: item.name,
+              address: item.owner,
+            };
+          }),
+        );
       } catch (error) {
         console.error(error);
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
   // Debounce logic
   useEffect(() => {
@@ -47,9 +48,11 @@ export const useNameSearch = (value: string, limit = 20) => {
     };
   }, [value, limit]);
 
-  return useMemo(() => ({
-    isLoading,
-    results: nameList,
-  }), [isLoading, nameList]);
-  
+  return useMemo(
+    () => ({
+      isLoading,
+      results: nameList,
+    }),
+    [isLoading, nameList],
+  );
 };

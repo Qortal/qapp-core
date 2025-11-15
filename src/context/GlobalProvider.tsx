@@ -53,8 +53,7 @@ export const GlobalProvider = ({
   config,
   toastStyle = {},
 }: GlobalProviderProps) => {
- 
-  useIframe()
+  useIframe();
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
   const isPublishing = useMultiplePublishStore((s) => s.isPublishing);
@@ -62,11 +61,11 @@ export const GlobalProvider = ({
   const lists = useResources();
   const identifierOperations = useIdentifiers(
     config.publicSalt,
-    config.appName
+    config.appName,
   );
   const persistentOperations = usePersistentStore(
     config.publicSalt,
-    config.appName
+    config.appName,
   );
   const indexOperations = useIndexes();
   // ✅ Merge all hooks into a single `contextValue`
@@ -87,7 +86,7 @@ export const GlobalProvider = ({
       identifierOperations,
       persistentOperations,
       config?.enableGlobalVideoFeature,
-    ]
+    ],
   );
   const { clearOldProgress } = useProgressStore();
 
@@ -97,7 +96,6 @@ export const GlobalProvider = ({
 
   return (
     <GlobalContext.Provider value={contextValue}>
-
       {config?.enableGlobalVideoFeature && <GlobalPipPlayer />}
 
       {isPublishing && <MultiPublishDialog />}
@@ -112,7 +110,6 @@ export const GlobalProvider = ({
       <IndexManager username={auth?.name} />
 
       {children}
-
     </GlobalContext.Provider>
   );
 };

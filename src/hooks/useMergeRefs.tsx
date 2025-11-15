@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 
-export function useMergeRefs<T extends HTMLElement>(...refs: (React.Ref<T> | undefined)[]) {
+export function useMergeRefs<T extends HTMLElement>(
+  ...refs: (React.Ref<T> | undefined)[]
+) {
   const mergedRef = useRef<T>(null as unknown as T); // ✅ Ensures correct type
 
   useEffect(() => {

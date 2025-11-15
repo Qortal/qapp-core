@@ -22,7 +22,7 @@ export const showLoading = (message: string, duration = Infinity): string => {
     </div>,
     {
       duration,
-    }
+    },
   );
 };
 

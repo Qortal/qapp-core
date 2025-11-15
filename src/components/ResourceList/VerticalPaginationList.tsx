@@ -23,7 +23,7 @@ interface VerticalPaginatedListProps {
   defaultLoaderParams?: DefaultLoaderParams;
 }
 
- const MemorizedComponent = ({
+const MemorizedComponent = ({
   items,
   listItem,
   loaderItem,
@@ -40,8 +40,9 @@ interface VerticalPaginatedListProps {
 
   const displayedItems = disablePagination
     ? items
-    : items?.length < (displayedLimit * 3) ? items?.slice(0, displayedLimit * 3) : items.slice(- (displayedLimit * 3));
-
+    : items?.length < displayedLimit * 3
+      ? items?.slice(0, displayedLimit * 3)
+      : items.slice(-(displayedLimit * 3));
 
   return (
     <>
@@ -61,7 +62,6 @@ interface VerticalPaginatedListProps {
       )}
 
       {displayedItems?.map((item, index, list) => {
-   
         return (
           <React.Fragment
             key={`${item?.name}-${item?.service}-${item?.identifier}`}
@@ -75,9 +75,12 @@ interface VerticalPaginatedListProps {
               ref={
                 index === displayedLimit
                   ? lastItemRef2
-                  : index === (list.length - displayedLimit - 1 < displayedLimit ? displayedLimit - 1 : list.length - displayedLimit - 1 )
-                  ? lastItemRef
-                  : null
+                  : index ===
+                      (list.length - displayedLimit - 1 < displayedLimit
+                        ? displayedLimit - 1
+                        : list.length - displayedLimit - 1)
+                    ? lastItemRef
+                    : null
               }
             >
               <ListItemWrapper
@@ -91,11 +94,15 @@ interface VerticalPaginatedListProps {
           </React.Fragment>
         );
       })}
-       {(disablePagination || (!disablePagination && displayedItems?.length >= limit)) && (
+      {(disablePagination ||
+        (!disablePagination && displayedItems?.length >= limit)) && (
         <LazyLoad
           onLoadMore={async () => {
             await onLoadMore(displayedLimit);
-            if(!disablePagination && (displayedItems?.length === displayedLimit * 3)){
+            if (
+              !disablePagination &&
+              displayedItems?.length === displayedLimit * 3
+            ) {
               lastItemRef.current.scrollIntoView({
                 behavior: "auto",
                 block: "end",
@@ -104,7 +111,6 @@ interface VerticalPaginatedListProps {
                 window.scrollBy({ top: 50, behavior: "instant" }); // 'smooth' if needed
               }, 0);
             }
-            
           }}
         />
       )}

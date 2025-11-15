@@ -14,12 +14,17 @@ import { useMergeRefs } from "../hooks/useMergeRefs";
 interface PropsVirtualizedList {
   list: any[];
   children: (item: any, index: number) => React.ReactNode;
-  onSeenLastItem?: (item: QortalMetadata)=> void;
-  listName: string
+  onSeenLastItem?: (item: QortalMetadata) => void;
+  listName: string;
 }
-export const VirtualizedList = ({ list, children, onSeenLastItem, listName }: PropsVirtualizedList) => {
+export const VirtualizedList = ({
+  list,
+  children,
+  onSeenLastItem,
+  listName,
+}: PropsVirtualizedList) => {
   const parentRef = useRef(null);
-  useScrollTrackerRef(listName, list?.length > 0, parentRef)
+  useScrollTrackerRef(listName, list?.length > 0, parentRef);
 
   const rowVirtualizer = useVirtualizer({
     count: list.length,
@@ -28,7 +33,7 @@ export const VirtualizedList = ({ list, children, onSeenLastItem, listName }: Pr
         list[index]?.name && list[index]?.name
           ? `${list[index].name}-${list[index].identifier}`
           : list[index]?.id,
-      [list]
+      [list],
     ),
     getScrollElement: () => parentRef.current,
     estimateSize: () => 80, // Provide an estimated height of items, adjust this as needed
@@ -36,10 +41,9 @@ export const VirtualizedList = ({ list, children, onSeenLastItem, listName }: Pr
   });
 
   const onSeenLastItemFunc = (lastItem: QortalMetadata) => {
-    if(onSeenLastItem){
-      onSeenLastItem(lastItem)
+    if (onSeenLastItem) {
+      onSeenLastItem(lastItem);
     }
-    
   };
 
   return (

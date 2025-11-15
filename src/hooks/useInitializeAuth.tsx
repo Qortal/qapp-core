@@ -50,7 +50,7 @@ export const useAuth = ({
   const setBalance = useAuthStore((s) => s.setBalance);
 
   const balanceSetIntervalRef = useRef<null | ReturnType<typeof setInterval>>(
-    null
+    null,
   );
 
   const authenticateUser = useCallback(
@@ -74,13 +74,13 @@ export const useAuth = ({
         }
       } catch (error) {
         setErrorLoadingUser(
-          error instanceof Error ? error.message : "Unable to authenticate"
+          error instanceof Error ? error.message : "Unable to authenticate",
         );
       } finally {
         setIsLoadingUser(false);
       }
     },
-    [setErrorLoadingUser, setIsLoadingUser, setUser]
+    [setErrorLoadingUser, setIsLoadingUser, setUser],
   );
 
   const getBalance = useCallback(
@@ -101,7 +101,7 @@ export const useAuth = ({
         setIsLoadingBalance(false);
       }
     },
-    [setBalance]
+    [setBalance],
   );
 
   const balanceSetInterval = useCallback(
@@ -122,7 +122,7 @@ export const useAuth = ({
         console.error(error);
       }
     },
-    [getBalance]
+    [getBalance],
   );
 
   useEffect(() => {
@@ -180,6 +180,6 @@ export const useAuth = ({
       isLoadingUser,
       errorLoadingUser,
       authenticateUser,
-    ]
+    ],
   );
 };

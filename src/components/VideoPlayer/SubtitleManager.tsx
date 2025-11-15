@@ -125,7 +125,7 @@ const SubtitleManagerComponent = ({
   const { fetchResources } = useResources();
   // const [subtitles, setSubtitles] = useState([])
   const subtitles = useListReturn(
-    `subs-${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`
+    `subs-${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`,
   );
   const mySubtitles = useMemo(() => {
     if (!auth?.name) return [];
@@ -137,7 +137,7 @@ const SubtitleManagerComponent = ({
       const videoId = `${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`;
       const postIdSearch = await identifierOperations.buildLooseSearchPrefix(
         ENTITY_SUBTITLE,
-        videoId
+        videoId,
       );
       let name: string | undefined = qortalMetadata?.name;
       if (showAll) {
@@ -153,7 +153,7 @@ const SubtitleManagerComponent = ({
       const res = await lists.fetchResourcesResultsOnly(searchParams);
       lists.addList(
         `subs-${videoId}`,
-        res?.filter((item) => !!item?.metadata?.title) || []
+        res?.filter((item) => !!item?.metadata?.title) || [],
       );
     } catch (error) {
       console.error(error);
@@ -209,7 +209,7 @@ const SubtitleManagerComponent = ({
       for (const sub of subtitles) {
         const identifier = await identifierOperations.buildLooseIdentifier(
           ENTITY_SUBTITLE,
-          videoId
+          videoId,
         );
         const data = {
           subtitleData: sub.base64,
@@ -250,7 +250,7 @@ const SubtitleManagerComponent = ({
 
       lists.addNewResources(
         `subs-${qortalMetadata?.service}-${qortalMetadata?.name}-${qortalMetadata?.identifier}`,
-        tempResources
+        tempResources,
       );
     } catch (error) {}
   };
@@ -267,14 +267,14 @@ const SubtitleManagerComponent = ({
   if (!open) return null;
   return (
     <>
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9, // one layer below MUI drawer
-      }}
-      onClick={(e) => e.stopPropagation()}
-    />
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 9, // one layer below MUI drawer
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
       <Box
         ref={ref}
         tabIndex={-1}
@@ -558,7 +558,7 @@ const PublishSubtitles = ({
       showSuccess(t("subtitle.deleted"));
     } catch (error) {
       showError(
-        error instanceof Error ? error.message : t("subtitle.unable_delete")
+        error instanceof Error ? error.message : t("subtitle.unable_delete"),
       );
     } finally {
       setIsPublishing(false);
@@ -576,7 +576,7 @@ const PublishSubtitles = ({
       setSubtitles([]);
     } catch (error) {
       showError(
-        error instanceof Error ? error.message : t("subtitle.unable_publish")
+        error instanceof Error ? error.message : t("subtitle.unable_publish"),
       );
     } finally {
       dismissToast(loadId);
@@ -779,7 +779,7 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
     2,
     "JSON",
     sub,
-    true
+    true,
   );
   const isSelected = currentSubtrack === resource?.data?.language;
   const [isGettingStatus, setIsGettingStatus] = useState(true);
@@ -802,7 +802,7 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
               name,
               build: false,
             });
-          }
+          },
         );
         if (response?.status === "READY") {
           setIsReady(true);
@@ -814,7 +814,7 @@ const Subtitle = ({ sub, onSelect, currentSubtrack }: SubProps) => {
         setIsGettingStatus(false);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {

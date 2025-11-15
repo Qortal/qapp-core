@@ -1,17 +1,14 @@
-import { useCallback, useMemo } from 'react';
-import { EnumCollisionStrength, hashWord } from '../utils/encryption';
-import { db } from '../utils/persistentDb';
+import { useCallback, useMemo } from "react";
+import { EnumCollisionStrength, hashWord } from "../utils/encryption";
+import { db } from "../utils/persistentDb";
 
-export const usePersistentStore = (
-  publicSalt: string,
-  appName: string
-) => {
+export const usePersistentStore = (publicSalt: string, appName: string) => {
   const getHashedId = useCallback(
     async (id: string) => {
       const key = `${appName}-${id}`;
       return await hashWord(key, EnumCollisionStrength.HIGH, publicSalt);
     },
-    [appName, publicSalt]
+    [appName, publicSalt],
   );
 
   // --- TIMESTAMP FUNCTIONS ---
@@ -22,7 +19,7 @@ export const usePersistentStore = (
       await db.timestamps.put({ id, timestamp });
       return true;
     },
-    [getHashedId]
+    [getHashedId],
   );
 
   const getTimestamp = useCallback(
@@ -31,7 +28,7 @@ export const usePersistentStore = (
       const entry = await db.timestamps.get(id);
       return entry?.timestamp ?? null;
     },
-    [getHashedId]
+    [getHashedId],
   );
 
   const isNewTimestamp = useCallback(
@@ -41,7 +38,7 @@ export const usePersistentStore = (
       if (!entry) return true;
       return Date.now() - entry.timestamp > differenceTimestamp;
     },
-    [getHashedId]
+    [getHashedId],
   );
 
   // --- GENERIC CRUD FOR DYNAMIC DATA ---
@@ -51,7 +48,7 @@ export const usePersistentStore = (
       const hashedId = await getHashedId(id);
       await db.dynamicData.put({ id: hashedId, data });
     },
-    [getHashedId]
+    [getHashedId],
   );
 
   const getData = useCallback(
@@ -60,7 +57,7 @@ export const usePersistentStore = (
       const entry = await db.dynamicData.get(hashedId);
       return entry?.data ?? null;
     },
-    [getHashedId]
+    [getHashedId],
   );
 
   const deleteData = useCallback(
@@ -68,20 +65,31 @@ export const usePersistentStore = (
       const hashedId = await getHashedId(id);
       await db.dynamicData.delete(hashedId);
     },
-    [getHashedId]
+    [getHashedId],
   );
 
   const listAllData = useCallback(async () => {
     return await db.dynamicData.toArray();
   }, []);
 
-  return useMemo(() => ({
-    setTimestamp,
-    getTimestamp,
-    isNewTimestamp,
-    saveData,
-    getData,
-    deleteData,
-    listAllData,
-  }), [setTimestamp, getTimestamp, isNewTimestamp, saveData, getData, deleteData, listAllData]);
+  return useMemo(
+    () => ({
+      setTimestamp,
+      getTimestamp,
+      isNewTimestamp,
+      saveData,
+      getData,
+      deleteData,
+      listAllData,
+    }),
+    [
+      setTimestamp,
+      getTimestamp,
+      isNewTimestamp,
+      saveData,
+      getData,
+      deleteData,
+      listAllData,
+    ],
+  );
 };

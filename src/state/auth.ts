@@ -16,9 +16,12 @@ interface AuthState {
   isLoadingInitialBalance: boolean;
   errorLoadingUser: string | null;
 
-
   // Methods
-  setUser: (user: { address: string; publicKey: string; name?: string }) => void;
+  setUser: (user: {
+    address: string;
+    publicKey: string;
+    name?: string;
+  }) => void;
   setBalance: (balance: number) => void;
   setIsLoadingUser: (loading: boolean) => void;
   setIsLoadingBalance: (loading: boolean) => void;
@@ -39,7 +42,16 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   // Methods
   setUser: (user) =>
-    set({ address: user.address, publicKey: user.publicKey, name: user.name || null, avatarUrl: !user?.name ? null : `/arbitrary/THUMBNAIL/${encodeURIComponent(user.name)}/qortal_avatar?async=true` }),
+    set({
+      address: user.address,
+      publicKey: user.publicKey,
+      name: user.name || null,
+      avatarUrl: !user?.name
+        ? null
+        : `/arbitrary/THUMBNAIL/${encodeURIComponent(
+            user.name,
+          )}/qortal_avatar?async=true`,
+    }),
   setBalance: (balance) => set({ balance }),
   setIsLoadingUser: (loading) => set({ isLoadingUser: loading }),
   setIsLoadingBalance: (loading) => set({ isLoadingInitialBalance: loading }),
@@ -49,6 +61,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       name,
       avatarUrl: !name
         ? null
-        : `/arbitrary/THUMBNAIL/${encodeURIComponent(name)}/qortal_avatar?async=true`,
+        : `/arbitrary/THUMBNAIL/${encodeURIComponent(
+            name,
+          )}/qortal_avatar?async=true`,
     }),
 }));

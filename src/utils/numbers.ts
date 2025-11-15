@@ -2,7 +2,7 @@ type ByteFormat = "Decimal" | "Binary";
 export function formatBytes(
   bytes: number,
   decimals = 2,
-  format: ByteFormat = "Binary"
+  format: ByteFormat = "Binary",
 ) {
   if (bytes === 0) return "0 Bytes";
 
@@ -16,15 +16,14 @@ export function formatBytes(
 }
 
 export function formatDuration(seconds: number): string {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-  
-    const paddedMins = mins.toString().padStart(hrs > 0 ? 2 : 1, '0');
-    const paddedSecs = secs.toString().padStart(2, '0');
-  
-    return hrs > 0
-      ? `${hrs}:${paddedMins}:${paddedSecs}`
-      : `${paddedMins}:${paddedSecs}`;
-  }
-  
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  const paddedMins = mins.toString().padStart(hrs > 0 ? 2 : 1, "0");
+  const paddedSecs = secs.toString().padStart(2, "0");
+
+  return hrs > 0
+    ? `${hrs}:${paddedMins}:${paddedSecs}`
+    : `${paddedMins}:${paddedSecs}`;
+}

@@ -18,7 +18,7 @@ interface LoadingVideoProps {
   togglePlay: () => void;
   startPlay: boolean;
   downloadResource: () => void;
-  isStatusWrong: boolean
+  isStatusWrong: boolean;
 }
 export const LoadingVideo = ({
   status,
@@ -28,7 +28,7 @@ export const LoadingVideo = ({
   togglePlay,
   startPlay,
   downloadResource,
-  isStatusWrong
+  isStatusWrong,
 }: LoadingVideoProps) => {
   const getDownloadProgress = (percentLoaded: number) => {
     const progress = percentLoaded;
@@ -82,11 +82,11 @@ export const LoadingVideo = ({
 
                   <> Refetching in 10 seconds</>
                 </>
-              ) : (status === "DOWNLOADED" && !isStatusWrong) ? (
+              ) : status === "DOWNLOADED" && !isStatusWrong ? (
                 <>Download Completed: building video...</>
               ) : status === "FAILED_TO_DOWNLOAD" ? (
                 <>Unable to fetch video chunks from peers</>
-              ) : (!isStatusWrong && status === 'DOWNLOADED') ? (
+              ) : !isStatusWrong && status === "DOWNLOADED" ? (
                 <>Fetching status: please wait.</>
               ) : (
                 <>{getDownloadProgress(percentLoaded)}</>

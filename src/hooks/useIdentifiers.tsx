@@ -13,14 +13,14 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
     (entityType: string, parentId: string | null) => {
       return buildIdentifier(appName, publicSalt, entityType, parentId);
     },
-    [appName, publicSalt]
+    [appName, publicSalt],
   );
 
   const buildSearchPrefixFunc = useCallback(
     (entityType: string, parentId: string | null) => {
       return buildSearchPrefix(appName, publicSalt, entityType, parentId);
     },
-    [appName, publicSalt]
+    [appName, publicSalt],
   );
 
   const createSingleIdentifier = useCallback(
@@ -28,11 +28,11 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
       const appNameHashed = await hashWord(
         appName,
         EnumCollisionStrength.HIGH,
-        publicSalt
+        publicSalt,
       );
       return appNameHashed + "_" + partialIdentifier;
     },
-    [appName, publicSalt]
+    [appName, publicSalt],
   );
 
   const hashQortalName = useCallback(
@@ -40,11 +40,11 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
       const hashedQortalName = await hashWord(
         qortalName,
         EnumCollisionStrength.HIGH,
-        publicSalt
+        publicSalt,
       );
       return hashedQortalName;
     },
-    [publicSalt]
+    [publicSalt],
   );
 
   const hashString = useCallback(
@@ -52,7 +52,7 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
       const hashedQortalName = await hashWord(string, strength, publicSalt);
       return hashedQortalName;
     },
-    [publicSalt]
+    [publicSalt],
   );
 
   return useMemo(
@@ -63,7 +63,7 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
       hashQortalName,
       hashString,
       buildLooseSearchPrefix,
-      buildLooseIdentifier
+      buildLooseIdentifier,
     }),
     [
       buildIdentifierFunc,
@@ -71,6 +71,6 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
       createSingleIdentifier,
       hashQortalName,
       hashString,
-    ]
+    ],
   );
 };

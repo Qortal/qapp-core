@@ -5,7 +5,7 @@ export const useQortBalance = () => {
   const address = useAuthStore((s) => s.address);
   const setBalance = useAuthStore((s) => s.setBalance);
   const isLoadingInitialBalance = useAuthStore(
-    (s) => s.isLoadingInitialBalance
+    (s) => s.isLoadingInitialBalance,
   );
   const setIsLoadingBalance = useAuthStore((s) => s.setIsLoadingBalance);
 
@@ -29,7 +29,7 @@ export const useQortBalance = () => {
         setIsLoadingBalance(false);
       }
     },
-    [setBalance]
+    [setBalance],
   );
 
   const manualGetBalance = useCallback(async (): Promise<number | Error> => {
@@ -43,6 +43,6 @@ export const useQortBalance = () => {
       getBalance: manualGetBalance,
       isLoading: isLoadingInitialBalance,
     }),
-    [qortBalance, manualGetBalance, isLoadingInitialBalance]
+    [qortBalance, manualGetBalance, isLoadingInitialBalance],
   );
 };

@@ -21,9 +21,7 @@ export const ResourceLoader = ({ status, message }: PropsResourceLoader) => {
       {status === "loading" && (
         <>
           <BarSpinner width="22px" color="green" />
-          <Typography>
-            {message || `Fetching Content...`}
-          </Typography>
+          <Typography>{message || `Fetching Content...`}</Typography>
         </>
       )}
       {status === "error" && (

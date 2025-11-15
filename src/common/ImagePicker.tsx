@@ -45,7 +45,8 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
 }) => {
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      const images = mode === "single" ? acceptedFiles.slice(0, 1) : acceptedFiles;
+      const images =
+        mode === "single" ? acceptedFiles.slice(0, 1) : acceptedFiles;
 
       const results: ImageResult[] = [];
 
@@ -97,7 +98,7 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
         (onPick as (results: ImageResult[]) => void)(results);
       }
     },
-    [onPick, mode, quality, maxWidth]
+    [onPick, mode, quality, maxWidth],
   );
 
   const {

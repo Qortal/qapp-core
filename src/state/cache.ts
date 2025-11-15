@@ -18,7 +18,7 @@ interface SearchCache {
 
 export const mergeUniqueItems = (
   array1: QortalMetadata[],
-  array2: QortalMetadata[]
+  array2: QortalMetadata[],
 ) => {
   const mergedArray = [...array1, ...array2];
 
@@ -59,7 +59,7 @@ interface CacheState {
   setResourceCache: (
     id: string,
     data: ListItem | false | null,
-    customExpiry?: number
+    customExpiry?: number,
   ) => void;
 
   setSearchCache: (
@@ -67,25 +67,25 @@ interface CacheState {
     searchTerm: string,
     data: QortalMetadata[],
     searchParamsStringified: string | null,
-    customExpiry?: number
+    customExpiry?: number,
   ) => void;
   setSearchParamsForList: (
     ListName: string,
-    searchParamsStringified: string
+    searchParamsStringified: string,
   ) => void;
   getSearchCache: (
     listName: string,
-    searchTerm: string
+    searchTerm: string,
   ) => QortalMetadata[] | null;
   clearExpiredCache: () => void;
   getResourceCache: (
     id: string,
-    ignoreExpire?: boolean
+    ignoreExpire?: boolean,
   ) => ListItem | false | null;
   addTemporaryResource: (
     listName: string,
     newResources: QortalMetadata[],
-    customExpiry?: number
+    customExpiry?: number,
   ) => void;
   getTemporaryResources: (listName: string) => QortalMetadata[];
   deletedResources: DeletedResources;
@@ -143,7 +143,7 @@ export const useCacheStore = create<CacheState>((set, get) => ({
     searchTerm,
     data,
     searchParamsStringified,
-    customExpiry
+    customExpiry,
   ) =>
     set((state) => {
       const expiry =
@@ -253,8 +253,8 @@ export const useCacheStore = create<CacheState>((set, get) => ({
       // ✅ Remove expired deletions before adding a new one
       const validDeletedResources = Object.fromEntries(
         Object.entries(state.deletedResources).filter(
-          ([_, value]) => value.expiry > now
-        )
+          ([_, value]) => value.expiry > now,
+        ),
       );
 
       const key = `${item.service}-${item.name}-${item.identifier}`;
@@ -270,7 +270,7 @@ export const useCacheStore = create<CacheState>((set, get) => ({
     const deletedResources = get().deletedResources; // ✅ Read without modifying store
     return items.filter(
       (item) =>
-        !deletedResources[`${item.service}-${item.name}-${item.identifier}`]
+        !deletedResources[`${item.service}-${item.name}-${item.identifier}`],
     );
   },
   isListExpired: (listName: string): boolean | string => {
@@ -284,8 +284,8 @@ export const useCacheStore = create<CacheState>((set, get) => ({
       const now = Date.now();
       const validSearchCache = Object.fromEntries(
         Object.entries(state.searchCache).filter(
-          ([, value]) => value.expiry > now
-        )
+          ([, value]) => value.expiry > now,
+        ),
       );
       return { searchCache: validSearchCache };
     }),
@@ -298,7 +298,7 @@ export const useCacheStore = create<CacheState>((set, get) => ({
 
         for (const [term, items] of Object.entries(list.searches)) {
           updatedSearches[term] = items.filter(
-            (item) => !names.includes(item.name)
+            (item) => !names.includes(item.name),
           );
         }
 

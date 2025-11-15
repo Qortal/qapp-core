@@ -5,7 +5,11 @@ interface AppState {
   publicSalt: string | null;
   appNameHashed: string | null;
   // Methods
-  setAppState: (appState: { appName: string; publicSalt: string; appNameHashed: string }) => void;
+  setAppState: (appState: {
+    appName: string;
+    publicSalt: string;
+    appNameHashed: string;
+  }) => void;
 }
 
 // ✅ Typed Zustand Store
@@ -15,5 +19,9 @@ export const useAppStore = create<AppState>((set) => ({
   appNameHashed: null,
   // Methods
   setAppState: (appState) =>
-    set({ appName: appState.appName, publicSalt: appState.publicSalt, appNameHashed: appState.appNameHashed }),
+    set({
+      appName: appState.appName,
+      publicSalt: appState.publicSalt,
+      appNameHashed: appState.appNameHashed,
+    }),
 }));

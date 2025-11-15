@@ -1,23 +1,23 @@
 export const createAvatarLink = (qortalName: string): string => {
-   if (!qortalName?.trim()) return '';
+  if (!qortalName?.trim()) return "";
 
-    return `/arbitrary/THUMBNAIL/${encodeURIComponent(qortalName)}/qortal_avatar?async=true`
-}
+  return `/arbitrary/THUMBNAIL/${encodeURIComponent(qortalName)}/qortal_avatar?async=true`;
+};
 
-const removeTrailingSlash = (str: string) => str.replace(/\/$/, '');
+const removeTrailingSlash = (str: string) => str.replace(/\/$/, "");
 
 export const createQortalLink = (
-  type: 'APP' | 'WEBSITE',
+  type: "APP" | "WEBSITE",
   appName: string,
-  path: string
+  path: string,
 ) => {
   const encodedAppName = encodeURIComponent(appName);
   let link = `qortal://${type}/${encodedAppName}`;
 
   if (path) {
-    link += path.startsWith('/')
+    link += path.startsWith("/")
       ? removeTrailingSlash(path)
-      : '/' + removeTrailingSlash(path);
+      : "/" + removeTrailingSlash(path);
   }
 
   return link;

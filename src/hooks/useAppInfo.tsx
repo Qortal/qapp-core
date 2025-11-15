@@ -11,7 +11,7 @@ export const useAppInfo = (appName?: string, publicSalt?: string) => {
     const appNameHashed = await hashWord(
       name,
       EnumCollisionStrength.HIGH,
-      salt
+      salt,
     );
     setAppState({
       appName: name,
@@ -30,6 +30,6 @@ export const useAppInfo = (appName?: string, publicSalt?: string) => {
       appName,
       appNameHashed,
     }),
-    [appName, appNameHashed]
+    [appName, appNameHashed],
   );
 };

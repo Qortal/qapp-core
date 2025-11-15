@@ -81,7 +81,7 @@ export const VideoControlsBar = ({
   togglePictureInPicture,
   isVideoPlayerSmall,
   isOnTimeline,
-  styling
+  styling,
 }: VideoControlsBarProps) => {
   const { t } = useLibTranslation();
 

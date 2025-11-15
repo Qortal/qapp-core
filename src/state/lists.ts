@@ -44,7 +44,7 @@ export const useListStore = create<ListStore>((set, get) => ({
           name,
           items: state.lists[name].items.slice(
             0,
-            state.lists[name].items.length - length
+            state.lists[name].items.length - length,
           ),
         }, // ✅ Store items as an array
       },
@@ -58,7 +58,7 @@ export const useListStore = create<ListStore>((set, get) => ({
       const existingItem = state.lists[listName].items.find(
         (existing) =>
           `${existing.name}-${existing.service}-${existing.identifier}` ===
-          itemKey
+          itemKey,
       );
 
       if (existingItem) return state; // Avoid duplicates
@@ -88,8 +88,8 @@ export const useListStore = create<ListStore>((set, get) => ({
       // ✅ Generate existing keys correctly
       const existingKeys = new Set(
         state.lists[listName].items.map(
-          (item) => `${item.name}-${item.service}-${item.identifier}`
-        )
+          (item) => `${item.name}-${item.service}-${item.identifier}`,
+        ),
       );
 
       // ✅ Ensure we correctly compare identifiers
@@ -102,7 +102,7 @@ export const useListStore = create<ListStore>((set, get) => ({
 
       if (newItems.length === 0) {
         console.warn(
-          "No new items were added because they were all considered duplicates."
+          "No new items were added because they were all considered duplicates.",
         );
         return state; // ✅ Prevent unnecessary re-renders if no changes
       }
@@ -133,7 +133,7 @@ export const useListStore = create<ListStore>((set, get) => ({
               `${existing.name}-${existing.service}-${existing.identifier}` ===
               itemKey
                 ? item // ✅ Update item
-                : existing
+                : existing,
             ),
           },
         },
@@ -151,7 +151,7 @@ export const useListStore = create<ListStore>((set, get) => ({
             ...state.lists[listName],
             items: state.lists[listName].items.filter(
               (item) =>
-                `${item.name}-${item.service}-${item.identifier}` !== itemKey
+                `${item.name}-${item.service}-${item.identifier}` !== itemKey,
             ), // ✅ Remove from array
           },
         },

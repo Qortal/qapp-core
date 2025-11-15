@@ -28,11 +28,9 @@ export const GlobalPipPlayer = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
- const volume = useVideoStore(
-    (state) => state.playbackSettings.volume
-  );
+  const volume = useVideoStore((state) => state.playbackSettings.volume);
   const context = useContext(GlobalContext);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const videoNode = useRef<HTMLVideoElement>(null);
   const hideTimeoutRef = useRef<number | null>(null);
   const { setProgress } = useProgressStore();
@@ -56,9 +54,9 @@ export const GlobalPipPlayer = () => {
         responsive: true,
         fluid: true,
       });
-       playerRef.current?.on("error", () => {
-            // Optional: display user-friendly message
-          });
+      playerRef.current?.on("error", () => {
+        // Optional: display user-friendly message
+      });
 
       // Resume playback if needed
       playerRef.current.on("ready", () => {
@@ -85,17 +83,15 @@ export const GlobalPipPlayer = () => {
     const player = playerRef.current;
 
     if (!player) return;
-   
+
     if (!videoSrc && player.src) {
       // Only pause the player and unload the source without re-triggering playback
       player.pause();
 
-    
-    // player.src({ src: '', type: '' }); // ⬅️ this is the safe way to clear it
-  
+      // player.src({ src: '', type: '' }); // ⬅️ this is the safe way to clear it
 
-  setPlaying(false);
-  setHasStarted(false);
+      setPlaying(false);
+      setHasStarted(false);
 
       // Optionally clear the poster and currentTime
       player.poster("");
@@ -108,7 +104,7 @@ export const GlobalPipPlayer = () => {
       // Set source and resume if needed
       player.src({ src: videoSrc, type: type });
       player.currentTime(currentTime);
-      player.volume(volume)
+      player.volume(volume);
       if (isPlaying) {
         const playPromise = player.play();
 
@@ -147,32 +143,33 @@ export const GlobalPipPlayer = () => {
 
   const [height, setHeight] = useState(300);
   const [width, setWidth] = useState(400);
-const savedHeightRef = useRef<null | number>(null)
-const savedWidthRef = useRef<null | number>(null)
+  const savedHeightRef = useRef<null | number>(null);
+  const savedWidthRef = useRef<null | number>(null);
 
-useEffect(() => {
-  if (!videoSrc) return;
+  useEffect(() => {
+    if (!videoSrc) return;
 
-  const screenWidth = window.innerWidth;
-  const screenHeight = window.innerHeight;
-  const aspectRatio = 0.75; // 300 / 400 = 3:4
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const aspectRatio = 0.75; // 300 / 400 = 3:4
 
-  const maxWidthByScreen = screenWidth * 0.75;
-  const maxWidthByHeight = (screenHeight * 0.3) / aspectRatio;
+    const maxWidthByScreen = screenWidth * 0.75;
+    const maxWidthByHeight = (screenHeight * 0.3) / aspectRatio;
 
-  const maxWidth = savedWidthRef.current || Math.min(maxWidthByScreen, maxWidthByHeight);
-  const maxHeight = savedHeightRef.current || maxWidth * aspectRatio;
+    const maxWidth =
+      savedWidthRef.current || Math.min(maxWidthByScreen, maxWidthByHeight);
+    const maxHeight = savedHeightRef.current || maxWidth * aspectRatio;
 
-  setWidth(maxWidth);
-  setHeight(maxHeight);
-  
-  rndRef.current.updatePosition({
-    x: screenWidth - maxWidth - margin,
-    y: screenHeight - maxHeight - margin,
-    width: maxWidth,
-    height: maxHeight,
-  });
-}, [videoSrc]);
+    setWidth(maxWidth);
+    setHeight(maxHeight);
+
+    rndRef.current.updatePosition({
+      x: screenWidth - maxWidth - margin,
+      y: screenHeight - maxHeight - margin,
+      width: maxWidth,
+      height: maxHeight,
+    });
+  }, [videoSrc]);
 
   const [showControls, setShowControls] = useState(false);
 
@@ -247,7 +244,6 @@ useEffect(() => {
     };
   }, [videoSrc]);
 
-
   return (
     <Rnd
       enableResizing={{
@@ -274,8 +270,8 @@ useEffect(() => {
       onResize={(e, direction, ref, delta, position) => {
         setWidth(ref.offsetWidth);
         setHeight(ref.offsetHeight);
-        savedHeightRef.current = ref.offsetHeight
-        savedWidthRef.current = ref.offsetWidth
+        savedHeightRef.current = ref.offsetHeight;
+        savedWidthRef.current = ref.offsetWidth;
       }}
       //  default={{
       //     x: 500,
@@ -347,16 +343,18 @@ useEffect(() => {
                 opacity: 1,
                 right: 5,
                 zIndex: 2,
-                 background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '5px'
+                background: "rgba(0,0,0,0.3)",
+                borderRadius: "50%",
+                padding: "5px",
               }}
               onClick={reset}
               onTouchStart={reset}
             >
-              <CloseIcon sx={{
-            color: 'white',
-          }} />
+              <CloseIcon
+                sx={{
+                  color: "white",
+                }}
+              />
             </IconButton>
             {location && (
               <IconButton
@@ -366,26 +364,28 @@ useEffect(() => {
                   left: 5,
                   zIndex: 2,
                   opacity: 1,
-                 background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '5px'
+                  background: "rgba(0,0,0,0.3)",
+                  borderRadius: "50%",
+                  padding: "5px",
                 }}
                 onClick={(e) => {
-                  e.stopPropagation()
+                  e.stopPropagation();
                   if (navigate) {
                     navigate(location);
                   }
                 }}
                 onTouchStart={(e) => {
-                  e.stopPropagation()
+                  e.stopPropagation();
                   if (navigate) {
                     navigate(location);
                   }
                 }}
               >
-                <OpenInFullIcon sx={{
-            color: 'white',
-          }} />
+                <OpenInFullIcon
+                  sx={{
+                    color: "white",
+                  }}
+                />
               </IconButton>
             )}
             {playing && (
@@ -397,16 +397,18 @@ useEffect(() => {
                   transform: "translate(-50%, -50%)",
                   opacity: 1,
                   zIndex: 2,
-                  background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '5px'
+                  background: "rgba(0,0,0,0.3)",
+                  borderRadius: "50%",
+                  padding: "5px",
                 }}
                 onClick={stopPlay}
                 onTouchStart={stopPlay}
               >
-                <PauseIcon sx={{
-            color: 'white',
-          }} />
+                <PauseIcon
+                  sx={{
+                    color: "white",
+                  }}
+                />
               </IconButton>
             )}
             {!playing && (
@@ -418,16 +420,18 @@ useEffect(() => {
                   left: "50%",
                   transform: "translate(-50%, -50%)",
                   zIndex: 2,
-                  background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '5px'
+                  background: "rgba(0,0,0,0.3)",
+                  borderRadius: "50%",
+                  padding: "5px",
                 }}
                 onClick={startPlay}
                 onTouchStart={startPlay}
               >
-                <PlayArrowIcon sx={{
-            color: 'white',
-          }} />
+                <PlayArrowIcon
+                  sx={{
+                    color: "white",
+                  }}
+                />
               </IconButton>
             )}
 

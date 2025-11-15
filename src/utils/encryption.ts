@@ -4,10 +4,10 @@ import { objectToBase64, uint8ArrayToBase64 } from "./base64";
 import { RequestQueueWithPromise } from "./queue";
 import { base64ToUint8Array } from "./publish";
 import nacl from "../deps/nacl-fast";
-import SHA256 from 'crypto-js/sha256';
-import EncBase64 from 'crypto-js/enc-base64';
+import SHA256 from "crypto-js/sha256";
+import EncBase64 from "crypto-js/enc-base64";
 
-export const IDENTIFIER_BUILDER_VERSION = `v1`
+export const IDENTIFIER_BUILDER_VERSION = `v1`;
 export const requestQueueGetPublicKeys = new RequestQueueWithPromise(10);
 
 export enum EnumCollisionStrength {
@@ -19,48 +19,42 @@ export enum EnumCollisionStrength {
 }
 
 const deprecatedSafeBase64 = (base64: string): string =>
-  base64
-.replace(/\+/g, "-")
-.replace(/\//g, "_")
-.replace(/=+$/, "")
-
+  base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
 // Custom URL-safe replacements (reserving '-' and '_')
 const safeBase64 = (base64: string): string =>
   base64
-    .replace(/\+/g, ".")   // Replace '+' with '.' (URL-safe)
-    .replace(/\//g, "~")   // Replace '/' with '~' (URL-safe)
-    .replace(/_/g, "!")    // Replace '_' with '!' if needed (optional)
-    .replace(/=+$/, "");   // Remove padding
+    .replace(/\+/g, ".") // Replace '+' with '.' (URL-safe)
+    .replace(/\//g, "~") // Replace '/' with '~' (URL-safe)
+    .replace(/_/g, "!") // Replace '_' with '!' if needed (optional)
+    .replace(/=+$/, ""); // Remove padding
 
+export async function hashWord(
+  word: string,
+  collisionStrength: number,
+  publicSalt: string,
+): Promise<string> {
+  const saltedWord = publicSalt + word;
 
-    export async function hashWord(
-      word: string,
-      collisionStrength: number,
-      publicSalt: string
-    ): Promise<string> {
-      const saltedWord = publicSalt + word;
-    
-      try {
-        if (!crypto?.subtle?.digest) throw new Error("Web Crypto not available");
-    
-        const encoded = new TextEncoder().encode(saltedWord);
-        const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
-        const base64 = Buffer.from(hashBuffer).toString("base64");
-    
-        return safeBase64(base64).slice(0, collisionStrength);
-      } catch (err) {
-        const hash = SHA256(saltedWord);
-        const base64 = EncBase64.stringify(hash);
-    
-        return safeBase64(base64).slice(0, collisionStrength);
-      }
-    }
+  try {
+    if (!crypto?.subtle?.digest) throw new Error("Web Crypto not available");
 
+    const encoded = new TextEncoder().encode(saltedWord);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
+    const base64 = Buffer.from(hashBuffer).toString("base64");
+
+    return safeBase64(base64).slice(0, collisionStrength);
+  } catch (err) {
+    const hash = SHA256(saltedWord);
+    const base64 = EncBase64.stringify(hash);
+
+    return safeBase64(base64).slice(0, collisionStrength);
+  }
+}
 
 export async function hashWordWithoutPublicSalt(
   word: string,
-  collisionStrength: number
+  collisionStrength: number,
 ): Promise<string> {
   try {
     if (!crypto?.subtle?.digest) throw new Error("Web Crypto not available");
@@ -78,38 +72,32 @@ export async function hashWordWithoutPublicSalt(
   }
 }
 
-
 const uid = new ShortUniqueId({ length: 15, dictionary: "alphanum" });
 
 interface EntityConfig {
   children?: Record<string, EntityConfig>;
 }
 
-
-
-
 // Function to generate a prefix for searching
 export async function buildSearchPrefix(
   appName: string,
   publicSalt: string,
   entityType: string,
-  parentId: string | null
+  parentId: string | null,
 ): Promise<string> {
   // Hash app name (11 chars)
   const appHash: string = await hashWord(
     appName,
     EnumCollisionStrength.HIGH,
-    publicSalt
+    publicSalt,
   );
 
   // Hash entity type (4 chars)
   const entityPrefix: string = await hashWord(
     entityType,
     EnumCollisionStrength.ENTITY_LABEL,
-    publicSalt
+    publicSalt,
   );
-
-
 
   // Determine parent reference
   let parentRef = "";
@@ -119,7 +107,7 @@ export async function buildSearchPrefix(
     parentRef = await hashWord(
       parentId,
       EnumCollisionStrength.PARENT_REF,
-      publicSalt
+      publicSalt,
     );
   }
 
@@ -131,24 +119,20 @@ export async function buildSearchPrefix(
 
 export async function buildLooseSearchPrefix(
   entityType: string,
-  parentId?: string | null
+  parentId?: string | null,
 ): Promise<string> {
   // Hash entity type (6 chars)
   const entityPrefix: string = await hashWord(
     entityType,
     EnumCollisionStrength.ENTITY_LABEL,
-    ""
+    "",
   );
 
   let parentRef = "";
   if (parentId === null) {
     parentRef = "00000000000000"; // for true root entities
   } else if (parentId) {
-    parentRef = await hashWord(
-      parentId,
-      EnumCollisionStrength.PARENT_REF,
-      ""
-    );
+    parentRef = await hashWord(parentId, EnumCollisionStrength.PARENT_REF, "");
   }
 
   return parentRef
@@ -161,20 +145,20 @@ export async function buildIdentifier(
   appName: string,
   publicSalt: string,
   entityType: string, // ✅ Now takes only the entity type
-  parentId: string | null
+  parentId: string | null,
 ): Promise<string> {
   // Hash app name (11 chars)
   const appHash: string = await hashWord(
     appName,
     EnumCollisionStrength.HIGH,
-    publicSalt
+    publicSalt,
   );
 
   // Hash entity type (4 chars)
   const entityPrefix: string = await hashWord(
     entityType,
     EnumCollisionStrength.ENTITY_LABEL,
-    publicSalt
+    publicSalt,
   );
 
   // Generate a unique identifier for this entity
@@ -186,7 +170,7 @@ export async function buildIdentifier(
     parentRef = await hashWord(
       parentId,
       EnumCollisionStrength.PARENT_REF,
-      publicSalt
+      publicSalt,
     );
   }
 
@@ -195,29 +179,25 @@ export async function buildIdentifier(
 
 export async function buildLooseIdentifier(
   entityType: string,
-  parentId?: string | null
+  parentId?: string | null,
 ): Promise<string> {
   // 4-char hash for entity type
   const entityPrefix: string = await hashWord(
     entityType,
     EnumCollisionStrength.ENTITY_LABEL,
-    ""
+    "",
   );
 
   // Generate 8-12 character random uid (depends on uid.rnd() settings)
   const entityUid = uid.rnd();
 
   // Optional hashed parent ref
-  let parentRef = '';
+  let parentRef = "";
   if (parentId) {
-    parentRef = await hashWord(
-      parentId,
-      EnumCollisionStrength.PARENT_REF,
-      ""
-    );
+    parentRef = await hashWord(parentId, EnumCollisionStrength.PARENT_REF, "");
   }
 
-  return `${entityPrefix}${parentRef ? `-${parentRef}` : ''}-${entityUid}${IDENTIFIER_BUILDER_VERSION ? `-${IDENTIFIER_BUILDER_VERSION}` : ''}`;
+  return `${entityPrefix}${parentRef ? `-${parentRef}` : ""}-${entityUid}${IDENTIFIER_BUILDER_VERSION ? `-${IDENTIFIER_BUILDER_VERSION}` : ""}`;
 }
 
 export const createSymmetricKeyAndNonce = () => {
@@ -240,7 +220,7 @@ const getPublicKeysByNames = async (names: string[]) => {
       } catch (error) {
         return null;
       }
-    })
+    }),
   );
 
   const members = await Promise.all(memberPromises);
@@ -250,15 +230,14 @@ const getPublicKeysByNames = async (names: string[]) => {
 export const addAndEncryptSymmetricKeys = async ({
   previousData,
   names,
-  disableAddNewKey
+  disableAddNewKey,
 }: {
   previousData: Object;
   names: string[];
-  disableAddNewKey?: boolean
+  disableAddNewKey?: boolean;
 }) => {
   try {
-    if(disableAddNewKey){
-
+    if (disableAddNewKey) {
       const groupmemberPublicKeys = await getPublicKeysByNames(names);
       const symmetricKeyAndNonceBase64 = await objectToBase64(previousData);
       const encryptedData = await qortalRequest({
@@ -266,9 +245,13 @@ export const addAndEncryptSymmetricKeys = async ({
         base64: symmetricKeyAndNonceBase64,
         publicKeys: groupmemberPublicKeys,
       });
-  
+
       if (encryptedData) {
-        return {encryptedData, publicKeys: groupmemberPublicKeys, symmetricKeys: previousData};
+        return {
+          encryptedData,
+          publicKeys: groupmemberPublicKeys,
+          symmetricKeys: previousData,
+        };
       } else {
         throw new Error("Cannot encrypt content");
       }
@@ -278,7 +261,7 @@ export const addAndEncryptSymmetricKeys = async ({
       highestKey = Math.max(
         ...Object.keys(previousData || {})
           .filter((item) => !isNaN(+item))
-          .map(Number)
+          .map(Number),
       );
     }
     const groupmemberPublicKeys = await getPublicKeysByNames(names);
@@ -297,7 +280,11 @@ export const addAndEncryptSymmetricKeys = async ({
     });
 
     if (encryptedData) {
-      return {encryptedData, publicKeys: groupmemberPublicKeys, symmetricKeys: objectToSave};
+      return {
+        encryptedData,
+        publicKeys: groupmemberPublicKeys,
+        symmetricKeys: objectToSave,
+      };
     } else {
       throw new Error("Cannot encrypt content");
     }
@@ -315,7 +302,7 @@ export const encryptWithSymmetricKeys = async ({
   const highestKey = Math.max(
     ...Object.keys(secretKeyObject)
       .filter((item) => !isNaN(+item))
-      .map(Number)
+      .map(Number),
   );
   const highestKeyObject = secretKeyObject[highestKey];
 
@@ -359,10 +346,10 @@ export const encryptWithSymmetricKeys = async ({
     const highestKeyStr = highestKey.toString().padStart(10, "0"); // Fixed length of 10 digits
 
     const highestKeyBytes = new TextEncoder().encode(
-      highestKeyStr.padStart(10, "0")
+      highestKeyStr.padStart(10, "0"),
     );
     const typeNumberBytes = new TextEncoder().encode(
-      typeNumberStr.padStart(3, "0")
+      typeNumberStr.padStart(3, "0"),
     );
 
     // Step 3: Concatenate all binary
@@ -370,7 +357,7 @@ export const encryptWithSymmetricKeys = async ({
       highestKeyBytes.length +
         typeNumberBytes.length +
         nonce.length +
-        encryptedData.length
+        encryptedData.length,
     );
     //   finalEncryptedData = btoa(highestKeyStr) + btoa(typeNumberStr) + nonceBase64 + encryptedDataBase64;
     combinedBinary.set(highestKeyBytes, 0);
@@ -378,7 +365,7 @@ export const encryptWithSymmetricKeys = async ({
     combinedBinary.set(nonce, highestKeyBytes.length + typeNumberBytes.length);
     combinedBinary.set(
       encryptedData,
-      highestKeyBytes.length + typeNumberBytes.length + nonce.length
+      highestKeyBytes.length + typeNumberBytes.length + nonce.length,
     );
 
     // Step 4: Base64 encode once
@@ -392,7 +379,7 @@ export interface SecretKeyValue {
   messageKey: string;
 }
 
-export type SymmetricKeys = Record<number, SecretKeyValue>
+export type SymmetricKeys = Record<number, SecretKeyValue>;
 
 export const decryptWithSymmetricKeys = async ({
   base64,
@@ -436,12 +423,12 @@ export const decryptWithSymmetricKeys = async ({
     const highestKey = parseInt(highestKeyStr, 10);
 
     const messageKey = base64ToUint8Array(
-      secretKeyObject[+highestKey].messageKey
+      secretKeyObject[+highestKey].messageKey,
     );
     const decryptedBytes = nacl.secretbox.open(
       encryptedData,
       nonce,
-      messageKey
+      messageKey,
     );
 
     // Check if decryption was successful

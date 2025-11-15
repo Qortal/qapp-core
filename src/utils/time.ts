@@ -21,10 +21,9 @@ export function formatTimestamp(timestamp: number): string {
   }
 }
 
-
-export function oneMonthAgo(){
-    const oneMonthAgoTimestamp = dayjs().subtract(1, "month").valueOf();
-    return oneMonthAgoTimestamp
+export function oneMonthAgo() {
+  const oneMonthAgoTimestamp = dayjs().subtract(1, "month").valueOf();
+  return oneMonthAgoTimestamp;
 }
 
 export function formatTime(seconds: number): string {

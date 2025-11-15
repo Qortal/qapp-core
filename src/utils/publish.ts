@@ -4,7 +4,7 @@ export async function retryTransaction<T>(
   fn: (...args: any[]) => Promise<T>, // Function that returns a promise
   args: any[], // Arguments for the function
   throwError: boolean,
-  retries: number = MAX_RETRIES
+  retries: number = MAX_RETRIES,
 ): Promise<T | null> {
   let attempt = 0;
 
@@ -33,27 +33,26 @@ export async function retryTransaction<T>(
 }
 
 export function base64ToUint8Array(base64: string) {
-	const binaryString = atob(base64)
-	const len = binaryString.length
-	const bytes = new Uint8Array(len)
-	for (let i = 0; i < len; i++) {
-		bytes[i] = binaryString.charCodeAt(i)
-	}
-	return bytes
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
 }
 
 export function uint8ArrayToObject(uint8Array: Uint8Array) {
-	// Decode the byte array using TextDecoder
-	const decoder = new TextDecoder()
-	const jsonString = decoder.decode(uint8Array)
-	// Convert the JSON string back into an object
-	return JSON.parse(jsonString)
+  // Decode the byte array using TextDecoder
+  const decoder = new TextDecoder();
+  const jsonString = decoder.decode(uint8Array);
+  // Convert the JSON string back into an object
+  return JSON.parse(jsonString);
 }
 
+export function base64ToObject(base64: string) {
+  const toUint = base64ToUint8Array(base64);
+  const toObject = uint8ArrayToObject(toUint);
 
-export function base64ToObject(base64: string){
-	const toUint = base64ToUint8Array(base64);
-	const toObject = uint8ArrayToObject(toUint);
-
-	return toObject
+  return toObject;
 }

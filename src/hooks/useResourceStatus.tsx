@@ -30,10 +30,10 @@ export const useResourceStatus = ({
 
   const statusRef = useRef<ResourceStatus | null>(null);
   const startGlobalDownload = usePublishStore(
-    (state) => state.startGlobalDownload
+    (state) => state.startGlobalDownload,
   );
   const stopGlobalDownload = usePublishStore(
-    (state) => state.stopGlobalDownload
+    (state) => state.stopGlobalDownload,
   );
   useEffect(() => {
     statusRef.current = status;
@@ -42,7 +42,7 @@ export const useResourceStatus = ({
     (
       { service, name, identifier }: QortalGetMetadata,
       build?: boolean,
-      isRecalling?: boolean
+      isRecalling?: boolean,
     ) => {
       try {
         if (statusRef.current && statusRef.current?.status === "READY") {
@@ -57,22 +57,21 @@ export const useResourceStatus = ({
           return;
         }
         if (!isRecalling) {
-          const id = `${service}-${name}-${identifier}`
-          const resourceStatus = getResourceStatus(id)
-          if(!resourceStatus){
+          const id = `${service}-${name}-${identifier}`;
+          const resourceStatus = getResourceStatus(id);
+          if (!resourceStatus) {
             setResourceStatus(
-            { service, name, identifier },
-            {
-              status: "SEARCHING",
-              localChunkCount: 0,
-              totalChunkCount: 0,
-              percentLoaded: 0,
-              path: path || "",
-              filename: filename || "",
-            }
-          );
+              { service, name, identifier },
+              {
+                status: "SEARCHING",
+                localChunkCount: 0,
+                totalChunkCount: 0,
+                percentLoaded: 0,
+                path: path || "",
+                filename: filename || "",
+              },
+            );
           }
-          
         }
         let isCalling = false;
         let percentLoaded = 0;
@@ -96,7 +95,7 @@ export const useResourceStatus = ({
               { service, name, identifier },
               {
                 ...res,
-              }
+              },
             );
             if (tries > retryAttempts) {
               if (intervalRef.current) {
@@ -112,7 +111,7 @@ export const useResourceStatus = ({
                 {
                   ...res,
                   status: "FAILED_TO_DOWNLOAD",
-                }
+                },
               );
 
               return;
@@ -153,7 +152,7 @@ export const useResourceStatus = ({
                   {
                     ...res,
                     status: "REFETCHING",
-                  }
+                  },
                 );
 
                 timeoutRef.current = setTimeout(() => {
@@ -171,7 +170,7 @@ export const useResourceStatus = ({
               { service, name, identifier },
               {
                 ...res,
-              }
+              },
             );
           }
           // Check if progress is 100% and clear interval if true
@@ -188,7 +187,7 @@ export const useResourceStatus = ({
               { service, name, identifier },
               {
                 ...res,
-              }
+              },
             );
             return;
           }
@@ -221,7 +220,7 @@ export const useResourceStatus = ({
         }
       };
     },
-    [retryAttempts]
+    [retryAttempts],
   );
   useEffect(() => {
     if (disableAutoFetch) return;
@@ -271,25 +270,25 @@ export const useResourceStatus = ({
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-        const id = `${resource?.service}-${resource?.name}-${resource?.identifier}`
-          const resourceStatus = getResourceStatus(id)
-          if(!resourceStatus){
-      setResourceStatus(
-        {
-          service: resource.service,
-          name: resource.name,
-          identifier: resource.identifier,
-        },
-        {
-          status: "SEARCHING",
-          localChunkCount: 0,
-          totalChunkCount: 0,
-          percentLoaded: 0,
-          path: path || "",
-          filename: filename || "",
-        }
-      );
-    }
+      const id = `${resource?.service}-${resource?.name}-${resource?.identifier}`;
+      const resourceStatus = getResourceStatus(id);
+      if (!resourceStatus) {
+        setResourceStatus(
+          {
+            service: resource.service,
+            name: resource.name,
+            identifier: resource.identifier,
+          },
+          {
+            status: "SEARCHING",
+            localChunkCount: 0,
+            totalChunkCount: 0,
+            percentLoaded: 0,
+            path: path || "",
+            filename: filename || "",
+          },
+        );
+      }
       if (isGlobal) {
         const id = `${resource.service}-${resource.name}-${resource.identifier}`;
         stopGlobalDownload(id);
@@ -334,6 +333,6 @@ export const useResourceStatus = ({
       status?.percentLoaded,
       resourceUrl,
       downloadResource,
-    ]
+    ],
   );
 };

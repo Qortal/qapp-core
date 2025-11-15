@@ -76,7 +76,7 @@ export const ProgressSlider = ({
   isOnTimeline,
   railColor,
   thumbColor,
-  trackColor
+  trackColor,
 }: any) => {
   const sliderRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -463,118 +463,118 @@ export const PlayBackMenu = ({
   if (!isOpen) return null;
   return (
     <>
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9, // one layer below MUI drawer
-      }}
-      onClick={(e) => e.stopPropagation()}
-    />
-    <Box
-      ref={ref}
-      tabIndex={-1}
-      onBlur={handleBlur}
-      bgcolor={alpha("#181818", 0.98)}
-      sx={{
-        position: isFromDrawer ? "relative" : "absolute",
-        bottom: isFromDrawer ? "relative" : 60,
-        right: isFromDrawer ? "relative" : 5,
-        color: "white",
-        opacity: 0.9,
-        borderRadius: 2,
-        boxShadow: isFromDrawer ? "relative" : 5,
-        p: 1,
-        minWidth: 225,
-        height: 300,
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 10,
-      }}
-    >
-      <Box
-        sx={{
-          padding: "5px 0px 10px 0px",
-          display: "flex",
-          gap: "10px",
-          width: "100%",
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 9, // one layer below MUI drawer
         }}
-      >
-        <ButtonBase onClick={close}>
-          <ArrowBackIosIcon
-            sx={{
-              fontSize: "1.15em",
-            }}
-          />
-        </ButtonBase>
-        <ButtonBase>
-          <Typography
-            onClick={close}
-            sx={{
-              fontSize: "0.85rem",
-            }}
-          >
-            {t("video.playback_speed")}
-          </Typography>
-        </ButtonBase>
-      </Box>
-      <Divider />
+        onClick={(e) => e.stopPropagation()}
+      />
       <Box
+        ref={ref}
+        tabIndex={-1}
+        onBlur={handleBlur}
+        bgcolor={alpha("#181818", 0.98)}
         sx={{
+          position: isFromDrawer ? "relative" : "absolute",
+          bottom: isFromDrawer ? "relative" : 60,
+          right: isFromDrawer ? "relative" : 5,
+          color: "white",
+          opacity: 0.9,
+          borderRadius: 2,
+          boxShadow: isFromDrawer ? "relative" : 5,
+          p: 1,
+          minWidth: 225,
+          height: 300,
+          overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          flexGrow: 1,
-          overflow: "auto",
-          "::-webkit-scrollbar-track": {
-            backgroundColor: "transparent",
-          },
-
-          "::-webkit-scrollbar": {
-            width: "16px",
-            height: "10px",
-          },
-
-          "::-webkit-scrollbar-thumb": {
-            backgroundColor: theme.palette.primary.main,
-            borderRadius: "8px",
-            backgroundClip: "content-box",
-            border: "4px solid transparent",
-            transition: "0.3s background-color",
-          },
-
-          "::-webkit-scrollbar-thumb:hover": {
-            backgroundColor: theme.palette.primary.dark,
-          },
+          zIndex: 10,
         }}
       >
-        {speeds?.map((speed) => {
-          const isSelected = speed === playbackRate;
-          return (
-            <ButtonBase
-              disabled={isSelected}
-              key={speed}
-              onClick={(e) => {
-                onSelect(speed);
-                close();
-              }}
+        <Box
+          sx={{
+            padding: "5px 0px 10px 0px",
+            display: "flex",
+            gap: "10px",
+            width: "100%",
+          }}
+        >
+          <ButtonBase onClick={close}>
+            <ArrowBackIosIcon
               sx={{
-                px: 2,
-                py: 1,
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                },
-                width: "100%",
-                justifyContent: "space-between",
+                fontSize: "1.15em",
+              }}
+            />
+          </ButtonBase>
+          <ButtonBase>
+            <Typography
+              onClick={close}
+              sx={{
+                fontSize: "0.85rem",
               }}
             >
-              <Typography>{speed}</Typography>
-              {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
-            </ButtonBase>
-          );
-        })}
+              {t("video.playback_speed")}
+            </Typography>
+          </ButtonBase>
+        </Box>
+        <Divider />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flexGrow: 1,
+            overflow: "auto",
+            "::-webkit-scrollbar-track": {
+              backgroundColor: "transparent",
+            },
+
+            "::-webkit-scrollbar": {
+              width: "16px",
+              height: "10px",
+            },
+
+            "::-webkit-scrollbar-thumb": {
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: "8px",
+              backgroundClip: "content-box",
+              border: "4px solid transparent",
+              transition: "0.3s background-color",
+            },
+
+            "::-webkit-scrollbar-thumb:hover": {
+              backgroundColor: theme.palette.primary.dark,
+            },
+          }}
+        >
+          {speeds?.map((speed) => {
+            const isSelected = speed === playbackRate;
+            return (
+              <ButtonBase
+                disabled={isSelected}
+                key={speed}
+                onClick={(e) => {
+                  onSelect(speed);
+                  close();
+                }}
+                sx={{
+                  px: 2,
+                  py: 1,
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                  width: "100%",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography>{speed}</Typography>
+                {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
+              </ButtonBase>
+            );
+          })}
+        </Box>
       </Box>
-    </Box>
     </>
   );
 };

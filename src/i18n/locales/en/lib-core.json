@@ -57,7 +57,6 @@
     "recommendation_size": "It is recommended to keep your term character count below {{recommendedSize}} characters",
     "multiple_title": "Adding multiple indices",
     "multiple_description": "Subsequent indices will keep your publish fees lower, but they will have less strength in future search results."
-
   },
   "multi_publish": {
     "title": "Publishing Status",

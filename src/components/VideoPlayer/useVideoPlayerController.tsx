@@ -17,8 +17,8 @@ interface UseVideoControls {
   retryAttempts?: number;
   isMuted: boolean;
   videoRef: any;
-  filename?: string
-  path?: string
+  filename?: string;
+  path?: string;
 }
 
 export const useVideoPlayerController = (props: UseVideoControls) => {
@@ -30,27 +30,34 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     retryAttempts,
     isMuted,
     filename = "",
-    path = ""
+    path = "",
   } = props;
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControlsFullScreen, setShowControlsFullScreen] = useState(false);
   const [videoObjectFit, setVideoObjectFit] = useState<"contain" | "fill">(
-    "contain"
+    "contain",
   );
   const [startPlay, setStartPlay] = useState(false);
   const [startedFetch, setStartedFetch] = useState(false);
   const startedFetchRef = useRef(false);
   const { playbackSettings, setPlaybackRate } = useVideoStore();
 
-  const { isReady, resourceUrl, status, localChunkCount, totalChunkCount , percentLoaded, downloadResource } =
-    useResourceStatus({
-      resource: !startedFetch ? null : qortalVideoResource,
-      retryAttempts,
-      filename,
-      path,
-      isGlobal: true
-    });
+  const {
+    isReady,
+    resourceUrl,
+    status,
+    localChunkCount,
+    totalChunkCount,
+    percentLoaded,
+    downloadResource,
+  } = useResourceStatus({
+    resource: !startedFetch ? null : qortalVideoResource,
+    retryAttempts,
+    filename,
+    path,
+    isGlobal: true,
+  });
 
   const idleTime = 5000; // Time in milliseconds
   useIdleTimeout({
@@ -73,7 +80,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
         console.error("updatePlaybackRate", error);
       }
     },
-    [setPlaybackRate, minSpeed, maxSpeed]
+    [setPlaybackRate, minSpeed, maxSpeed],
   );
 
   const increaseSpeed = useCallback(
@@ -88,7 +95,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
         console.error("increaseSpeed", increaseSpeed);
       }
     },
-    [updatePlaybackRate, playbackSettings.playbackRate]
+    [updatePlaybackRate, playbackSettings.playbackRate],
   );
 
   const decreaseSpeed = useCallback(() => {
@@ -304,6 +311,10 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     seekTo,
     togglePictureInPicture,
     downloadResource,
-    isStatusWrong: !isNaN(totalChunkCount) && !isNaN(localChunkCount) &&  totalChunkCount === 2 && (totalChunkCount < localChunkCount)
+    isStatusWrong:
+      !isNaN(totalChunkCount) &&
+      !isNaN(localChunkCount) &&
+      totalChunkCount === 2 &&
+      totalChunkCount < localChunkCount,
   };
 };

@@ -23,13 +23,13 @@ interface MobileControlsProps {
   setProgressRelative: (val: number) => void;
   setLocalProgress: (val: number) => void;
   resetHideTimeout: () => void;
-   styling?: {
-      progressSlider?: {
-        thumbColor?: CSSProperties["color"];
-        railColor?: CSSProperties["color"];
-        trackColor?: CSSProperties["color"];
-      };
+  styling?: {
+    progressSlider?: {
+      thumbColor?: CSSProperties["color"];
+      railColor?: CSSProperties["color"];
+      trackColor?: CSSProperties["color"];
     };
+  };
 }
 export const MobileControls = ({
   showControlsMobile,
@@ -45,7 +45,7 @@ export const MobileControls = ({
   setProgressRelative,
   setLocalProgress,
   resetHideTimeout,
-  styling
+  styling,
 }: MobileControlsProps) => {
   return (
     <Box
@@ -237,7 +237,7 @@ export const MobileControls = ({
         sx={{
           width: "100%",
           position: "absolute",
-          bottom: '5px',
+          bottom: "5px",
           display: "flex",
           flexDirection: "column",
         }}
@@ -257,8 +257,8 @@ export const MobileControls = ({
           setShowControlsMobile={setShowControlsMobile}
           resetHideTimeout={resetHideTimeout}
           thumbColor={styling?.progressSlider?.thumbColor}
-            railColor={styling?.progressSlider?.railColor}
-            trackColor={styling?.progressSlider?.trackColor}
+          railColor={styling?.progressSlider?.railColor}
+          trackColor={styling?.progressSlider?.trackColor}
         />
       </Box>
     </Box>

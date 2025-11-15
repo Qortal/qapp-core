@@ -33,7 +33,7 @@ import { MobileControls } from "./MobileControls";
 import { useLocation } from "react-router-dom";
 
 export async function srtBase64ToVttBlobUrl(
-  base64Srt: string
+  base64Srt: string,
 ): Promise<string | null> {
   try {
     // Step 1: Convert base64 string to a Uint8Array
@@ -103,11 +103,11 @@ const videoStyles = {
 };
 
 async function getVideoMimeTypeFromUrl(
-  qortalVideoResource: any
+  qortalVideoResource: any,
 ): Promise<string | null> {
   try {
     const metadataResponse = await fetch(
-      `/arbitrary/metadata/${qortalVideoResource.service}/${qortalVideoResource.name}/${qortalVideoResource.identifier}`
+      `/arbitrary/metadata/${qortalVideoResource.service}/${qortalVideoResource.name}/${qortalVideoResource.identifier}`,
     );
     const metadataData = await metadataResponse.json();
     return metadataData?.mimeType || null;
@@ -153,7 +153,7 @@ export const VideoPlayer = ({
       setVolume: state.setVolume,
       setPlaybackRate: state.setPlaybackRate,
       playbackRate: state.playbackSettings.playbackRate,
-    })
+    }),
   );
   // const playerRef = useRef<Player | null>(null);
   const [drawerOpenSubtitles, setDrawerOpenSubtitles] = useState(false);
@@ -196,7 +196,7 @@ export const VideoPlayer = ({
     seekTo,
     togglePictureInPicture,
     downloadResource,
-    isStatusWrong
+    isStatusWrong,
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
@@ -308,7 +308,7 @@ export const VideoPlayer = ({
       toggleMute,
       setProgressAbsolute,
       toggleFullscreen,
-    ]
+    ],
   );
 
   const closeSubtitleManager = useCallback(() => {
@@ -376,7 +376,7 @@ export const VideoPlayer = ({
         console.error("onVolumeChangeHandler", onVolumeChangeHandler);
       }
     },
-    [setIsMuted, setVolume]
+    [setIsMuted, setVolume],
   );
 
   const videoStylesContainer = useMemo(() => {
@@ -403,7 +403,7 @@ export const VideoPlayer = ({
         onEnded(e);
       }
     },
-    [onEnded]
+    [onEnded],
   );
 
   const handleCanPlay = useCallback(() => {
@@ -558,7 +558,7 @@ export const VideoPlayer = ({
           label: subtitle.language,
           default: true,
         },
-        true
+        true,
       );
 
       await new Promise((res) => {
@@ -571,7 +571,7 @@ export const VideoPlayer = ({
 
       const tracks = Array.from(
         { length: (tracksInfo as any).length },
-        (_, i) => (tracksInfo as any)[i]
+        (_, i) => (tracksInfo as any)[i],
       );
       for (const track of tracks) {
         if (track.kind === "subtitles") {
@@ -579,7 +579,7 @@ export const VideoPlayer = ({
         }
       }
     },
-    []
+    [],
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -659,7 +659,7 @@ export const VideoPlayer = ({
 
               const tracks = Array.from(
                 { length: (tracksInfo as any).length },
-                (_, i) => (tracksInfo as any)[i]
+                (_, i) => (tracksInfo as any)[i],
               );
               for (const track of tracks) {
                 if (track.kind === "subtitles" || track.kind === "captions") {
@@ -901,9 +901,11 @@ export const VideoPlayer = ({
             />
           </Drawer>
         </ClickAwayListener>
-        <ClickAwayListener onClickAway={() => {
-          setDrawerOpenPlayback(false)
-        }}>
+        <ClickAwayListener
+          onClickAway={() => {
+            setDrawerOpenPlayback(false);
+          }}
+        >
           <Drawer
             variant="persistent"
             anchor="bottom"

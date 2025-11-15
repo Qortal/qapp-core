@@ -1,29 +1,29 @@
-import { useEffect } from 'react';
-import { AudioPlayerHandle } from './AudioPlayerControls';
+import { useEffect } from "react";
+import { AudioPlayerHandle } from "./AudioPlayerControls";
 
 export const useAudioPlayerHotkeys = (
   ref: React.RefObject<AudioPlayerHandle | null>,
-  isAudioPlayerAvalable: boolean
+  isAudioPlayerAvalable: boolean,
 ) => {
   useEffect(() => {
     if (!ref?.current || !isAudioPlayerAvalable) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
       const isTyping =
-        tag === 'INPUT' ||
-        tag === 'TEXTAREA' ||
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
         (e.target as HTMLElement)?.isContentEditable;
       if (isTyping) return;
       // Allow system shortcuts
-  if (e.ctrlKey || e.metaKey) {
-    const systemCombos = ["c", "v", "x", "a", "f", "z", "y"];
-    if (systemCombos.includes(e.key.toLowerCase())) return;
-  }
+      if (e.ctrlKey || e.metaKey) {
+        const systemCombos = ["c", "v", "x", "a", "f", "z", "y"];
+        if (systemCombos.includes(e.key.toLowerCase())) return;
+      }
 
       const audio = ref.current;
 
       switch (e.key) {
-        case ' ':
+        case " ":
           e.preventDefault();
           if (audio?.isPlaying) {
             audio.pause();
@@ -32,28 +32,28 @@ export const useAudioPlayerHotkeys = (
           }
 
           break;
-        case 'ArrowLeft':
+        case "ArrowLeft":
           audio?.seekTo((audio.audioEl?.currentTime || 0) - 5);
           break;
-        case 'ArrowRight':
+        case "ArrowRight":
           audio?.seekTo((audio.audioEl?.currentTime || 0) + 5);
           break;
-        case 'm':
-        case 'M':
+        case "m":
+        case "M":
           audio?.toggleMute();
           break;
-        case 'n':
-        case 'N':
+        case "n":
+        case "N":
           audio?.next();
           break;
-        case 'p':
-        case 'P':
+        case "p":
+        case "P":
           audio?.prev();
           break;
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [ref, isAudioPlayerAvalable]);
 };
