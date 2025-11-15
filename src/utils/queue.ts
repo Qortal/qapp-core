@@ -85,12 +85,12 @@ export async function retryTransaction<T>(
 
       attempt++;
       if (attempt === retries) {
-        console.error("Max retries reached. Skipping transaction.");
+        console.error('Max retries reached. Skipping transaction.');
         if (throwError) {
           throw new Error(
             error instanceof Error
               ? error.message
-              : "Unable to process transaction"
+              : 'Unable to process transaction'
           );
         } else {
           return null;

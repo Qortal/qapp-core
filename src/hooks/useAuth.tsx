@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from "react";
-import { useAuthStore } from "../state/auth";
-import { userAccountInfo } from "./useInitializeAuth";
+import { useCallback, useMemo } from 'react';
+import { useAuthStore } from '../state/auth';
+import { userAccountInfo } from './useInitializeAuth';
 
 export const useAuth = () => {
   const address = useAuthStore((s) => s.address);
@@ -23,19 +23,19 @@ export const useAuth = () => {
         const account =
           userAccountInfo ||
           (await qortalRequest({
-            action: "GET_USER_ACCOUNT",
+            action: 'GET_USER_ACCOUNT',
           }));
 
         if (account?.address) {
           const nameData = await qortalRequest({
-            action: "GET_PRIMARY_NAME",
+            action: 'GET_PRIMARY_NAME',
             address: account.address,
           });
-          setUser({ ...account, name: nameData || "" });
+          setUser({ ...account, name: nameData || '' });
         }
       } catch (error) {
         setErrorLoadingUser(
-          error instanceof Error ? error.message : "Unable to authenticate"
+          error instanceof Error ? error.message : 'Unable to authenticate'
         );
       } finally {
         setIsLoadingUser(false);
@@ -46,9 +46,9 @@ export const useAuth = () => {
 
   const switchName = useCallback(
     async (name: string) => {
-      if (!name) throw new Error("No name provided");
+      if (!name) throw new Error('No name provided');
       const response = await fetch(`/names/${name}`);
-      if (!response?.ok) throw new Error("Error fetching name details");
+      if (!response?.ok) throw new Error('Error fetching name details');
       const nameInfo = await response.json();
       const currentAddress = useAuthStore.getState().address;
 

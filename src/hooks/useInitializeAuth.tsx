@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { useAuthStore } from "../state/auth";
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useAuthStore } from '../state/auth';
 
 // ✅ Define Types
 /**
@@ -62,19 +62,19 @@ export const useAuth = ({
         const account =
           userAccountInfo ||
           (await qortalRequest({
-            action: "GET_USER_ACCOUNT",
+            action: 'GET_USER_ACCOUNT',
           }));
 
         if (account?.address) {
           const nameData = await qortalRequest({
-            action: "GET_PRIMARY_NAME",
+            action: 'GET_PRIMARY_NAME',
             address: account.address,
           });
-          setUser({ ...account, name: nameData || "" });
+          setUser({ ...account, name: nameData || '' });
         }
       } catch (error) {
         setErrorLoadingUser(
-          error instanceof Error ? error.message : "Unable to authenticate"
+          error instanceof Error ? error.message : 'Unable to authenticate'
         );
       } finally {
         setIsLoadingUser(false);
@@ -88,7 +88,7 @@ export const useAuth = ({
       try {
         setIsLoadingBalance(true);
         const response = await qortalRequest({
-          action: "GET_BALANCE",
+          action: 'GET_BALANCE',
           address,
         });
         const userBalance = Number(response) || 0;

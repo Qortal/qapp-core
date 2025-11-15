@@ -7,30 +7,30 @@ import {
   useMemo,
   useRef,
   useState,
-} from "react";
-import { QortalGetMetadata } from "../../types/interfaces/resources";
-import { VideoContainer, VideoElement } from "./VideoPlayer-styles";
-import { useVideoPlayerHotKeys } from "./useVideoPlayerHotKeys";
+} from 'react';
+import { QortalGetMetadata } from '../../types/interfaces/resources';
+import { VideoContainer, VideoElement } from './VideoPlayer-styles';
+import { useVideoPlayerHotKeys } from './useVideoPlayerHotKeys';
 import {
   useIsPlaying,
   useProgressStore,
   useVideoStore,
-} from "../../state/video";
-import { useVideoPlayerController } from "./useVideoPlayerController";
-import { LoadingVideo } from "./LoadingVideo";
-import { VideoControlsBar } from "./VideoControlsBar";
-import videojs from "video.js";
-import "video.js/dist/video-js.css";
+} from '../../state/video';
+import { useVideoPlayerController } from './useVideoPlayerController';
+import { LoadingVideo } from './LoadingVideo';
+import { VideoControlsBar } from './VideoControlsBar';
+import videojs from 'video.js';
+import 'video.js/dist/video-js.css';
 
-import { SubtitleManager, SubtitlePublishedData } from "./SubtitleManager";
-import { base64ToBlobUrl } from "../../utils/base64";
-import convert from "srt-webvtt";
-import { TimelineActionsComponent } from "./TimelineActionsComponent";
-import { PlayBackMenu } from "./VideoControls";
-import { useGlobalPlayerStore } from "../../state/pip";
-import { alpha, ClickAwayListener, Drawer } from "@mui/material";
-import { MobileControls } from "./MobileControls";
-import { useLocation } from "react-router-dom";
+import { SubtitleManager, SubtitlePublishedData } from './SubtitleManager';
+import { base64ToBlobUrl } from '../../utils/base64';
+import convert from 'srt-webvtt';
+import { TimelineActionsComponent } from './TimelineActionsComponent';
+import { PlayBackMenu } from './VideoControls';
+import { useGlobalPlayerStore } from '../../state/pip';
+import { alpha, ClickAwayListener, Drawer } from '@mui/material';
+import { MobileControls } from './MobileControls';
+import { useLocation } from 'react-router-dom';
 
 export async function srtBase64ToVttBlobUrl(
   base64Srt: string
@@ -44,34 +44,34 @@ export async function srtBase64ToVttBlobUrl(
     }
 
     // Step 2: Create a Blob from the Uint8Array with correct MIME type
-    const srtBlob = new Blob([bytes], { type: "application/x-subrip" });
+    const srtBlob = new Blob([bytes], { type: 'application/x-subrip' });
     // Step 3: Use convert() with the Blob
     const vttBlobUrl: string = await convert(srtBlob);
     return vttBlobUrl;
   } catch (error) {
-    console.error("Failed to convert SRT to VTT:", error);
+    console.error('Failed to convert SRT to VTT:', error);
     return null;
   }
 }
-type StretchVideoType = "contain" | "fill" | "cover" | "none" | "scale-down";
+type StretchVideoType = 'contain' | 'fill' | 'cover' | 'none' | 'scale-down';
 
 export type TimelineAction =
   | {
-      type: "SEEK";
+      type: 'SEEK';
       time: number;
       duration: number;
       label: string;
       onClick?: () => void;
       seekToTime: number; // ✅ Required for SEEK
-      placement?: "TOP-RIGHT" | "TOP-LEFT" | "BOTTOM-LEFT" | "BOTTOM-RIGHT";
+      placement?: 'TOP-RIGHT' | 'TOP-LEFT' | 'BOTTOM-LEFT' | 'BOTTOM-RIGHT';
     }
   | {
-      type: "CUSTOM";
+      type: 'CUSTOM';
       time: number;
       duration: number;
       label: string;
       onClick: () => void; // ✅ Required for CUSTOM
-      placement?: "TOP-RIGHT" | "TOP-LEFT" | "BOTTOM-LEFT" | "BOTTOM-RIGHT";
+      placement?: 'TOP-RIGHT' | 'TOP-LEFT' | 'BOTTOM-LEFT' | 'BOTTOM-RIGHT';
     };
 export interface VideoPlayerProps {
   qortalVideoResource: QortalGetMetadata;
@@ -90,9 +90,9 @@ export interface VideoPlayerProps {
   path?: string;
   styling?: {
     progressSlider?: {
-      thumbColor?: CSSProperties["color"];
-      railColor?: CSSProperties["color"];
-      trackColor?: CSSProperties["color"];
+      thumbColor?: CSSProperties['color'];
+      railColor?: CSSProperties['color'];
+      trackColor?: CSSProperties['color'];
     };
   };
 }
@@ -116,7 +116,7 @@ async function getVideoMimeTypeFromUrl(
   }
 }
 export const isTouchDevice =
-  "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 export const VideoPlayer = ({
   videoRef,
@@ -136,7 +136,7 @@ export const VideoPlayer = ({
   styling,
 }: VideoPlayerProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [videoObjectFit] = useState<StretchVideoType>("contain");
+  const [videoObjectFit] = useState<StretchVideoType>('contain');
   const { isPlaying, setIsPlaying } = useIsPlaying();
   const isOnTimeline = useRef(false);
   const [width, setWidth] = useState(0);
@@ -196,7 +196,7 @@ export const VideoPlayer = ({
     seekTo,
     togglePictureInPicture,
     downloadResource,
-    isStatusWrong
+    isStatusWrong,
   } = useVideoPlayerController({
     autoPlay,
     playerRef,
@@ -232,22 +232,22 @@ export const VideoPlayer = ({
       }
 
       if (
-        typeof screen.orientation !== "undefined" &&
-        "lock" in screen.orientation &&
-        typeof screen.orientation.lock === "function"
+        typeof screen.orientation !== 'undefined' &&
+        'lock' in screen.orientation &&
+        typeof screen.orientation.lock === 'function'
       ) {
         try {
-          await (screen.orientation as any).lock("landscape");
+          await (screen.orientation as any).lock('landscape');
         } catch (err) {
-          console.warn("Orientation lock failed:", err);
+          console.warn('Orientation lock failed:', err);
         }
       }
       await qortalRequest({
-        action: "SCREEN_ORIENTATION",
-        mode: "landscape",
+        action: 'SCREEN_ORIENTATION',
+        mode: 'landscape',
       });
     } catch (err) {
-      console.error("Failed to enter fullscreen or lock orientation:", err);
+      console.error('Failed to enter fullscreen or lock orientation:', err);
     }
   }, []);
 
@@ -258,23 +258,23 @@ export const VideoPlayer = ({
       }
 
       if (
-        typeof screen.orientation !== "undefined" &&
-        "lock" in screen.orientation &&
-        typeof screen.orientation.lock === "function"
+        typeof screen.orientation !== 'undefined' &&
+        'lock' in screen.orientation &&
+        typeof screen.orientation.lock === 'function'
       ) {
         try {
           // Attempt to reset by locking to 'portrait' or 'any' (if supported)
-          await screen.orientation.lock("portrait"); // or 'any' if supported
+          await screen.orientation.lock('portrait'); // or 'any' if supported
         } catch (err) {
-          console.warn("Orientation lock failed:", err);
+          console.warn('Orientation lock failed:', err);
         }
       }
       await qortalRequest({
-        action: "SCREEN_ORIENTATION",
-        mode: "portrait",
+        action: 'SCREEN_ORIENTATION',
+        mode: 'portrait',
       });
     } catch (err) {
-      console.warn("Error exiting fullscreen or unlocking orientation:", err);
+      console.warn('Error exiting fullscreen or unlocking orientation:', err);
     }
   }, [isFullscreen]);
 
@@ -335,10 +335,10 @@ export const VideoPlayer = ({
   const updateProgress = useCallback(() => {
     if (!isPlaying || !isPlayerInitialized) return;
     const player = playerRef?.current;
-    if (!player || typeof player?.currentTime !== "function") return;
+    if (!player || typeof player?.currentTime !== 'function') return;
 
     const currentTime = player.currentTime();
-    if (typeof currentTime === "number" && videoLocation && currentTime > 0.1) {
+    if (typeof currentTime === 'number' && videoLocation && currentTime > 0.1) {
       setProgress(videoLocation, currentTime);
       setLocalProgress(currentTime);
     }
@@ -373,7 +373,7 @@ export const VideoPlayer = ({
         setVolume(video.volume);
         setIsMuted(video.muted);
       } catch (error) {
-        console.error("onVolumeChangeHandler", onVolumeChangeHandler);
+        console.error('onVolumeChangeHandler', onVolumeChangeHandler);
       }
     },
     [setIsMuted, setVolume]
@@ -381,7 +381,7 @@ export const VideoPlayer = ({
 
   const videoStylesContainer = useMemo(() => {
     return {
-      cursor: "auto",
+      cursor: 'auto',
       ...videoStyles?.videoContainer,
     };
   }, [showControls, isVideoPlayerSmall]);
@@ -390,10 +390,10 @@ export const VideoPlayer = ({
     return {
       ...videoStyles?.video,
       objectFit: videoObjectFit,
-      backgroundColor: "#000000",
-      height: isFullscreen ? "calc(100vh - 40px)" : "100%",
-      width: "100%",
-      cursor: showControls ? "default" : "none",
+      backgroundColor: '#000000',
+      height: isFullscreen ? 'calc(100vh - 40px)' : '100%',
+      width: '100%',
+      cursor: showControls ? 'default' : 'none',
     };
   }, [videoObjectFit, isFullscreen, showControls]);
 
@@ -413,23 +413,23 @@ export const VideoPlayer = ({
   useEffect(() => {
     if (!isPlayerInitialized) return;
     const player = playerRef.current;
-    if (!player || typeof player.on !== "function") return;
+    if (!player || typeof player.on !== 'function') return;
 
     const handleLoadedMetadata = () => {
       const duration = player.duration?.();
 
-      if (typeof duration === "number" && !isNaN(duration)) {
+      if (typeof duration === 'number' && !isNaN(duration)) {
         setDuration(duration);
       }
     };
 
-    player.on("loadedmetadata", handleLoadedMetadata);
+    player.on('loadedmetadata', handleLoadedMetadata);
 
     if (player?.readyState() >= 1) {
       handleLoadedMetadata();
     }
     return () => {
-      player.off("loadedmetadata", handleLoadedMetadata);
+      player.off('loadedmetadata', handleLoadedMetadata);
     };
   }, [isPlayerInitialized]);
 
@@ -522,7 +522,7 @@ export const VideoPlayer = ({
         previousSubtitleUrlRef.current = null;
       }
       let blobUrl;
-      if (subtitle?.type === "application/x-subrip") {
+      if (subtitle?.type === 'application/x-subrip') {
         blobUrl = await srtBase64ToVttBlobUrl(subtitle.subtitleData);
       } else {
         blobUrl = base64ToBlobUrl(subtitle.subtitleData, subtitle.type);
@@ -552,7 +552,7 @@ export const VideoPlayer = ({
       }
       playerRef.current?.addRemoteTextTrack(
         {
-          kind: "subtitles",
+          kind: 'subtitles',
           src: blobUrl,
           srclang: subtitle.language,
           label: subtitle.language,
@@ -574,8 +574,8 @@ export const VideoPlayer = ({
         (_, i) => (tracksInfo as any)[i]
       );
       for (const track of tracks) {
-        if (track.kind === "subtitles") {
-          track.mode = "showing"; // force display
+        if (track.kind === 'subtitles') {
+          track.mode = 'showing'; // force display
         }
       }
     },
@@ -622,12 +622,12 @@ export const VideoPlayer = ({
           controls: false,
           responsive: true,
           // fluid: true,
-          poster: startPlay ? "" : poster,
+          poster: startPlay ? '' : poster,
           // aspectRatio: "16:9",
           sources: [
             {
               src: resourceUrl,
-              type: type || "video/mp4", // fallback
+              type: type || 'video/mp4', // fallback
             },
           ],
         };
@@ -638,14 +638,14 @@ export const VideoPlayer = ({
           playerRef.current = videojs(ref.current, options, () => {
             setIsPlayerInitialized(true);
             ref.current.tabIndex = -1; // Prevents focus entirely
-            ref.current.style.outline = "none"; // Backup
-            playerRef.current?.poster("");
+            ref.current.style.outline = 'none'; // Backup
+            playerRef.current?.poster('');
             playerRef.current?.playbackRate(playbackRate);
             playerRef.current?.volume(volume);
             const key = `${resource.service}-${resource.name}-${resource.identifier}`;
             if (key) {
               const savedProgress = getProgress(key);
-              if (typeof savedProgress === "number") {
+              if (typeof savedProgress === 'number') {
                 playerRef.current?.currentTime(savedProgress);
               }
             }
@@ -662,8 +662,8 @@ export const VideoPlayer = ({
                 (_, i) => (tracksInfo as any)[i]
               );
               for (const track of tracks) {
-                if (track.kind === "subtitles" || track.kind === "captions") {
-                  if (track.mode === "showing") {
+                if (track.kind === 'subtitles' || track.kind === 'captions') {
+                  if (track.mode === 'showing') {
                     activeTrack = track;
                     break;
                   }
@@ -681,18 +681,18 @@ export const VideoPlayer = ({
             checkActiveSubtitle();
 
             // Use Video.js event system
-            tracksInfo?.on("change", checkActiveSubtitle);
+            tracksInfo?.on('change', checkActiveSubtitle);
           });
-          playerRef.current?.on("error", () => {
+          playerRef.current?.on('error', () => {
             const error = playerRef.current?.error();
-            console.error("Video.js playback error:", error);
+            console.error('Video.js playback error:', error);
           });
         }
       };
 
       setupPlayer();
     } catch (error) {
-      console.error("useEffect start player", error);
+      console.error('useEffect start player', error);
     }
   }, [isReady, resourceUrl, startPlay, poster, videoLocactionStringified]);
 
@@ -708,10 +708,10 @@ export const VideoPlayer = ({
       }
     };
 
-    player.on("ratechange", handleRateChange);
+    player.on('ratechange', handleRateChange);
 
     return () => {
-      player.off("ratechange", handleRateChange);
+      player.off('ratechange', handleRateChange);
     };
   }, [isPlayerInitialized]);
   const hideTimeoutRef = useRef<number | null>(null);
@@ -730,10 +730,10 @@ export const VideoPlayer = ({
     const container = containerRef.current;
     if (!container) return;
 
-    container.addEventListener("touchstart", handleInteraction);
+    container.addEventListener('touchstart', handleInteraction);
 
     return () => {
-      container.removeEventListener("touchstart", handleInteraction);
+      container.removeEventListener('touchstart', handleInteraction);
     };
   }, []);
 
@@ -876,14 +876,14 @@ export const VideoPlayer = ({
             slotProps={{
               paper: {
                 sx: {
-                  backgroundColor: alpha("#181818", 0.98),
+                  backgroundColor: alpha('#181818', 0.98),
                   borderRadius: 2,
-                  width: "90%",
-                  margin: "0 auto",
+                  width: '90%',
+                  margin: '0 auto',
                   p: 1,
-                  backgroundImage: "none",
+                  backgroundImage: 'none',
                   mb: 1,
-                  position: "absolute",
+                  position: 'absolute',
                 },
               },
             }}
@@ -901,9 +901,11 @@ export const VideoPlayer = ({
             />
           </Drawer>
         </ClickAwayListener>
-        <ClickAwayListener onClickAway={() => {
-          setDrawerOpenPlayback(false)
-        }}>
+        <ClickAwayListener
+          onClickAway={() => {
+            setDrawerOpenPlayback(false);
+          }}
+        >
           <Drawer
             variant="persistent"
             anchor="bottom"
@@ -912,14 +914,14 @@ export const VideoPlayer = ({
             slotProps={{
               paper: {
                 sx: {
-                  backgroundColor: alpha("#181818", 0.98),
+                  backgroundColor: alpha('#181818', 0.98),
                   borderRadius: 2,
-                  width: "90%",
-                  margin: "0 auto",
+                  width: '90%',
+                  margin: '0 auto',
                   p: 1,
-                  backgroundImage: "none",
+                  backgroundImage: 'none',
                   mb: 1,
-                  position: "absolute",
+                  position: 'absolute',
                 },
               },
             }}

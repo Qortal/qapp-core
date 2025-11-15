@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from "react";
-import { useAuthStore } from "../state/auth";
+import { useCallback, useMemo } from 'react';
+import { useAuthStore } from '../state/auth';
 
 export const useQortBalance = () => {
   const address = useAuthStore((s) => s.address);
@@ -16,7 +16,7 @@ export const useQortBalance = () => {
       try {
         setIsLoadingBalance(true);
         const response = await qortalRequest({
-          action: "GET_BALANCE",
+          action: 'GET_BALANCE',
           address,
         });
         const userBalance = Number(response) || 0;
@@ -33,7 +33,7 @@ export const useQortBalance = () => {
   );
 
   const manualGetBalance = useCallback(async (): Promise<number | Error> => {
-    if (!address) throw new Error("Not authenticated");
+    if (!address) throw new Error('Not authenticated');
     const res = await getBalance(address);
     return res;
   }, [address]);

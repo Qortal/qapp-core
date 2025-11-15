@@ -18,8 +18,9 @@
     "dist"
   ],
   "scripts": {
-    "generate-i18n": "./scripts/generate_locales.js",
-    "build": "npm run generate-i18n && tsup",
+    "generate-i18n": "node ./scripts/generate_locales.js",
+    "build": "npm run build:types && npm run generate-i18n && tsup",
+    "build:types": "tsc -p tsconfig.build.json",
     "format": "prettier --write .",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "prepare": "npm run build",

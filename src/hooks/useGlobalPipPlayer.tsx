@@ -1,18 +1,18 @@
 // GlobalVideoPlayer.tsx
-import videojs from "video.js";
-import { useGlobalPlayerStore } from "../state/pip";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { Box, IconButton } from "@mui/material";
-import { VideoContainer } from "../components/VideoPlayer/VideoPlayer-styles";
-import { Rnd } from "react-rnd";
-import { useProgressStore, useVideoStore } from "../state/video";
-import CloseIcon from "@mui/icons-material/Close";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
-import OpenInFullIcon from "@mui/icons-material/OpenInFull";
-import { GlobalContext } from "../context/GlobalProvider";
-import { isTouchDevice } from "../components/VideoPlayer/VideoPlayer";
-import { useNavigate } from "react-router-dom";
+import videojs from 'video.js';
+import { useGlobalPlayerStore } from '../state/pip';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Box, IconButton } from '@mui/material';
+import { VideoContainer } from '../components/VideoPlayer/VideoPlayer-styles';
+import { Rnd } from 'react-rnd';
+import { useProgressStore, useVideoStore } from '../state/video';
+import CloseIcon from '@mui/icons-material/Close';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import { GlobalContext } from '../context/GlobalProvider';
+import { isTouchDevice } from '../components/VideoPlayer/VideoPlayer';
+import { useNavigate } from 'react-router-dom';
 export const GlobalPipPlayer = () => {
   const {
     videoSrc,
@@ -28,21 +28,19 @@ export const GlobalPipPlayer = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
- const volume = useVideoStore(
-    (state) => state.playbackSettings.volume
-  );
+  const volume = useVideoStore((state) => state.playbackSettings.volume);
   const context = useContext(GlobalContext);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const videoNode = useRef<HTMLVideoElement>(null);
   const hideTimeoutRef = useRef<number | null>(null);
   const { setProgress } = useProgressStore();
 
   const updateProgress = useCallback(() => {
     const player = playerRef?.current;
-    if (!player || typeof player?.currentTime !== "function") return;
+    if (!player || typeof player?.currentTime !== 'function') return;
 
     const currentTime = player.currentTime();
-    if (typeof currentTime === "number" && videoId && currentTime > 0.1) {
+    if (typeof currentTime === 'number' && videoId && currentTime > 0.1) {
       setProgress(videoId, currentTime);
     }
   }, [videoId]);
@@ -56,12 +54,12 @@ export const GlobalPipPlayer = () => {
         responsive: true,
         fluid: true,
       });
-       playerRef.current?.on("error", () => {
-            // Optional: display user-friendly message
-          });
+      playerRef.current?.on('error', () => {
+        // Optional: display user-friendly message
+      });
 
       // Resume playback if needed
-      playerRef.current.on("ready", () => {
+      playerRef.current.on('ready', () => {
         if (videoSrc) {
           playerRef.current.src(videoSrc);
           playerRef.current.currentTime(currentTime);
@@ -85,20 +83,18 @@ export const GlobalPipPlayer = () => {
     const player = playerRef.current;
 
     if (!player) return;
-   
+
     if (!videoSrc && player.src) {
       // Only pause the player and unload the source without re-triggering playback
       player.pause();
 
-    
-    // player.src({ src: '', type: '' }); // ⬅️ this is the safe way to clear it
-  
+      // player.src({ src: '', type: '' }); // ⬅️ this is the safe way to clear it
 
-  setPlaying(false);
-  setHasStarted(false);
+      setPlaying(false);
+      setHasStarted(false);
 
       // Optionally clear the poster and currentTime
-      player.poster("");
+      player.poster('');
       player.currentTime(0);
 
       return;
@@ -108,13 +104,13 @@ export const GlobalPipPlayer = () => {
       // Set source and resume if needed
       player.src({ src: videoSrc, type: type });
       player.currentTime(currentTime);
-      player.volume(volume)
+      player.volume(volume);
       if (isPlaying) {
         const playPromise = player.play();
 
         if (playPromise?.catch) {
           playPromise.catch((err: any) => {
-            console.warn("Unable to autoplay:", err);
+            console.warn('Unable to autoplay:', err);
           });
         }
       } else {
@@ -147,32 +143,33 @@ export const GlobalPipPlayer = () => {
 
   const [height, setHeight] = useState(300);
   const [width, setWidth] = useState(400);
-const savedHeightRef = useRef<null | number>(null)
-const savedWidthRef = useRef<null | number>(null)
+  const savedHeightRef = useRef<null | number>(null);
+  const savedWidthRef = useRef<null | number>(null);
 
-useEffect(() => {
-  if (!videoSrc) return;
+  useEffect(() => {
+    if (!videoSrc) return;
 
-  const screenWidth = window.innerWidth;
-  const screenHeight = window.innerHeight;
-  const aspectRatio = 0.75; // 300 / 400 = 3:4
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const aspectRatio = 0.75; // 300 / 400 = 3:4
 
-  const maxWidthByScreen = screenWidth * 0.75;
-  const maxWidthByHeight = (screenHeight * 0.3) / aspectRatio;
+    const maxWidthByScreen = screenWidth * 0.75;
+    const maxWidthByHeight = (screenHeight * 0.3) / aspectRatio;
 
-  const maxWidth = savedWidthRef.current || Math.min(maxWidthByScreen, maxWidthByHeight);
-  const maxHeight = savedHeightRef.current || maxWidth * aspectRatio;
+    const maxWidth =
+      savedWidthRef.current || Math.min(maxWidthByScreen, maxWidthByHeight);
+    const maxHeight = savedHeightRef.current || maxWidth * aspectRatio;
 
-  setWidth(maxWidth);
-  setHeight(maxHeight);
-  
-  rndRef.current.updatePosition({
-    x: screenWidth - maxWidth - margin,
-    y: screenHeight - maxHeight - margin,
-    width: maxWidth,
-    height: maxHeight,
-  });
-}, [videoSrc]);
+    setWidth(maxWidth);
+    setHeight(maxHeight);
+
+    rndRef.current.updatePosition({
+      x: screenWidth - maxWidth - margin,
+      y: screenHeight - maxHeight - margin,
+      width: maxWidth,
+      height: maxHeight,
+    });
+  }, [videoSrc]);
 
   const [showControls, setShowControls] = useState(false);
 
@@ -193,10 +190,10 @@ useEffect(() => {
       try {
         player.play();
       } catch (err) {
-        console.warn("Play failed:", err);
+        console.warn('Play failed:', err);
       }
     } catch (error) {
-      console.error("togglePlay", error);
+      console.error('togglePlay', error);
     }
   }, []);
 
@@ -207,7 +204,7 @@ useEffect(() => {
     try {
       player.pause();
     } catch (err) {
-      console.warn("Play failed:", err);
+      console.warn('Play failed:', err);
     }
   }, []);
 
@@ -235,18 +232,17 @@ useEffect(() => {
       resetHideTimeout();
     };
 
-    container.addEventListener("touchstart", handleInteraction, {
+    container.addEventListener('touchstart', handleInteraction, {
       passive: true,
       capture: true,
     });
 
     return () => {
-      container.removeEventListener("touchstart", handleInteraction, {
+      container.removeEventListener('touchstart', handleInteraction, {
         capture: true,
       });
     };
   }, [videoSrc]);
-
 
   return (
     <Rnd
@@ -264,18 +260,18 @@ useEffect(() => {
       //   onDragStart={onDragStart}
       //   onDragStop={onDragStop}
       style={{
-        display: hasStarted ? "block" : "none",
-        position: "fixed",
+        display: hasStarted ? 'block' : 'none',
+        position: 'fixed',
         zIndex: 999999999,
 
-        cursor: "default",
+        cursor: 'default',
       }}
       size={{ width, height }}
       onResize={(e, direction, ref, delta, position) => {
         setWidth(ref.offsetWidth);
         setHeight(ref.offsetHeight);
-        savedHeightRef.current = ref.offsetHeight
-        savedWidthRef.current = ref.offsetWidth
+        savedHeightRef.current = ref.offsetHeight;
+        savedWidthRef.current = ref.offsetWidth;
       }}
       //  default={{
       //     x: 500,
@@ -301,12 +297,12 @@ useEffect(() => {
         ref={containerRef}
         sx={{
           height,
-          pointerEvents: "auto",
+          pointerEvents: 'auto',
           width,
-          position: "relative",
-          background: "black",
-          overflow: "hidden",
-          borderRadius: "10px",
+          position: 'relative',
+          background: 'black',
+          overflow: 'hidden',
+          borderRadius: '10px',
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -315,119 +311,127 @@ useEffect(() => {
         {showControls && (
           <Box
             sx={{
-              position: "absolute",
+              position: 'absolute',
               top: 0,
               bottom: 0,
               left: 0,
               right: 0,
               zIndex: 1,
               opacity: showControls ? 1 : 0,
-              pointerEvents: showControls ? "auto" : "none",
-              transition: "opacity 0.5s ease-in-out",
+              pointerEvents: showControls ? 'auto' : 'none',
+              transition: 'opacity 0.5s ease-in-out',
             }}
           >
             <Box
               sx={{
-                position: "absolute",
-                background: "rgba(0,0,0,.5)",
+                position: 'absolute',
+                background: 'rgba(0,0,0,.5)',
                 top: 0,
                 bottom: 0,
                 left: 0,
                 right: 0,
                 zIndex: 1,
                 opacity: showControls ? 1 : 0,
-                pointerEvents: showControls ? "auto" : "none",
-                transition: "opacity 0.5s ease-in-out",
+                pointerEvents: showControls ? 'auto' : 'none',
+                transition: 'opacity 0.5s ease-in-out',
               }}
             />
             <IconButton
               sx={{
-                position: "absolute",
+                position: 'absolute',
                 top: 5,
                 opacity: 1,
                 right: 5,
                 zIndex: 2,
-                 background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '5px'
+                background: 'rgba(0,0,0,0.3)',
+                borderRadius: '50%',
+                padding: '5px',
               }}
               onClick={reset}
               onTouchStart={reset}
             >
-              <CloseIcon sx={{
-            color: 'white',
-          }} />
+              <CloseIcon
+                sx={{
+                  color: 'white',
+                }}
+              />
             </IconButton>
             {location && (
               <IconButton
                 sx={{
-                  position: "absolute",
+                  position: 'absolute',
                   top: 5,
                   left: 5,
                   zIndex: 2,
                   opacity: 1,
-                 background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '5px'
+                  background: 'rgba(0,0,0,0.3)',
+                  borderRadius: '50%',
+                  padding: '5px',
                 }}
                 onClick={(e) => {
-                  e.stopPropagation()
+                  e.stopPropagation();
                   if (navigate) {
                     navigate(location);
                   }
                 }}
                 onTouchStart={(e) => {
-                  e.stopPropagation()
+                  e.stopPropagation();
                   if (navigate) {
                     navigate(location);
                   }
                 }}
               >
-                <OpenInFullIcon sx={{
-            color: 'white',
-          }} />
+                <OpenInFullIcon
+                  sx={{
+                    color: 'white',
+                  }}
+                />
               </IconButton>
             )}
             {playing && (
               <IconButton
                 sx={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
                   opacity: 1,
                   zIndex: 2,
                   background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '5px'
+                  borderRadius: '50%',
+                  padding: '5px',
                 }}
                 onClick={stopPlay}
                 onTouchStart={stopPlay}
               >
-                <PauseIcon sx={{
-            color: 'white',
-          }} />
+                <PauseIcon
+                  sx={{
+                    color: 'white',
+                  }}
+                />
               </IconButton>
             )}
             {!playing && (
               <IconButton
                 sx={{
-                  position: "absolute",
+                  position: 'absolute',
                   opacity: 1,
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
                   zIndex: 2,
                   background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '5px'
+                  borderRadius: '50%',
+                  padding: '5px',
                 }}
                 onClick={startPlay}
                 onTouchStart={startPlay}
               >
-                <PlayArrowIcon sx={{
-            color: 'white',
-          }} />
+                <PlayArrowIcon
+                  sx={{
+                    color: 'white',
+                  }}
+                />
               </IconButton>
             )}
 

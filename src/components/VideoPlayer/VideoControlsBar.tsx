@@ -1,5 +1,5 @@
-import { Box, IconButton } from "@mui/material";
-import { ControlsContainer } from "./VideoPlayer-styles";
+import { Box, IconButton } from '@mui/material';
+import { ControlsContainer } from './VideoPlayer-styles';
 import {
   FullscreenButton,
   PlaybackRate,
@@ -8,12 +8,12 @@ import {
   ReloadButton,
   VideoTime,
   VolumeControl,
-} from "./VideoControls";
-import SubtitlesIcon from "@mui/icons-material/Subtitles";
-import { CustomFontTooltip } from "./CustomFontTooltip";
-import { CSSProperties, RefObject } from "react";
-import { useLibTranslation } from "../../hooks/useLibTranslation";
-import i18n from "../../i18n/i18n";
+} from './VideoControls';
+import SubtitlesIcon from '@mui/icons-material/Subtitles';
+import { CustomFontTooltip } from './CustomFontTooltip';
+import { CSSProperties, RefObject } from 'react';
+import { useLibTranslation } from '../../hooks/useLibTranslation';
+import i18n from '../../i18n/i18n';
 interface VideoControlsBarProps {
   canPlay: boolean;
   isScreenSmall: boolean;
@@ -45,9 +45,9 @@ interface VideoControlsBarProps {
   isOnTimeline: RefObject<boolean>;
   styling?: {
     progressSlider?: {
-      thumbColor?: CSSProperties["color"];
-      railColor?: CSSProperties["color"];
-      trackColor?: CSSProperties["color"];
+      thumbColor?: CSSProperties['color'];
+      railColor?: CSSProperties['color'];
+      trackColor?: CSSProperties['color'];
     };
   };
 }
@@ -81,16 +81,16 @@ export const VideoControlsBar = ({
   togglePictureInPicture,
   isVideoPlayerSmall,
   isOnTimeline,
-  styling
+  styling,
 }: VideoControlsBarProps) => {
   const { t } = useLibTranslation();
 
   const showMobileControls = isScreenSmall && canPlay;
 
   const controlGroupSX = {
-    display: "flex",
-    gap: "5px",
-    alignItems: "center",
+    display: 'flex',
+    gap: '5px',
+    alignItems: 'center',
     height: controlsHeight,
   };
 
@@ -98,7 +98,7 @@ export const VideoControlsBar = ({
   if (isFullScreen && showControlsFullScreen) {
     additionalStyles = {
       opacity: 1,
-      position: "fixed",
+      position: 'fixed',
       bottom: 0,
     };
   }
@@ -106,19 +106,19 @@ export const VideoControlsBar = ({
   return (
     <ControlsContainer
       style={{
-        padding: "0px",
+        padding: '0px',
         opacity: showControls ? 1 : 0,
-        pointerEvents: showControls ? "auto" : "none",
-        transition: "opacity 0.4s ease-in-out",
-        width: "100%",
+        pointerEvents: showControls ? 'auto' : 'none',
+        transition: 'opacity 0.4s ease-in-out',
+        width: '100%',
       }}
     >
       {showMobileControls ? null : canPlay ? (
         <Box
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
           }}
         >
           <ProgressSlider
@@ -134,8 +134,8 @@ export const VideoControlsBar = ({
           {!isVideoPlayerSmall && (
             <Box
               sx={{
-                width: "100%",
-                display: "flex",
+                width: '100%',
+                display: 'flex',
               }}
             >
               <Box sx={controlGroupSX}>
@@ -145,14 +145,14 @@ export const VideoControlsBar = ({
                 <VolumeControl
                   onVolumeChange={onVolumeChange}
                   volume={volume}
-                  sliderWidth={"100px"}
+                  sliderWidth={'100px'}
                   isMuted={isMuted}
                   toggleMute={toggleMute}
                 />
                 <VideoTime progress={progress} duration={duration} />
               </Box>
 
-              <Box sx={{ ...controlGroupSX, marginLeft: "auto" }}>
+              <Box sx={{ ...controlGroupSX, marginLeft: 'auto' }}>
                 <PlaybackRate
                   openPlaybackMenu={openPlaybackMenu}
                   onSelect={onSelectPlaybackRate}
@@ -161,7 +161,7 @@ export const VideoControlsBar = ({
                   decreaseSpeed={decreaseSpeed}
                 />
                 <CustomFontTooltip
-                  title={t("subtitle.subtitles")}
+                  title={t('subtitle.subtitles')}
                   placement="bottom"
                   arrow
                 >
@@ -171,7 +171,7 @@ export const VideoControlsBar = ({
                   >
                     <SubtitlesIcon
                       sx={{
-                        color: "white",
+                        color: 'white',
                       }}
                     />
                   </IconButton>

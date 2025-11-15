@@ -1,8 +1,8 @@
-import { Box, Typography } from "@mui/material";
-import { BarSpinner } from "./Spinners/BarSpinner/BarSpinner";
-import { CSSProperties } from "react";
+import { Box, Typography } from '@mui/material';
+import { BarSpinner } from './Spinners/BarSpinner/BarSpinner';
+import { CSSProperties } from 'react';
 
-export type LoaderListStatus = "LOADING" | "NO_RESULTS"
+export type LoaderListStatus = 'LOADING' | 'NO_RESULTS';
 
 interface ListLoaderProps {
   isLoading: boolean;
@@ -10,8 +10,8 @@ interface ListLoaderProps {
   resultsLength: number;
   noResultsMessage?: string; // Optional message when no results
   children: React.ReactNode; // Required, to render the list content
-  loaderList?:  (status: LoaderListStatus) => React.ReactNode; // Function type
-  loaderHeight?: CSSProperties
+  loaderList?: (status: LoaderListStatus) => React.ReactNode; // Function type
+  loaderHeight?: CSSProperties;
 }
 
 export const ListLoader = ({
@@ -21,28 +21,22 @@ export const ListLoader = ({
   children,
   noResultsMessage,
   loaderList,
-  loaderHeight
+  loaderHeight,
 }: ListLoaderProps) => {
   return (
     <>
-      {loaderList && isLoading && (
-        <>
-        {loaderList("LOADING")}
-        </>
-      )}
+      {loaderList && isLoading && <>{loaderList('LOADING')}</>}
       {loaderList && !isLoading && resultsLength === 0 && (
-        <>
-        {loaderList("NO_RESULTS")}
-        </>
+        <>{loaderList('NO_RESULTS')}</>
       )}
       {!loaderList && isLoading && (
         <Box
           sx={{
-            display: "flex",
-            gap: "20px",
-            alignItems: "center",
-            overflow: "auto",
-            height: loaderHeight || "auto"
+            display: 'flex',
+            gap: '20px',
+            alignItems: 'center',
+            overflow: 'auto',
+            height: loaderHeight || 'auto',
           }}
         >
           <BarSpinner width="22px" color="green" />
@@ -52,7 +46,7 @@ export const ListLoader = ({
       {!loaderList && !isLoading && resultsLength === 0 && (
         <Typography
           style={{
-            display: "block",
+            display: 'block',
           }}
         >
           {noResultsMessage}

@@ -8,9 +8,9 @@ import {
   Slider,
   Typography,
   useTheme,
-} from "@mui/material";
-export const fontSizeExSmall = "60%";
-export const fontSizeSmall = "80%";
+} from '@mui/material';
+export const fontSizeExSmall = '60%';
+export const fontSizeSmall = '80%';
 import {
   Fullscreen,
   Pause,
@@ -18,26 +18,26 @@ import {
   Refresh,
   VolumeOff,
   VolumeUp,
-} from "@mui/icons-material";
-import { formatTime } from "../../utils/time.js";
-import { CustomFontTooltip } from "./CustomFontTooltip.js";
-import { useEffect, useRef, useState } from "react";
-import SlowMotionVideoIcon from "@mui/icons-material/SlowMotionVideo";
-const buttonPaddingBig = "6px";
-const buttonPaddingSmall = "4px";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-import CheckIcon from "@mui/icons-material/Check";
-import { useLibTranslation } from "../../hooks/useLibTranslation.js";
+} from '@mui/icons-material';
+import { formatTime } from '../../utils/time.js';
+import { CustomFontTooltip } from './CustomFontTooltip.js';
+import { useEffect, useRef, useState } from 'react';
+import SlowMotionVideoIcon from '@mui/icons-material/SlowMotionVideo';
+const buttonPaddingBig = '6px';
+const buttonPaddingSmall = '4px';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import CheckIcon from '@mui/icons-material/Check';
+import { useLibTranslation } from '../../hooks/useLibTranslation.js';
 
 export const PlayButton = ({ togglePlay, isPlaying, isScreenSmall }: any) => {
   const { t } = useLibTranslation();
 
   return (
-    <CustomFontTooltip title={t("video.play_pause")} placement="bottom" arrow>
+    <CustomFontTooltip title={t('video.play_pause')} placement="bottom" arrow>
       <IconButton
         sx={{
-          color: "white",
+          color: 'white',
           padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
         }}
         onClick={() => togglePlay()}
@@ -52,10 +52,10 @@ export const ReloadButton = ({ reloadVideo, isScreenSmall }: any) => {
   const { t } = useLibTranslation();
 
   return (
-    <CustomFontTooltip title={t("video.reload_video")} placement="bottom" arrow>
+    <CustomFontTooltip title={t('video.reload_video')} placement="bottom" arrow>
       <IconButton
         sx={{
-          color: "white",
+          color: 'white',
           padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
         }}
         onClick={reloadVideo}
@@ -76,9 +76,9 @@ export const ProgressSlider = ({
   isOnTimeline,
   railColor,
   thumbColor,
-  trackColor
+  trackColor,
 }: any) => {
-  const sliderRef = useRef(null);
+  const sliderRef = useRef<HTMLDivElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [sliderValue, setSliderValue] = useState(0); // local slider value
   const [hoverX, setHoverX] = useState<number | null>(null);
@@ -98,7 +98,7 @@ export const ProgressSlider = ({
   };
   const onProgressChange = (e: any, value: number | number[]) => {
     const clientX =
-      "touches" in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+      'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
     if (clientX && resetHideTimeout) {
       showTimeFunc(value as number, clientX);
     }
@@ -182,19 +182,19 @@ export const ProgressSlider = ({
     <Box
       position="relative"
       sx={{
-        width: "100%",
-        padding: isVideoPlayerSmall ? "0px" : "0px 10px",
+        width: '100%',
+        padding: isVideoPlayerSmall ? '0px' : '0px 10px',
       }}
     >
       <Box
         ref={hoverAnchorRef}
         sx={{
-          position: "absolute",
+          position: 'absolute',
           top: 0,
-          width: "1px",
-          height: "1px",
-          pointerEvents: "none",
-          transform: "translateX(-50%)", // center popper on the anchor
+          width: '1px',
+          height: '1px',
+          pointerEvents: 'none',
+          transform: 'translateX(-50%)', // center popper on the anchor
         }}
       />
       <Slider
@@ -209,30 +209,30 @@ export const ProgressSlider = ({
         max={duration || 100}
         step={0.1}
         sx={{
-          color: "#00abff",
-          padding: "0px",
-          borderRadius: "0px",
-          height: "0px",
-          "@media (pointer: coarse)": { padding: "0px" },
-          "& .MuiSlider-thumb": {
-            backgroundColor: thumbColor || "red",
-            width: "14px",
-            height: "14px",
+          color: '#00abff',
+          padding: '0px',
+          borderRadius: '0px',
+          height: '0px',
+          '@media (pointer: coarse)': { padding: '0px' },
+          '& .MuiSlider-thumb': {
+            backgroundColor: thumbColor || 'red',
+            width: '14px',
+            height: '14px',
           },
-          "& .MuiSlider-thumb::after": {
-            width: "14px",
-            height: "14px",
-            backgroundColor: thumbColor || "red",
+          '& .MuiSlider-thumb::after': {
+            width: '14px',
+            height: '14px',
+            backgroundColor: thumbColor || 'red',
           },
-          "& .MuiSlider-rail": {
+          '& .MuiSlider-rail': {
             opacity: 0.5,
-            height: "6px",
-            backgroundColor: railColor || "#73859f80",
+            height: '6px',
+            backgroundColor: railColor || '#73859f80',
           },
-          "& .MuiSlider-track": {
-            height: "6px",
-            border: "0px",
-            backgroundColor: trackColor || "red",
+          '& .MuiSlider-track': {
+            height: '6px',
+            border: '0px',
+            backgroundColor: trackColor || 'red',
           },
         }}
       />
@@ -242,23 +242,23 @@ export const ProgressSlider = ({
           anchorEl={hoverAnchorRef.current}
           placement="top"
           disablePortal
-          modifiers={[{ name: "offset", options: { offset: [10, 0] } }]}
+          modifiers={[{ name: 'offset', options: { offset: [10, 0] } }]}
         >
           <Box
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              bgcolor: alpha("#181818", 0.75),
-              padding: "5px",
-              borderRadius: "5px",
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              bgcolor: alpha('#181818', 0.75),
+              padding: '5px',
+              borderRadius: '5px',
             }}
           >
             <Typography
               sx={{
-                fontSize: "0.8rom",
-                textShadow: "0 0 5px rgba(0, 0, 0, 0.7)",
-                fontFamily: "sans-serif",
+                fontSize: '0.8rom',
+                textShadow: '0 0 5px rgba(0, 0, 0, 0.7)',
+                fontFamily: 'sans-serif',
               }}
             >
               {formatTime(showDuration)}
@@ -275,7 +275,7 @@ export const VideoTime = ({ progress, isScreenSmall, duration }: any) => {
 
   return (
     <CustomFontTooltip
-      title={t("video.seek_video")}
+      title={t('video.seek_video')}
       placement="bottom"
       arrow
       disableHoverListener={isScreenSmall}
@@ -285,15 +285,15 @@ export const VideoTime = ({ progress, isScreenSmall, duration }: any) => {
       <Typography
         sx={{
           fontSize: isScreenSmall ? fontSizeExSmall : fontSizeSmall,
-          color: "white",
-          visibility: typeof duration !== "number" ? "hidden" : "visible",
-          whiteSpace: "nowrap",
-          fontFamily: "sans-serif",
+          color: 'white',
+          visibility: typeof duration !== 'number' ? 'hidden' : 'visible',
+          whiteSpace: 'nowrap',
+          fontFamily: 'sans-serif',
         }}
       >
-        {typeof duration === "number" ? formatTime(progress) : ""}
-        {" / "}
-        {typeof duration === "number" ? formatTime(duration) : ""}
+        {typeof duration === 'number' ? formatTime(progress) : ''}
+        {' / '}
+        {typeof duration === 'number' ? formatTime(duration) : ''}
       </Typography>
     </CustomFontTooltip>
   );
@@ -303,10 +303,10 @@ const VolumeButton = ({ isMuted, toggleMute }: any) => {
   const { t } = useLibTranslation();
 
   return (
-    <CustomFontTooltip title={t("video.toggle_mute")} placement="bottom" arrow>
+    <CustomFontTooltip title={t('video.toggle_mute')} placement="bottom" arrow>
       <IconButton
         sx={{
-          color: "white",
+          color: 'white',
         }}
         onClick={toggleMute}
       >
@@ -317,10 +317,10 @@ const VolumeButton = ({ isMuted, toggleMute }: any) => {
 };
 
 const VolumeSlider = ({ width, volume, onVolumeChange }: any) => {
-  let color = "";
-  if (volume <= 0.5) color = "green";
-  else if (volume <= 0.75) color = "yellow";
-  else color = "red";
+  let color = '';
+  if (volume <= 0.5) color = 'green';
+  else if (volume <= 0.75) color = 'yellow';
+  else color = 'red';
 
   return (
     <Slider
@@ -331,16 +331,16 @@ const VolumeSlider = ({ width, volume, onVolumeChange }: any) => {
       step={0.01}
       sx={{
         width,
-        marginRight: "10px",
+        marginRight: '10px',
         color,
-        "& .MuiSlider-thumb": {
-          backgroundColor: "#fff",
-          width: "16px",
-          height: "16px",
+        '& .MuiSlider-thumb': {
+          backgroundColor: '#fff',
+          width: '16px',
+          height: '16px',
         },
-        "& .MuiSlider-thumb::after": { width: "16px", height: "16px" },
-        "& .MuiSlider-rail": { opacity: 0.5, height: "6px" },
-        "& .MuiSlider-track": { height: "6px", border: "0px" },
+        '& .MuiSlider-thumb::after': { width: '16px', height: '16px' },
+        '& .MuiSlider-rail': { opacity: 0.5, height: '6px' },
+        '& .MuiSlider-track': { height: '6px', border: '0px' },
       }}
     />
   );
@@ -355,7 +355,7 @@ export const VolumeControl = ({
 }: any) => {
   return (
     <Box
-      sx={{ display: "flex", gap: "5px", alignItems: "center", width: "100%" }}
+      sx={{ display: 'flex', gap: '5px', alignItems: 'center', width: '100%' }}
     >
       <VolumeButton isMuted={isMuted} toggleMute={toggleMute} />
       <VolumeSlider
@@ -388,14 +388,14 @@ export const PlaybackRate = ({
   return (
     <>
       <CustomFontTooltip
-        title={t("video.video_speed")}
+        title={t('video.video_speed')}
         placement="bottom"
         arrow
       >
         <IconButton
           ref={btnRef}
           sx={{
-            color: "white",
+            color: 'white',
             fontSize: fontSizeSmall,
             padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
           }}
@@ -413,13 +413,13 @@ export const FullscreenButton = ({ toggleFullscreen, isScreenSmall }: any) => {
 
   return (
     <CustomFontTooltip
-      title={t("video.toggle_fullscreen")}
+      title={t('video.toggle_fullscreen')}
       placement="bottom"
       arrow
     >
       <IconButton
         sx={{
-          color: "white",
+          color: 'white',
           padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
         }}
         onClick={() => toggleFullscreen()}
@@ -463,118 +463,118 @@ export const PlayBackMenu = ({
   if (!isOpen) return null;
   return (
     <>
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9, // one layer below MUI drawer
-      }}
-      onClick={(e) => e.stopPropagation()}
-    />
-    <Box
-      ref={ref}
-      tabIndex={-1}
-      onBlur={handleBlur}
-      bgcolor={alpha("#181818", 0.98)}
-      sx={{
-        position: isFromDrawer ? "relative" : "absolute",
-        bottom: isFromDrawer ? "relative" : 60,
-        right: isFromDrawer ? "relative" : 5,
-        color: "white",
-        opacity: 0.9,
-        borderRadius: 2,
-        boxShadow: isFromDrawer ? "relative" : 5,
-        p: 1,
-        minWidth: 225,
-        height: 300,
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 10,
-      }}
-    >
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9, // one layer below MUI drawer
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
       <Box
+        ref={ref}
+        tabIndex={-1}
+        onBlur={handleBlur}
+        bgcolor={alpha('#181818', 0.98)}
         sx={{
-          padding: "5px 0px 10px 0px",
-          display: "flex",
-          gap: "10px",
-          width: "100%",
+          position: isFromDrawer ? 'relative' : 'absolute',
+          bottom: isFromDrawer ? 'relative' : 60,
+          right: isFromDrawer ? 'relative' : 5,
+          color: 'white',
+          opacity: 0.9,
+          borderRadius: 2,
+          boxShadow: isFromDrawer ? 'relative' : 5,
+          p: 1,
+          minWidth: 225,
+          height: 300,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          zIndex: 10,
         }}
       >
-        <ButtonBase onClick={close}>
-          <ArrowBackIosIcon
-            sx={{
-              fontSize: "1.15em",
-            }}
-          />
-        </ButtonBase>
-        <ButtonBase>
-          <Typography
-            onClick={close}
-            sx={{
-              fontSize: "0.85rem",
-            }}
-          >
-            {t("video.playback_speed")}
-          </Typography>
-        </ButtonBase>
-      </Box>
-      <Divider />
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flexGrow: 1,
-          overflow: "auto",
-          "::-webkit-scrollbar-track": {
-            backgroundColor: "transparent",
-          },
-
-          "::-webkit-scrollbar": {
-            width: "16px",
-            height: "10px",
-          },
-
-          "::-webkit-scrollbar-thumb": {
-            backgroundColor: theme.palette.primary.main,
-            borderRadius: "8px",
-            backgroundClip: "content-box",
-            border: "4px solid transparent",
-            transition: "0.3s background-color",
-          },
-
-          "::-webkit-scrollbar-thumb:hover": {
-            backgroundColor: theme.palette.primary.dark,
-          },
-        }}
-      >
-        {speeds?.map((speed) => {
-          const isSelected = speed === playbackRate;
-          return (
-            <ButtonBase
-              disabled={isSelected}
-              key={speed}
-              onClick={(e) => {
-                onSelect(speed);
-                close();
-              }}
+        <Box
+          sx={{
+            padding: '5px 0px 10px 0px',
+            display: 'flex',
+            gap: '10px',
+            width: '100%',
+          }}
+        >
+          <ButtonBase onClick={close}>
+            <ArrowBackIosIcon
               sx={{
-                px: 2,
-                py: 1,
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                },
-                width: "100%",
-                justifyContent: "space-between",
+                fontSize: '1.15em',
+              }}
+            />
+          </ButtonBase>
+          <ButtonBase>
+            <Typography
+              onClick={close}
+              sx={{
+                fontSize: '0.85rem',
               }}
             >
-              <Typography>{speed}</Typography>
-              {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
-            </ButtonBase>
-          );
-        })}
+              {t('video.playback_speed')}
+            </Typography>
+          </ButtonBase>
+        </Box>
+        <Divider />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
+            overflow: 'auto',
+            '::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent',
+            },
+
+            '::-webkit-scrollbar': {
+              width: '16px',
+              height: '10px',
+            },
+
+            '::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.primary.main,
+              borderRadius: '8px',
+              backgroundClip: 'content-box',
+              border: '4px solid transparent',
+              transition: '0.3s background-color',
+            },
+
+            '::-webkit-scrollbar-thumb:hover': {
+              backgroundColor: theme.palette.primary.dark,
+            },
+          }}
+        >
+          {speeds?.map((speed) => {
+            const isSelected = speed === playbackRate;
+            return (
+              <ButtonBase
+                disabled={isSelected}
+                key={speed}
+                onClick={(e) => {
+                  onSelect(speed);
+                  close();
+                }}
+                sx={{
+                  px: 2,
+                  py: 1,
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                  width: '100%',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography>{speed}</Typography>
+                {isSelected ? <CheckIcon /> : <ArrowForwardIosIcon />}
+              </ButtonBase>
+            );
+          })}
+        </Box>
       </Box>
-    </Box>
     </>
   );
 };
