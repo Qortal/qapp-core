@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo } from "react";
-import { useAppStore } from "../state/app";
-import { EnumCollisionStrength, hashWord } from "../utils/encryption";
+import { useCallback, useEffect, useMemo } from 'react';
+import { useAppStore } from '../state/app';
+import { EnumCollisionStrength, hashWord } from '../utils/encryption';
 
 export const useAppInfo = (appName?: string, publicSalt?: string) => {
   const setAppState = useAppStore((state) => state.setAppState);

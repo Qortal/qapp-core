@@ -2,10 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { EnumCollisionStrength, hashWord } from '../utils/encryption';
 import { db } from '../utils/persistentDb';
 
-export const usePersistentStore = (
-  publicSalt: string,
-  appName: string
-) => {
+export const usePersistentStore = (publicSalt: string, appName: string) => {
   const getHashedId = useCallback(
     async (id: string) => {
       const key = `${appName}-${id}`;
@@ -75,13 +72,24 @@ export const usePersistentStore = (
     return await db.dynamicData.toArray();
   }, []);
 
-  return useMemo(() => ({
-    setTimestamp,
-    getTimestamp,
-    isNewTimestamp,
-    saveData,
-    getData,
-    deleteData,
-    listAllData,
-  }), [setTimestamp, getTimestamp, isNewTimestamp, saveData, getData, deleteData, listAllData]);
+  return useMemo(
+    () => ({
+      setTimestamp,
+      getTimestamp,
+      isNewTimestamp,
+      saveData,
+      getData,
+      deleteData,
+      listAllData,
+    }),
+    [
+      setTimestamp,
+      getTimestamp,
+      isNewTimestamp,
+      saveData,
+      getData,
+      deleteData,
+      listAllData,
+    ]
+  );
 };

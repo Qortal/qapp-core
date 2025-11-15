@@ -1,4 +1,4 @@
-import { toast } from "react-hot-toast";
+import { toast } from 'react-hot-toast';
 
 export const showSuccess = (message: string, duration = 4000) => {
   toast.success(message, {
@@ -14,7 +14,7 @@ export const showError = (message: string, duration = 4000) => {
 
 export const showLoading = (message: string, duration = Infinity): string => {
   return toast.loading(
-    <div style={{ display: "flex", alignItems: "center" }}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
       <span role="img" aria-label="loading-icon">
         ⏳
       </span>

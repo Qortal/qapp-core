@@ -1,6 +1,6 @@
-import { CircularProgress } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
-import { useInView } from "react-intersection-observer";
+import { CircularProgress } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 
 interface Props {
   onLoadMore: () => Promise<void>;
@@ -31,10 +31,10 @@ const LazyLoad: React.FC<Props> = ({ onLoadMore }) => {
     <div
       ref={ref}
       style={{
-        display: "flex",
-        justifyContent: "center",
-        height: "50px",
-        overflow: "hidden",
+        display: 'flex',
+        justifyContent: 'center',
+        height: '50px',
+        overflow: 'hidden',
       }}
     >
       {isLoading && <CircularProgress />}

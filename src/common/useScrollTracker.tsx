@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useCacheStore } from "../state/cache";
+import { useEffect, useRef, useState } from 'react';
+import { useCacheStore } from '../state/cache';
 
 export const useScrollTracker = (
   listName: string,
@@ -31,14 +31,14 @@ export const useScrollTracker = (
       scrollPositionRef.current = window.scrollY; // Store the last known scroll position
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
     return () => {
       if (!disableScrollTracker) {
         sessionStorage.setItem(
           SCROLL_KEY,
           scrollPositionRef.current.toString()
         );
-        window.removeEventListener("scroll", handleScroll);
+        window.removeEventListener('scroll', handleScroll);
       }
     };
   }, [listName, hasList, disableScrollTracker]);

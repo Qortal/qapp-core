@@ -1,6 +1,6 @@
-import { Box, Typography } from "@mui/material";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { BarSpinner } from "../../common/Spinners/BarSpinner/BarSpinner";
+import { Box, Typography } from '@mui/material';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { BarSpinner } from '../../common/Spinners/BarSpinner/BarSpinner';
 interface PropsResourceLoader {
   status?: string;
   message?: string;
@@ -10,28 +10,26 @@ export const ResourceLoader = ({ status, message }: PropsResourceLoader) => {
   return (
     <Box
       sx={{
-        display: "flex",
-        gap: "20px",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100%",
-        width: "100%",
+        display: 'flex',
+        gap: '20px',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        width: '100%',
       }}
     >
-      {status === "loading" && (
+      {status === 'loading' && (
         <>
           <BarSpinner width="22px" color="green" />
-          <Typography>
-            {message || `Fetching Content...`}
-          </Typography>
+          <Typography>{message || `Fetching Content...`}</Typography>
         </>
       )}
-      {status === "error" && (
+      {status === 'error' && (
         <>
           <ErrorOutlineIcon
             width="22px"
             style={{
-              color: "green",
+              color: 'green',
             }}
           />
           <Typography>

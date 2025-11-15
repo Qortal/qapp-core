@@ -85,7 +85,7 @@ import {
   UpdateGroupQortalRequest,
   UpdateNameQortalRequest,
   VoteOnPollQortalRequest,
-} from "./types/qortalRequests/interfaces";
+} from './types/qortalRequests/interfaces';
 
 declare global {
   type QortalRequestOptions =

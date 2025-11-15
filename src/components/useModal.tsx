@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState } from 'react';
 
 interface State {
   isShow: boolean;
@@ -16,7 +16,7 @@ interface PromiseHandlers<T = unknown> {
 export const useModal = <T = any,>() => {
   const [state, setState] = useState<State>({ isShow: false });
   const [message, setMessage] = useState<Message>({
-    message: "",
+    message: '',
   });
 
   const promiseConfig = useRef<PromiseHandlers<T> | null>(null);
@@ -31,7 +31,7 @@ export const useModal = <T = any,>() => {
 
   const hide = () => {
     setState({ isShow: false });
-    setMessage({ message: "" });
+    setMessage({ message: '' });
   };
 
   const onOk = (payload: T) => {

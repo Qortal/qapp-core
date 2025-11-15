@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 export const useScrollTrackerRef = (
   listName: string,
@@ -19,11 +19,11 @@ export const useScrollTrackerRef = (
       );
     };
 
-    scrollerRef.current.addEventListener("scroll", handleScroll);
+    scrollerRef.current.addEventListener('scroll', handleScroll);
 
     return () => {
       if (scrollerRef.current) {
-        scrollerRef.current.removeEventListener("scroll", handleScroll);
+        scrollerRef.current.removeEventListener('scroll', handleScroll);
       }
     };
   }, [listName, hasMounted]);
@@ -36,7 +36,7 @@ export const useScrollTrackerRef = (
 
     const attemptScrollRestore = () => {
       const el = scrollerRef.current;
-      const saved = parseInt(savedPosition || "0", 10);
+      const saved = parseInt(savedPosition || '0', 10);
       if (!el) return;
       if (
         el.scrollHeight > el.clientHeight &&

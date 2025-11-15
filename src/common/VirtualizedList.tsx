@@ -1,8 +1,8 @@
-import React, { ReactNode, useCallback, useEffect, useRef } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { useInView } from "react-intersection-observer";
-import { QortalMetadata } from "../types/interfaces/resources";
-import { useScrollTrackerRef } from "./useScrollTrackerRef";
+import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useInView } from 'react-intersection-observer';
+import { QortalMetadata } from '../types/interfaces/resources';
+import { useScrollTrackerRef } from './useScrollTrackerRef';
 
 interface PropsVirtualizedList {
   list: any[];
@@ -42,18 +42,18 @@ export const VirtualizedList = ({
   return (
     <div
       style={{
-        display: "flex",
-        width: "100%",
-        height: "100%",
+        display: 'flex',
+        width: '100%',
+        height: '100%',
       }}
     >
       <div
         style={{
-          height: "100%",
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
+          height: '100%',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
         }}
       >
         <div
@@ -61,24 +61,24 @@ export const VirtualizedList = ({
           className="List"
           style={{
             flexGrow: 1,
-            overflow: "auto",
-            position: "relative",
-            display: "flex",
-            height: "0px",
+            overflow: 'auto',
+            position: 'relative',
+            display: 'flex',
+            height: '0px',
           }}
         >
           <div
             style={{
               height: rowVirtualizer.getTotalSize(),
-              width: "100%",
+              width: '100%',
             }}
           >
             <div
               style={{
-                position: "absolute",
+                position: 'absolute',
                 top: 0,
                 left: 0,
-                width: "100%",
+                width: '100%',
               }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -90,22 +90,22 @@ export const VirtualizedList = ({
                     ref={rowVirtualizer.measureElement} //measure dynamic row height
                     key={`${item.name}-${item.identifier}`}
                     style={{
-                      position: "absolute",
+                      position: 'absolute',
                       top: 0,
-                      left: "50%", // Move to the center horizontally
+                      left: '50%', // Move to the center horizontally
                       transform: `translateY(${virtualRow.start}px) translateX(-50%)`, // Adjust for centering
-                      width: "100%", // Control width (90% of the parent)
-                      display: "flex",
-                      alignItems: "center",
-                      overscrollBehavior: "none",
-                      flexDirection: "column",
+                      width: '100%', // Control width (90% of the parent)
+                      display: 'flex',
+                      alignItems: 'center',
+                      overscrollBehavior: 'none',
+                      flexDirection: 'column',
                     }}
                   >
                     <MessageWrapper
                       isLast={index === list?.length - 1}
                       onSeen={() => onSeenLastItemFunc(item)}
                     >
-                      {typeof children === "function"
+                      {typeof children === 'function'
                         ? children(item, index)
                         : null}
                     </MessageWrapper>
@@ -169,7 +169,7 @@ const WatchComponent: React.FC<WatchComponentProps> = ({
   return (
     <div
       ref={ref}
-      style={{ width: "100%", display: "flex", justifyContent: "center" }}
+      style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
     >
       {children}
     </div>
