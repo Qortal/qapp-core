@@ -1,5 +1,15 @@
 import { Service } from '../interfaces/resources';
 
+export enum Coin {
+  ARRR = 'ARRR',
+  BTC = 'BTC',
+  DGB = 'DGB',
+  DOGE = 'DOGE',
+  LTC = 'LTC',
+  QORT = 'QORT',
+  RVN = 'RVN',
+}
+
 export type ForeignCoin = 'BTC' | 'LTC' | 'DOGE' | 'DGB' | 'RVN' | 'ARRR';
 
 export type CoinType = 'QORT' | 'BTC' | 'LTC' | 'DOGE' | 'DGB' | 'RVN' | 'ARRR';
