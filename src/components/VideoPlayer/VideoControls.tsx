@@ -78,7 +78,7 @@ export const ProgressSlider = ({
   thumbColor,
   trackColor,
 }: any) => {
-  const sliderRef = useRef(null);
+  const sliderRef = useRef<HTMLDivElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [sliderValue, setSliderValue] = useState(0); // local slider value
   const [hoverX, setHoverX] = useState<number | null>(null);
