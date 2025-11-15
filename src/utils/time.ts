@@ -15,16 +15,17 @@ export function formatTimestamp(timestamp: number): string {
   } else if (elapsedTime < 60) {
     return `${elapsedTime}m ago - ${timestampDayJs.format("h:mm A")}`;
   } else if (elapsedTime < 1440) {
-    return `${Math.floor(elapsedTime / 60)}h ago - ${timestampDayJs.format("h:mm A")}`;
+    return `${Math.floor(elapsedTime / 60)}h ago - ${timestampDayJs.format(
+      "h:mm A"
+    )}`;
   } else {
     return timestampDayJs.format("MMM D, YYYY - h:mm A");
   }
 }
 
-
-export function oneMonthAgo(){
-    const oneMonthAgoTimestamp = dayjs().subtract(1, "month").valueOf();
-    return oneMonthAgoTimestamp
+export function oneMonthAgo() {
+  const oneMonthAgoTimestamp = dayjs().subtract(1, "month").valueOf();
+  return oneMonthAgoTimestamp;
 }
 
 export function formatTime(seconds: number): string {

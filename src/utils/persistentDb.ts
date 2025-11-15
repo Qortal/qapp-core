@@ -1,4 +1,4 @@
-import Dexie, { Table } from 'dexie';
+import Dexie, { Table } from "dexie";
 
 export interface TimestampEntry {
   id: string; // hashed key
@@ -15,10 +15,10 @@ class AppDatabase extends Dexie {
   dynamicData!: Table<DynamicEntry>;
 
   constructor() {
-    super('MyAppDB');
+    super("MyAppDB");
     this.version(1).stores({
-      timestamps: 'id',
-      dynamicData: 'id',
+      timestamps: "id",
+      dynamicData: "id",
     });
   }
 }

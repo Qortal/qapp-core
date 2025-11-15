@@ -45,7 +45,8 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
 }) => {
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      const images = mode === "single" ? acceptedFiles.slice(0, 1) : acceptedFiles;
+      const images =
+        mode === "single" ? acceptedFiles.slice(0, 1) : acceptedFiles;
 
       const results: ImageResult[] = [];
 
