@@ -2,7 +2,7 @@ import { Service } from '../interfaces/resources';
 
 export type ForeignCoin = 'BTC' | 'LTC' | 'DOGE' | 'DGB' | 'RVN' | 'ARRR';
 
-export type Coin = 'QORT' | 'BTC' | 'LTC' | 'DOGE' | 'DGB' | 'RVN' | 'ARRR';
+export type CoinType = 'QORT' | 'BTC' | 'LTC' | 'DOGE' | 'DGB' | 'RVN' | 'ARRR';
 
 export type ForeignBlockchain =
   | 'LITECOIN'
