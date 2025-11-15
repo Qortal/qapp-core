@@ -1,6 +1,6 @@
 import { Service } from "../interfaces/resources";
 import {
-  Coin,
+  CoinType,
   ConfirmationStatus,
   ConnectionType,
   CrosschainAtInfo,
@@ -18,7 +18,7 @@ interface BaseRequest {
 
 export interface SendCoinQortalRequest extends BaseRequest {
   action: "SEND_COIN";
-  coin: Coin;
+  coin: CoinType;
   recipient: string;
   amount: number;
 }
@@ -110,17 +110,17 @@ export interface GetUserAccountQortalRequest extends BaseRequest {
 
 export interface GetUserWalletQortalRequest extends BaseRequest {
   action: "GET_USER_WALLET";
-  coin: Coin;
+  coin: CoinType;
 }
 
 export interface GetWalletBalanceQortalRequest extends BaseRequest {
   action: "GET_WALLET_BALANCE";
-  coin: Coin;
+  coin: CoinType;
 }
 
 export interface GetUserWalletInfoQortalRequest extends BaseRequest {
   action: "GET_USER_WALLET_INFO";
-  coin: Coin;
+  coin: CoinType;
 }
 
 export interface GetAccountDataQortalRequest extends BaseRequest {
