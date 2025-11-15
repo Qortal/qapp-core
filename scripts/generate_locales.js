@@ -26,10 +26,30 @@ const OUTPUT_FILE = path.join(__dirname, '../src/i18n/compiled-i18n.json');
     resources[lang][ns] = json;
   }
 
+  const sortedLanguages = Array.from(supportedLanguages).sort();
+  const sortedResources = sortedLanguages.reduce((acc, lang) => {
+    const namespaces = resources[lang] || {};
+    const sortedNamespaces = Object.keys(namespaces)
+      .sort()
+      .reduce((nsAcc, ns) => {
+        nsAcc[ns] = namespaces[ns];
+        return nsAcc;
+      }, {});
+    acc[lang] = sortedNamespaces;
+    return acc;
+  }, {});
+
   // Save compiled resources and languages
   fs.writeFileSync(
     OUTPUT_FILE,
-    JSON.stringify({ resources, supportedLanguages: Array.from(supportedLanguages) }, null, 2)
+    JSON.stringify(
+      {
+        resources: sortedResources,
+        supportedLanguages: sortedLanguages,
+      },
+      null,
+      2
+    )
   );
 
   console.log('✅ i18n resources generated.');
