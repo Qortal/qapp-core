@@ -48,7 +48,7 @@ interface resourceCache {
 }
 
 interface DeletedResources {
-  [key: string]: { deleted: true; expiry: number }; // ✅ Added expiry field
+  [key: string]: { deleted: true; deletedAt: number; expiry: number };
 }
 
 interface CacheState {
@@ -87,7 +87,7 @@ interface CacheState {
     newResources: QortalMetadata[],
     customExpiry?: number
   ) => void;
-  getTemporaryResources: (listName: string) => QortalMetadata[];
+  getTemporaryResources: (listName: string | null) => QortalMetadata[];
   deletedResources: DeletedResources;
   markResourceAsDeleted: (item: QortalMetadata | QortalGetMetadata) => void;
   filterOutDeletedResources: (items: QortalMetadata[]) => QortalMetadata[];
@@ -236,13 +236,15 @@ export const useCacheStore = create<CacheState>((set, get) => ({
       };
     }),
 
-  getTemporaryResources: (listName: string) => {
-    const cache = get().searchCache[listName];
-    if (cache && cache.expiry > Date.now()) {
-      const resources = cache.temporaryNewResources || [];
-      return [...resources].sort((a, b) => b?.created - a?.created);
-    }
-    return [];
+  getTemporaryResources: (listName: string | null) => {
+    if (listName) {
+      const cache = get().searchCache[listName];
+      if (cache && cache.expiry > Date.now()) {
+        const resources = cache.temporaryNewResources || [];
+        return [...resources].sort((a, b) => b?.created - a?.created);
+      }
+      return [];
+    } else return [];
   },
 
   markResourceAsDeleted: (item) =>
@@ -261,17 +263,27 @@ export const useCacheStore = create<CacheState>((set, get) => ({
       return {
         deletedResources: {
           ...validDeletedResources, // ✅ Keep only non-expired ones
-          [key]: { deleted: true, expiry },
+          [key]: { deleted: true, deletedAt: now, expiry },
         },
       };
     }),
 
   filterOutDeletedResources: (items) => {
     const deletedResources = get().deletedResources; // ✅ Read without modifying store
-    return items.filter(
-      (item) =>
-        !deletedResources[`${item.service}-${item.name}-${item.identifier}`]
-    );
+    return items.filter((item) => {
+      const key = `${item.service}-${item.name}-${item.identifier}`;
+      const deletedEntry = deletedResources[key];
+
+      // If not in deleted resources, keep it
+      if (!deletedEntry) return true;
+
+      // Get the resource's most recent timestamp (updated or created)
+      const resourceTimestamp = item.updated || item.created;
+
+      // Only filter out if the resource is older than the deletion timestamp
+      // If the resource is newer (recreated after deletion), keep it
+      return resourceTimestamp > deletedEntry.deletedAt;
+    });
   },
   isListExpired: (listName: string): boolean | string => {
     const cache = get().searchCache[listName];
