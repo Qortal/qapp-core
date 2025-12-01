@@ -15,11 +15,17 @@ export const useScrollTracker = (listName: string, hasList: boolean, disableScro
       if(isExpired === true) return
     // 🔹 Restore scroll when the component mounts
     const savedPosition = sessionStorage.getItem(SCROLL_KEY);
-    if (savedPosition) {
+    const isNotNumber = isNaN(Number(savedPosition));
+    const isZero = Number(savedPosition) === 0;
+
+    if (!isNotNumber && !isZero && savedPosition) {
       window.scrollTo(0, parseInt(savedPosition, 10));
+
       setTimeout(() => {
         setHasMount(true);
       }, 200);
+    } else {
+      setHasMount(true);
     }
 
     // 🔹 Capture scroll position before unmount

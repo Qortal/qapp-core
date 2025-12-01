@@ -10,22 +10,22 @@ import React, {
 import {
   QortalMetadata,
   QortalSearchParams,
-} from "../../types/interfaces/resources";
-import { useResources } from "../../hooks/useResources";
-import { VirtualizedList } from "../../common/VirtualizedList";
-import { ListLoader } from "../../common/ListLoader";
-import { ListItem, useCacheStore } from "../../state/cache";
-import { ResourceLoader } from "./ResourceLoader";
-import { ItemCardWrapper } from "./ItemCardWrapper";
-import { Spacer } from "../../common/Spacer";
-import { useListStore } from "../../state/lists";
-import { useScrollTracker } from "../../common/useScrollTracker";
-import { HorizontalPaginatedList } from "./HorizontalPaginationList";
-import { VerticalPaginatedList } from "./VerticalPaginationList";
-import { useIdentifiers } from "../../hooks/useIdentifiers";
-import { useGlobal } from "../../context/GlobalProvider";
-import { useScrollTrackerRef } from "../../common/useScrollTrackerRef";
-type Direction = "VERTICAL" | "HORIZONTAL";
+  EntityParams,
+  SecondaryDataSource,
+} from '../../types/interfaces/resources';
+import { VirtualizedList } from '../../common/VirtualizedList';
+import { ListLoader } from '../../common/ListLoader';
+import { ListItem, useCacheStore } from '../../state/cache';
+import { ResourceLoader } from './ResourceLoader';
+import { ItemCardWrapper } from './ItemCardWrapper';
+import { Spacer } from '../../common/Spacer';
+import { useListStore } from '../../state/lists';
+import { useScrollTracker } from '../../common/useScrollTracker';
+import { HorizontalPaginatedList } from './HorizontalPaginationList';
+import { VerticalPaginatedList } from './VerticalPaginationList';
+import { useGlobal } from '../../context/GlobalProvider';
+import { useScrollTrackerRef } from '../../common/useScrollTrackerRef';
+type Direction = 'VERTICAL' | 'HORIZONTAL';
 
 interface ResourceListStyles {
   gap?: number;
@@ -37,13 +37,6 @@ interface ResourceListStyles {
     minItemWidth?: number
   }
 }
-
-interface EntityParams {
-  entityType: string;
-  parentId?: string | null;
-}
-
-
 
 export interface DefaultLoaderParams {
   listLoadingText?: string;
@@ -92,6 +85,7 @@ interface BaseProps  {
   ref?: any;
   scrollerRef?: React.RefObject<HTMLElement | null> | null;
   filterDuplicateIdentifiers?: FilterDuplicateIdentifiersOptions;
+  secondaryDataSources?: SecondaryDataSource[];
 }
 
 const defaultStyles = {
@@ -136,6 +130,7 @@ export const MemorizedComponent = ({
   ref,
   scrollerRef,
   filterDuplicateIdentifiers,
+  secondaryDataSources,
 }: PropsResourceListDisplay) => {
   const { identifierOperations, lists } = useGlobal();
   const [generatedIdentifier, setGeneratedIdentifier] = useState('');
@@ -168,17 +163,14 @@ const removeFromList = useListStore((s) => s.removeFromList);
 const addItems = useListStore((s) => s.addItems);
 
 
+  const stringifiedSecondaryDataSources = useMemo(() => {
+    if (!secondaryDataSources) return null;
+    return JSON.stringify(secondaryDataSources);
+  }, [secondaryDataSources]);
 
-  const searchIntervalRef = useRef<any>(null)
-  const lastItemTimestampRef = useRef<null | number>(null)
-  const stringifiedEntityParams = useMemo(()=> {
-    if(!entityParams) return null
-    return JSON .stringify(entityParams)
-  }, [entityParams])
-
-  useEffect(()=> {
-    if(list?.length > 0){
-      lastItemTimestampRef.current = list[0]?.created || null
+  useEffect(() => {
+    if (list?.length > 0) {
+      lastItemTimestampRef.current = list[0]?.created || null;
     }
   }, [list])
 
@@ -256,14 +248,26 @@ const addItems = useListStore((s) => s.addItems);
 
       lastItemTimestampRef.current = null;
       const parsedParams = { ...JSON.parse(memoizedParams) };
-      const responseData = await lists.fetchResources(
+
+      // Parse secondary sources if they exist
+      const parsedSecondarySources: SecondaryDataSource[] | undefined =
+        stringifiedSecondaryDataSources
+          ? JSON.parse(stringifiedSecondaryDataSources)
+          : undefined;
+
+      // Use the new priority-based fetching method
+      const responseData = await lists.fetchResourcesWithPriority(
         parsedParams,
+        parsedSecondarySources,
         listName,
         returnType,
-        true,
-        filterDuplicateIdentifiers?.enabled,
-        undefined // No existing identifiers for initial fetch
-      ); // Awaiting the async function
+        true, // cancelRequests
+        'initial', // paginationMode
+        filterDuplicateIdentifiers?.enabled || false,
+        identifierOperations,
+        undefined // No current list on initial fetch
+      );
+
       addList(listName, responseData || []);
       if (onNewData) {
         onNewData(false);
@@ -276,9 +280,11 @@ const addItems = useListStore((s) => s.addItems);
   }, [
     memoizedParams,
     generatedIdentifier,
-    lists.fetchResources,
+    stringifiedSecondaryDataSources,
+    lists.fetchResourcesWithPriority,
+    identifierOperations,
     filterDuplicateIdentifiers,
-  ]); // Added dependencies for re-fetching
+  ]);
 
   const resetSearch = useCallback(async ()=> {
     lists.deleteList(listName);
@@ -347,30 +353,45 @@ const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheEx
       try {
         if (!generatedIdentifier) return;
         const parsedParams = { ...JSON.parse(memoizedParams) };
-        parsedParams.before =
-          list.length === 0 ? null : list[list.length - 1]?.created;
-        parsedParams.offset = null;
+
+        // Set limit for pagination request
         if (displayLimit) {
           parsedParams.limit = displayLimit;
         }
-        // Extract existing identifiers from current list to avoid duplicates
-        const existingIdentifiers = filterDuplicateIdentifiers?.enabled
-          ? list.map((item) => item.identifier)
-          : undefined;
-        const responseData = await lists.fetchResources(
+
+        // Parse secondary sources if they exist
+        const parsedSecondarySources: SecondaryDataSource[] | undefined =
+          stringifiedSecondaryDataSources
+            ? JSON.parse(stringifiedSecondaryDataSources)
+            : undefined;
+
+        // Use the new priority-based fetching method with 'more' mode
+        const responseData = await lists.fetchResourcesWithPriority(
           parsedParams,
+          parsedSecondarySources,
           listName,
           returnType,
-          undefined,
-          filterDuplicateIdentifiers?.enabled,
-          existingIdentifiers
-        ); // Awaiting the async function
+          false, // Don't cancel requests on pagination
+          'more', // paginationMode
+          filterDuplicateIdentifiers?.enabled || false,
+          identifierOperations,
+          list // Pass current list for pagination fallback
+        );
+
         addItems(listName, responseData || []);
       } catch (error) {
         console.error('Failed to fetch resources:', error);
       }
     },
-    [memoizedParams, listName, list, filterDuplicateIdentifiers]
+    [
+      memoizedParams,
+      listName,
+      list,
+      stringifiedSecondaryDataSources,
+      lists.fetchResourcesWithPriority,
+      identifierOperations,
+      filterDuplicateIdentifiers,
+    ]
   );
 
   const disabledVirutalizationStyles: CSSProperties = useMemo(() => {
@@ -492,8 +513,12 @@ function arePropsEqual(
     JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&
     JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles) &&
     prevProps.listItem === nextProps.listItem &&
-    JSON.stringify(prevProps.entityParams) === JSON.stringify(nextProps.entityParams) &&
-    JSON.stringify(prevProps.searchNewData) === JSON.stringify(nextProps.searchNewData)
+    JSON.stringify(prevProps.entityParams) ===
+      JSON.stringify(nextProps.entityParams) &&
+    JSON.stringify(prevProps.searchNewData) ===
+      JSON.stringify(nextProps.searchNewData) &&
+    JSON.stringify(prevProps.secondaryDataSources) ===
+      JSON.stringify(nextProps.secondaryDataSources)
   );
 }
 

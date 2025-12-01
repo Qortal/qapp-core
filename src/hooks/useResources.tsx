@@ -4,14 +4,15 @@ import {
   QortalMetadata,
   QortalPreloadedParams,
   QortalSearchParams,
-} from "../types/interfaces/resources";
-import { ListItem, useCacheStore } from "../state/cache";
-import { RequestQueueWithPromise } from "../utils/queue";
-import { base64ToUint8Array, uint8ArrayToObject } from "../utils/base64";
-import { retryTransaction } from "../utils/publish";
-import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
-import { useListStore } from "../state/lists";
-import { usePublishStore } from "../state/publishes";
+  SecondaryDataSource,
+} from '../types/interfaces/resources';
+import { ListItem, useCacheStore } from '../state/cache';
+import { RequestQueueWithPromise } from '../utils/queue';
+import { base64ToUint8Array, uint8ArrayToObject } from '../utils/base64';
+import { retryTransaction } from '../utils/publish';
+import { ReturnType } from '../components/ResourceList/ResourceListDisplay';
+import { useListStore } from '../state/lists';
+import { usePublishStore } from '../state/publishes';
 
 export const requestQueueProductPublishes = new RequestQueueWithPromise(20);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
@@ -31,6 +32,9 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
   const addTemporaryResource = useCacheStore((s) => s.addTemporaryResource);
   const markResourceAsDeleted = useCacheStore((s) => s.markResourceAsDeleted);
   const setSearchParamsForList = useCacheStore((s) => s.setSearchParamsForList);
+  const getPaginationState = useCacheStore((s) => s.getPaginationState);
+  const setPaginationState = useCacheStore((s) => s.setPaginationState);
+  const clearPaginationState = useCacheStore((s) => s.clearPaginationState);
   const addList = useListStore((s) => s.addList);
     const setPublish = usePublishStore((state)=> state.setPublish)
   
@@ -383,9 +387,319 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
   );
   
 
+  const fetchResourcesWithPriority = useCallback(
+    async (
+      primaryParams: QortalSearchParams,
+      secondarySources: SecondaryDataSource[] | undefined,
+      listName: string,
+      returnType: ReturnType = 'JSON',
+      cancelRequests: boolean = false,
+      paginationMode: 'initial' | 'more' = 'initial',
+      filterDuplicateIdentifiers: boolean = false,
+      identifierOperations?: any,
+      currentList?: QortalMetadata[]
+    ): Promise<QortalMetadata[]> => {
+      if (cancelRequests) {
+        cancelAllRequests();
+      }
+
+      const targetLimit = primaryParams.limit || 20;
+
+      // If no secondary sources, use regular fetch
+      if (!secondarySources || secondarySources.length === 0) {
+        const fetchParams = { ...primaryParams };
+
+        // For pagination mode, set the before parameter
+        if (
+          paginationMode === 'more' &&
+          currentList &&
+          currentList.length > 0
+        ) {
+          fetchParams.before = currentList[currentList.length - 1].created;
+        }
+
+        // Build existing identifiers for filterDuplicateIdentifiers
+        const existingIdentifiers =
+          filterDuplicateIdentifiers && currentList
+            ? currentList.map((item) => item.identifier)
+            : undefined;
+
+        const results = await fetchResources(
+          fetchParams,
+          listName,
+          returnType,
+          cancelRequests,
+          filterDuplicateIdentifiers,
+          existingIdentifiers
+        );
+
+        // Clear pagination state for initial fetch
+        if (paginationMode === 'initial') {
+          clearPaginationState(listName);
+        }
+
+        return results;
+      }
+
+      // Clear pagination state on initial fetch
+      if (paginationMode === 'initial') {
+        clearPaginationState(listName);
+      }
+
+      // Build all sources (primary + secondary)
+      interface SourceWithKey {
+        priority: number;
+        params: QortalSearchParams;
+        sourceKey: string;
+        isPrimary: boolean;
+      }
+
+      const allSources: SourceWithKey[] = [
+        {
+          priority: 0,
+          params: primaryParams,
+          sourceKey: 'primary',
+          isPrimary: true,
+        },
+      ];
+
+      // Process secondary sources
+      for (let i = 0; i < secondarySources.length; i++) {
+        const source = secondarySources[i];
+        let params: QortalSearchParams;
+
+        // Handle entityParams resolution
+        if ('entityParams' in source.params) {
+          if (!identifierOperations?.buildSearchPrefix) {
+            console.error(
+              'identifierOperations.buildSearchPrefix not provided'
+            );
+            continue;
+          }
+          try {
+            const identifier = await identifierOperations.buildSearchPrefix(
+              source.params.entityParams.entityType,
+              source.params.entityParams.parentId || null
+            );
+            params = {
+              ...primaryParams,
+              identifier,
+            };
+          } catch (error) {
+            console.error('Failed to build search prefix:', error);
+            continue;
+          }
+        } else {
+          params = source.params as QortalSearchParams;
+        }
+
+        allSources.push({
+          priority: source.priority,
+          params,
+          sourceKey: `s-${source.priority}`,
+          isPrimary: false,
+        });
+      }
+
+      // Sort by priority
+      allSources.sort((a, b) => a.priority - b.priority);
+
+      // Build list of existing identifiers from current list (for filterDuplicateIdentifiers)
+      const existingIdentifiers =
+        filterDuplicateIdentifiers && currentList
+          ? currentList.map((item) => item.identifier)
+          : undefined;
+
+      // Fetch from all sources in parallel
+      const allFetches = await Promise.all(
+        allSources.map(async (source) => {
+          try {
+            // Get pagination state for this source
+            const paginationState = getPaginationState(
+              listName,
+              source.sourceKey
+            );
+
+            // Prepare params with pagination
+            const fetchParams = { ...source.params };
+            if (paginationMode === 'more') {
+              if (paginationState?.before) {
+                // Use stored pagination state
+                fetchParams.before = paginationState.before;
+              } else if (currentList && currentList.length > 0) {
+                // Fallback: use last item from current list
+                fetchParams.before =
+                  currentList[currentList.length - 1].created;
+              }
+            }
+
+            // Fetch data - pass existing identifiers to filter duplicates
+
+            const data = await fetchResources(
+              fetchParams,
+              source.isPrimary ? listName : `${listName}-${source.sourceKey}`,
+              returnType,
+              source.isPrimary && cancelRequests,
+              filterDuplicateIdentifiers,
+              existingIdentifiers
+            );
+
+            return {
+              priority: source.priority,
+              sourceKey: source.sourceKey,
+              data: data || [],
+              fetchParams,
+            };
+          } catch (error) {
+            console.error(`Priority ${source.priority} fetch failed:`, error);
+            return {
+              priority: source.priority,
+              sourceKey: source.sourceKey,
+              data: [],
+              fetchParams: source.params,
+            };
+          }
+        })
+      );
+
+      // Weighted distribution merge
+      const allResults: QortalMetadata[] = [];
+      const seenKeys = new Set<string>();
+      const seenIdentifiersForFilter = filterDuplicateIdentifiers
+        ? new Set<string>(existingIdentifiers || [])
+        : null;
+
+      // Track last item actually used from each source for pagination
+      const lastUsedPerSource = new Map<string, QortalMetadata>();
+
+      // Calculate total weight (priority as weight)
+      const totalWeight = allFetches.reduce(
+        (sum, fetch) => sum + (fetch.priority || 1),
+        0
+      );
+
+      // Calculate target count for each source based on weight
+      const sourcesWithTargets = allFetches.map((fetch) => {
+        const weight = fetch.priority || 1;
+        const targetCount = Math.floor((weight / totalWeight) * targetLimit);
+        return {
+          ...fetch,
+          targetCount,
+          currentIndex: 0,
+        };
+      });
+
+      // Distribute items proportionally using round-robin with weights
+      let remainingSlots = targetLimit;
+      let sourcesExhausted = 0;
+
+      while (
+        remainingSlots > 0 &&
+        sourcesExhausted < sourcesWithTargets.length
+      ) {
+        sourcesExhausted = 0;
+
+        for (const source of sourcesWithTargets) {
+          if (remainingSlots <= 0) break;
+
+          // Skip if this source has no more data
+          if (source.currentIndex >= source.data.length) {
+            sourcesExhausted++;
+            continue;
+          }
+
+          // Calculate how many items this source should contribute this round
+          const weight = source.priority || 1;
+          const itemsToTake = Math.max(
+            1,
+            Math.floor((weight / totalWeight) * 10)
+          );
+
+          let taken = 0;
+          while (
+            taken < itemsToTake &&
+            source.currentIndex < source.data.length &&
+            remainingSlots > 0
+          ) {
+            const item = source.data[source.currentIndex];
+            source.currentIndex++;
+
+            // If filterDuplicateIdentifiers is enabled, check identifier first
+            if (filterDuplicateIdentifiers && seenIdentifiersForFilter) {
+              if (seenIdentifiersForFilter.has(item.identifier)) {
+                continue; // Skip - identifier already seen
+              }
+            }
+
+            // Always deduplicate by full key
+            const fullKey = `${item.service}-${item.name}-${item.identifier}`;
+            if (seenKeys.has(fullKey)) continue;
+
+            // Add item
+            seenKeys.add(fullKey);
+            if (seenIdentifiersForFilter) {
+              seenIdentifiersForFilter.add(item.identifier);
+            }
+            allResults.push(item);
+
+            // Track this as the last used item from this source
+            if (source.sourceKey) {
+              lastUsedPerSource.set(source.sourceKey, item);
+            }
+
+            remainingSlots--;
+            taken++;
+          }
+
+          if (source.currentIndex >= source.data.length) {
+            sourcesExhausted++;
+          }
+        }
+      }
+
+      // Update pagination state for each source based on last item actually USED
+      sourcesWithTargets.forEach((source) => {
+        if (!source.sourceKey) return; // Skip if no sourceKey
+
+        const lastUsedItem = lastUsedPerSource.get(source.sourceKey);
+
+        if (lastUsedItem) {
+          // We used items from this source - update pagination state
+          setPaginationState(listName, source.sourceKey, {
+            before: lastUsedItem.created,
+            hasMore:
+              source.currentIndex < source.data.length ||
+              source.data.length === (source.fetchParams?.limit || 20),
+            lastFetchedCount: source.data.length,
+          });
+        } else if (source.data.length === 0) {
+          // No data from this source
+          const paginationState = getPaginationState(
+            listName,
+            source.sourceKey
+          );
+          setPaginationState(listName, source.sourceKey, {
+            before: paginationState?.before || null,
+            hasMore: false,
+            lastFetchedCount: 0,
+          });
+        }
+        // If we fetched data but didn't use any (all filtered out), keep existing pagination state
+      });
+
+      return allResults;
+    },
+    [
+      fetchResources,
+      cancelAllRequests,
+      getPaginationState,
+      setPaginationState,
+      clearPaginationState,
+    ]
+  );
+
   const addNewResources = useCallback(
     (listName: string, resources: Resource[]) => {
-      console.log('testtest', listName, resources);
       addTemporaryResource(
         listName,
         resources.map((item) => item.qortalMetadata)
@@ -413,42 +727,30 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
 
   const deleteResource = useCallback(async (resourcesToDelete: (QortalMetadata | QortalGetMetadata)[]) => {
 
-    
-   
-    
-    const deletes = []
-    for (const resource of resourcesToDelete) {
-      if (!resource?.service || !resource?.identifier)
-        throw new Error("Missing fields");
-      deletes.push({
-        service: resource.service,
-        identifier: resource.identifier,
-        data64: "RA==",
-   });
- }
- await qortalRequestWithTimeout({
-   action: "PUBLISH_MULTIPLE_QDN_RESOURCES",
-   resources: deletes,
- }, 600000);
- resourcesToDelete.forEach((item)=> {
-  markResourceAsDeleted(item);
-   setPublish(item, null);
- })
-    return true;
-  }, []);
-
-
-  return useMemo(() => ({
-    fetchResources,
-    addNewResources,
-    updateNewResources,
-    deleteResource,
-    deleteList,
-    addList,
-    fetchResourcesResultsOnly,
-    fetchPreloadedResources
-  }), [fetchResources, addNewResources, updateNewResources, deleteResource, deleteList, fetchResourcesResultsOnly, addList, fetchPreloadedResources]);
-  
+  return useMemo(
+    () => ({
+      fetchResources,
+      addNewResources,
+      updateNewResources,
+      deleteResource,
+      deleteList,
+      addList,
+      fetchResourcesResultsOnly,
+      fetchPreloadedResources,
+      fetchResourcesWithPriority,
+    }),
+    [
+      fetchResources,
+      addNewResources,
+      updateNewResources,
+      deleteResource,
+      deleteList,
+      fetchResourcesResultsOnly,
+      addList,
+      fetchPreloadedResources,
+      fetchResourcesWithPriority,
+    ]
+  );
 };
 
 export const generateCacheKey = (

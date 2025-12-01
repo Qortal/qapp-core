@@ -51,10 +51,23 @@ interface DeletedResources {
   [key: string]: { deleted: true; deletedAt: number; expiry: number };
 }
 
+interface SourcePaginationState {
+  before: number | null;
+  hasMore: boolean;
+  lastFetchedCount: number;
+}
+
+interface PaginationCache {
+  [listName: string]: {
+    [sourceKey: string]: SourcePaginationState;
+  };
+}
+
 interface CacheState {
   resourceCache: resourceCache;
 
   searchCache: SearchCache;
+  paginationCache: PaginationCache;
   // Search cache actions
   setResourceCache: (
     id: string,
@@ -98,6 +111,17 @@ interface CacheState {
   setResourceCacheExpiryDuration: (duration: number) => void;
   deleteSearchCache: (listName: string) => void;
   filterSearchCacheItemsByNames: (names: string[]) => void;
+  // Pagination state management
+  getPaginationState: (
+    listName: string,
+    sourceKey: string
+  ) => SourcePaginationState | null;
+  setPaginationState: (
+    listName: string,
+    sourceKey: string,
+    state: SourcePaginationState
+  ) => void;
+  clearPaginationState: (listName: string) => void;
 }
 
 export const useCacheStore = create<CacheState>((set, get) => ({
@@ -106,6 +130,7 @@ export const useCacheStore = create<CacheState>((set, get) => ({
   resourceCache: {},
   searchCache: {},
   deletedResources: {},
+  paginationCache: {},
   setSearchCacheExpiryDuration: (duration) =>
     set({ searchCacheExpiryDuration: duration }),
   setResourceCacheExpiryDuration: (duration) =>
@@ -321,5 +346,30 @@ export const useCacheStore = create<CacheState>((set, get) => ({
       }
 
       return { searchCache: updatedSearchCache };
+    }),
+
+  // Pagination state management
+  getPaginationState: (listName, sourceKey) => {
+    const listCache = get().paginationCache[listName];
+    if (!listCache) return null;
+    return listCache[sourceKey] || null;
+  },
+
+  setPaginationState: (listName, sourceKey, state) =>
+    set((storeState) => ({
+      paginationCache: {
+        ...storeState.paginationCache,
+        [listName]: {
+          ...(storeState.paginationCache[listName] || {}),
+          [sourceKey]: state,
+        },
+      },
+    })),
+
+  clearPaginationState: (listName) =>
+    set((state) => {
+      const updatedPaginationCache = { ...state.paginationCache };
+      delete updatedPaginationCache[listName];
+      return { paginationCache: updatedPaginationCache };
     }),
 }));

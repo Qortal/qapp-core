@@ -100,8 +100,47 @@ export interface QortalMetadata {
     mode?: 'ALL' | 'LATEST'
   }
 
-   export interface QortalPreloadedParams {
-    limit: number
-    offset: number
-  }
-  
+export interface QortalGetMetadata {
+  name: string;
+  identifier: string;
+  service: Service;
+}
+
+export interface QortalSearchParams {
+  after?: number;
+  before?: number;
+  description?: string;
+  exactMatchNames?: boolean;
+  excludeBlocked?: boolean;
+  followedOnly?: boolean;
+  identifier: string;
+  includemetadata?: boolean;
+  keywords?: string[];
+  limit?: number;
+  minLevel?: number;
+  mode?: 'ALL' | 'LATEST';
+  name?: string;
+  nameListFilter?: string;
+  names?: string[];
+  offset?: number;
+  prefix?: boolean;
+  query?: string;
+  reverse?: boolean;
+  service: Service;
+  title?: string;
+}
+
+export interface QortalPreloadedParams {
+  limit: number;
+  offset: number;
+}
+
+export interface EntityParams {
+  entityType: string;
+  parentId?: string | null;
+}
+
+export interface SecondaryDataSource {
+  priority: number; // Weight for distribution (higher = more items from this source)
+  params: QortalSearchParams | { entityParams: EntityParams };
+}
