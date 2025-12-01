@@ -9,6 +9,8 @@ import React, {
 import {
   QortalMetadata,
   QortalSearchParams,
+  EntityParams,
+  SecondaryDataSource,
 } from '../../types/interfaces/resources';
 import { VirtualizedList } from '../../common/VirtualizedList';
 import { ListLoader } from '../../common/ListLoader';
@@ -33,11 +35,6 @@ interface ResourceListStyles {
   horizontalStyles?: {
     minItemWidth?: number;
   };
-}
-
-interface EntityParams {
-  entityType: string;
-  parentId?: string | null;
 }
 
 export interface DefaultLoaderParams {
@@ -87,6 +84,7 @@ interface BaseProps {
   ref?: any;
   scrollerRef?: React.RefObject<HTMLElement | null> | null;
   filterDuplicateIdentifiers?: FilterDuplicateIdentifiersOptions;
+  secondaryDataSources?: SecondaryDataSource[];
 }
 
 const defaultStyles = {
@@ -130,6 +128,7 @@ export const MemorizedComponent = ({
   ref,
   scrollerRef,
   filterDuplicateIdentifiers,
+  secondaryDataSources,
 }: PropsResourceListDisplay) => {
   const { identifierOperations, lists } = useGlobal();
   const [generatedIdentifier, setGeneratedIdentifier] = useState('');
@@ -169,6 +168,11 @@ export const MemorizedComponent = ({
     if (!entityParams) return null;
     return JSON.stringify(entityParams);
   }, [entityParams]);
+
+  const stringifiedSecondaryDataSources = useMemo(() => {
+    if (!secondaryDataSources) return null;
+    return JSON.stringify(secondaryDataSources);
+  }, [secondaryDataSources]);
 
   useEffect(() => {
     if (list?.length > 0) {
@@ -254,14 +258,26 @@ export const MemorizedComponent = ({
 
       lastItemTimestampRef.current = null;
       const parsedParams = { ...JSON.parse(memoizedParams) };
-      const responseData = await lists.fetchResources(
+
+      // Parse secondary sources if they exist
+      const parsedSecondarySources: SecondaryDataSource[] | undefined =
+        stringifiedSecondaryDataSources
+          ? JSON.parse(stringifiedSecondaryDataSources)
+          : undefined;
+
+      // Use the new priority-based fetching method
+      const responseData = await lists.fetchResourcesWithPriority(
         parsedParams,
+        parsedSecondarySources,
         listName,
         returnType,
-        true,
-        filterDuplicateIdentifiers?.enabled,
-        undefined // No existing identifiers for initial fetch
-      ); // Awaiting the async function
+        true, // cancelRequests
+        'initial', // paginationMode
+        filterDuplicateIdentifiers?.enabled || false,
+        identifierOperations,
+        undefined // No current list on initial fetch
+      );
+
       addList(listName, responseData || []);
       if (onNewData) {
         onNewData(false);
@@ -274,9 +290,11 @@ export const MemorizedComponent = ({
   }, [
     memoizedParams,
     generatedIdentifier,
-    lists.fetchResources,
+    stringifiedSecondaryDataSources,
+    lists.fetchResourcesWithPriority,
+    identifierOperations,
     filterDuplicateIdentifiers,
-  ]); // Added dependencies for re-fetching
+  ]);
 
   const resetSearch = useCallback(async () => {
     lists.deleteList(listName);
@@ -352,30 +370,45 @@ export const MemorizedComponent = ({
       try {
         if (!generatedIdentifier) return;
         const parsedParams = { ...JSON.parse(memoizedParams) };
-        parsedParams.before =
-          list.length === 0 ? null : list[list.length - 1]?.created;
-        parsedParams.offset = null;
+
+        // Set limit for pagination request
         if (displayLimit) {
           parsedParams.limit = displayLimit;
         }
-        // Extract existing identifiers from current list to avoid duplicates
-        const existingIdentifiers = filterDuplicateIdentifiers?.enabled
-          ? list.map((item) => item.identifier)
-          : undefined;
-        const responseData = await lists.fetchResources(
+
+        // Parse secondary sources if they exist
+        const parsedSecondarySources: SecondaryDataSource[] | undefined =
+          stringifiedSecondaryDataSources
+            ? JSON.parse(stringifiedSecondaryDataSources)
+            : undefined;
+
+        // Use the new priority-based fetching method with 'more' mode
+        const responseData = await lists.fetchResourcesWithPriority(
           parsedParams,
+          parsedSecondarySources,
           listName,
           returnType,
-          undefined,
-          filterDuplicateIdentifiers?.enabled,
-          existingIdentifiers
-        ); // Awaiting the async function
+          false, // Don't cancel requests on pagination
+          'more', // paginationMode
+          filterDuplicateIdentifiers?.enabled || false,
+          identifierOperations,
+          list // Pass current list for pagination fallback
+        );
+
         addItems(listName, responseData || []);
       } catch (error) {
         console.error('Failed to fetch resources:', error);
       }
     },
-    [memoizedParams, listName, list, filterDuplicateIdentifiers]
+    [
+      memoizedParams,
+      listName,
+      list,
+      stringifiedSecondaryDataSources,
+      lists.fetchResourcesWithPriority,
+      identifierOperations,
+      filterDuplicateIdentifiers,
+    ]
   );
 
   const disabledVirutalizationStyles: CSSProperties = useMemo(() => {
@@ -533,7 +566,9 @@ function arePropsEqual(
     JSON.stringify(prevProps.entityParams) ===
       JSON.stringify(nextProps.entityParams) &&
     JSON.stringify(prevProps.searchNewData) ===
-      JSON.stringify(nextProps.searchNewData)
+      JSON.stringify(nextProps.searchNewData) &&
+    JSON.stringify(prevProps.secondaryDataSources) ===
+      JSON.stringify(nextProps.secondaryDataSources)
   );
 }
 

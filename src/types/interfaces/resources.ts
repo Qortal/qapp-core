@@ -104,3 +104,13 @@ export interface QortalPreloadedParams {
   limit: number;
   offset: number;
 }
+
+export interface EntityParams {
+  entityType: string;
+  parentId?: string | null;
+}
+
+export interface SecondaryDataSource {
+  priority: number; // Weight for distribution (higher = more items from this source)
+  params: QortalSearchParams | { entityParams: EntityParams };
+}
