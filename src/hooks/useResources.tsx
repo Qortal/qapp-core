@@ -362,6 +362,7 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
 
   const addNewResources = useCallback(
     (listName: string, resources: Resource[]) => {
+      console.log('testtest', listName, resources)
       addTemporaryResource(
         listName,
         resources.map((item) => item.qortalMetadata)
