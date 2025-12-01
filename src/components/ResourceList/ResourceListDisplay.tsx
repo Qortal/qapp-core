@@ -47,6 +47,13 @@ export interface DefaultLoaderParams {
   listItemErrorText?: string;
 }
 
+export interface FilterDuplicateIdentifiersOptions {
+  enabled: boolean;
+  // Future options can be added here
+  // e.g., strategy?: 'first' | 'last' | 'newest' | 'oldest';
+  // e.g., customCompare?: (a: QortalMetadata, b: QortalMetadata) => number;
+}
+
 export type ReturnType = 'JSON' | 'BASE64';
 
 export interface Results {
@@ -79,6 +86,7 @@ interface BaseProps {
   onNewData?: (hasNewData: boolean) => void;
   ref?: any;
   scrollerRef?: React.RefObject<HTMLElement | null> | null;
+  filterDuplicateIdentifiers?: FilterDuplicateIdentifiersOptions;
 }
 
 const defaultStyles = {
@@ -121,6 +129,7 @@ export const MemorizedComponent = ({
   onNewData,
   ref,
   scrollerRef,
+  filterDuplicateIdentifiers,
 }: PropsResourceListDisplay) => {
   const { identifierOperations, lists } = useGlobal();
   const [generatedIdentifier, setGeneratedIdentifier] = useState('');
@@ -249,7 +258,9 @@ export const MemorizedComponent = ({
         parsedParams,
         listName,
         returnType,
-        true
+        true,
+        filterDuplicateIdentifiers?.enabled,
+        undefined // No existing identifiers for initial fetch
       ); // Awaiting the async function
       addList(listName, responseData || []);
       if (onNewData) {
@@ -260,7 +271,12 @@ export const MemorizedComponent = ({
     } finally {
       setIsLoading(false);
     }
-  }, [memoizedParams, generatedIdentifier, lists.fetchResources]); // Added dependencies for re-fetching
+  }, [
+    memoizedParams,
+    generatedIdentifier,
+    lists.fetchResources,
+    filterDuplicateIdentifiers,
+  ]); // Added dependencies for re-fetching
 
   const resetSearch = useCallback(async () => {
     lists.deleteList(listName);
@@ -342,17 +358,24 @@ export const MemorizedComponent = ({
         if (displayLimit) {
           parsedParams.limit = displayLimit;
         }
+        // Extract existing identifiers from current list to avoid duplicates
+        const existingIdentifiers = filterDuplicateIdentifiers?.enabled
+          ? list.map((item) => item.identifier)
+          : undefined;
         const responseData = await lists.fetchResources(
           parsedParams,
           listName,
-          returnType
+          returnType,
+          undefined,
+          filterDuplicateIdentifiers?.enabled,
+          existingIdentifiers
         ); // Awaiting the async function
         addItems(listName, responseData || []);
       } catch (error) {
         console.error('Failed to fetch resources:', error);
       }
     },
-    [memoizedParams, listName, list]
+    [memoizedParams, listName, list, filterDuplicateIdentifiers]
   );
 
   const disabledVirutalizationStyles: CSSProperties = useMemo(() => {
@@ -502,6 +525,8 @@ function arePropsEqual(
     prevProps.disableVirtualization === nextProps.disableVirtualization &&
     prevProps.direction === nextProps.direction &&
     prevProps.onSeenLastItem === nextProps.onSeenLastItem &&
+    JSON.stringify(prevProps.filterDuplicateIdentifiers) ===
+      JSON.stringify(nextProps.filterDuplicateIdentifiers) &&
     JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&
     JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles) &&
     prevProps.listItem === nextProps.listItem &&
