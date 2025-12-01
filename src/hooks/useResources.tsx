@@ -211,11 +211,13 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
       listName: string,
       returnType: ReturnType = 'JSON',
       cancelRequests?: boolean,
+      filterOutDuplicateIdentifiers?: boolean,
+      existingIdentifiers?: string[]
     ): Promise<QortalMetadata[]> => {
       if (cancelRequests) {
         cancelAllRequests();
       }
-      const cacheKey = generateCacheKey(params);
+      const cacheKey = generateCacheKey(params, filterOutDuplicateIdentifiers);
       const searchCache = getSearchCache(listName, cacheKey);
       if (searchCache) {
         const copyParams = {...params}
@@ -232,6 +234,9 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
       let lastCreated = params.before || undefined;
       const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
       const isUnlimited = params.limit === 0;
+      const seenIdentifiers = filterOutDuplicateIdentifiers
+        ? new Set<string>(existingIdentifiers || [])
+        : null;
 
       while (isUnlimited || filteredResults.length < targetLimit) {
         const response = await qortalRequest({
@@ -247,7 +252,21 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
         }
 
         responseData = response;
-        const validResults = responseData.filter((item) => item.size !== 32 && item.size < maxSize);
+        let validResults = responseData.filter(
+          (item) => item.size !== 32 && item.size < maxSize
+        );
+
+        // Filter out duplicate identifiers during the fetch loop
+        if (filterOutDuplicateIdentifiers && seenIdentifiers) {
+          validResults = validResults.filter((item) => {
+            if (seenIdentifiers.has(item.identifier)) {
+              return false;
+            }
+            seenIdentifiers.add(item.identifier);
+            return true;
+          });
+        }
+
         filteredResults = [...filteredResults, ...validResults];
 
         if (filteredResults.length >= targetLimit && !isUnlimited) {
@@ -260,11 +279,17 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
 
         if (!lastCreated) break;
       }
-      const copyParams = {...params}
-        delete copyParams.after
-        delete copyParams.before
-        delete copyParams.offset
-      setSearchCache(listName, cacheKey, filteredResults, cancelRequests ? JSON.stringify(copyParams) : null);
+
+      const copyParams = { ...params };
+      delete copyParams.after;
+      delete copyParams.before;
+      delete copyParams.offset;
+      setSearchCache(
+        listName,
+        cacheKey,
+        filteredResults,
+        cancelRequests ? JSON.stringify(copyParams) : null
+      );
       fetchDataFromResults(filteredResults, returnType);
 
       return filteredResults;
@@ -360,7 +385,7 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
 
   const addNewResources = useCallback(
     (listName: string, resources: Resource[]) => {
-      console.log('testtest', listName, resources)
+      console.log('testtest', listName, resources);
       addTemporaryResource(
         listName,
         resources.map((item) => item.qortalMetadata)
@@ -426,7 +451,10 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
   
 };
 
-export const generateCacheKey = (params: QortalSearchParams): string => {
+export const generateCacheKey = (
+  params: QortalSearchParams,
+  filterOutDuplicateIdentifiers?: boolean
+): string => {
   const {
     identifier,
     service,
@@ -471,6 +499,8 @@ export const generateCacheKey = (params: QortalSearchParams): string => {
     offset !== undefined && `o-${offset}`,
     reverse !== undefined && `r-${reverse}`,
     mode !== undefined && `mo-${mode}`,
+    filterOutDuplicateIdentifiers !== undefined &&
+      `fodi-${filterOutDuplicateIdentifiers}`,
   ]
     .filter(Boolean) // Remove undefined or empty values
     .join("_"); // Join into a string

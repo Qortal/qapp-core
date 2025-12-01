@@ -52,7 +52,14 @@ export interface DefaultLoaderParams {
   listItemErrorText?: string;
 }
 
-export type ReturnType = 'JSON' | 'BASE64'
+export interface FilterDuplicateIdentifiersOptions {
+  enabled: boolean;
+  // Future options can be added here
+  // e.g., strategy?: 'first' | 'last' | 'newest' | 'oldest';
+  // e.g., customCompare?: (a: QortalMetadata, b: QortalMetadata) => number;
+}
+
+export type ReturnType = 'JSON' | 'BASE64';
 
 export interface Results {
   resourceItems: QortalMetadata[]
@@ -82,8 +89,9 @@ interface BaseProps  {
     intervalSearch: QortalSearchParams
   }
   onNewData?: (hasNewData: boolean) => void;
-  ref?: any
-  scrollerRef?: React.RefObject<HTMLElement | null> | null
+  ref?: any;
+  scrollerRef?: React.RefObject<HTMLElement | null> | null;
+  filterDuplicateIdentifiers?: FilterDuplicateIdentifiersOptions;
 }
 
 const defaultStyles = {
@@ -126,11 +134,12 @@ export const MemorizedComponent = ({
   searchNewData,
   onNewData,
   ref,
-  scrollerRef
-}: PropsResourceListDisplay)  => {
-  const {identifierOperations, lists} = useGlobal()
-  const [generatedIdentifier, setGeneratedIdentifier] = useState("")
-  const [memoizedParams, setMemorizedParams] = useState('')
+  scrollerRef,
+  filterDuplicateIdentifiers,
+}: PropsResourceListDisplay) => {
+  const { identifierOperations, lists } = useGlobal();
+  const [generatedIdentifier, setGeneratedIdentifier] = useState('');
+  const [memoizedParams, setMemorizedParams] = useState('');
   const setSearchParamsForList = useCacheStore((s) => s.setSearchParamsForList);
   const memoizedParamsSearchNewData = useMemo(() => {
     if(searchNewData?.intervalSearch){
@@ -243,21 +252,33 @@ const addItems = useListStore((s) => s.addItems);
         setTimeout(() => {
           res(null)
         }, 500);
-      })
-    
-      lastItemTimestampRef.current = null
-      const parsedParams = {...(JSON.parse(memoizedParams))};
-      const responseData = await lists.fetchResources(parsedParams, listName, returnType, true); // Awaiting the async function
-        addList(listName,  responseData || []);
-        if(onNewData){
-          onNewData(false)
-        }
+      });
+
+      lastItemTimestampRef.current = null;
+      const parsedParams = { ...JSON.parse(memoizedParams) };
+      const responseData = await lists.fetchResources(
+        parsedParams,
+        listName,
+        returnType,
+        true,
+        filterDuplicateIdentifiers?.enabled,
+        undefined // No existing identifiers for initial fetch
+      ); // Awaiting the async function
+      addList(listName, responseData || []);
+      if (onNewData) {
+        onNewData(false);
+      }
     } catch (error) {
       console.error("Failed to fetch resources:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [memoizedParams, generatedIdentifier, lists.fetchResources]); // Added dependencies for re-fetching
+  }, [
+    memoizedParams,
+    generatedIdentifier,
+    lists.fetchResources,
+    filterDuplicateIdentifiers,
+  ]); // Added dependencies for re-fetching
 
   const resetSearch = useCallback(async ()=> {
     lists.deleteList(listName);
@@ -321,24 +342,36 @@ const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheEx
     }
   }, [listToDisplay, onResults, isLoading])
 
-
-  const getResourceMoreList = useCallback(async (displayLimit?: number) => {
-    try {
-      if(!generatedIdentifier) return
-      const parsedParams = {...(JSON.parse(memoizedParams))};
-      parsedParams.before = list.length === 0 ? null : list[list.length - 1]?.created
-      parsedParams.offset = null
-      if(displayLimit){
-        parsedParams.limit = displayLimit
+  const getResourceMoreList = useCallback(
+    async (displayLimit?: number) => {
+      try {
+        if (!generatedIdentifier) return;
+        const parsedParams = { ...JSON.parse(memoizedParams) };
+        parsedParams.before =
+          list.length === 0 ? null : list[list.length - 1]?.created;
+        parsedParams.offset = null;
+        if (displayLimit) {
+          parsedParams.limit = displayLimit;
+        }
+        // Extract existing identifiers from current list to avoid duplicates
+        const existingIdentifiers = filterDuplicateIdentifiers?.enabled
+          ? list.map((item) => item.identifier)
+          : undefined;
+        const responseData = await lists.fetchResources(
+          parsedParams,
+          listName,
+          returnType,
+          undefined,
+          filterDuplicateIdentifiers?.enabled,
+          existingIdentifiers
+        ); // Awaiting the async function
+        addItems(listName, responseData || []);
+      } catch (error) {
+        console.error('Failed to fetch resources:', error);
       }
-      const responseData = await lists.fetchResources(parsedParams, listName, returnType); // Awaiting the async function
-      addItems(listName, responseData || [])
-    } catch (error) {
-      console.error("Failed to fetch resources:", error);
-    } 
-  }, [memoizedParams, listName, list]); 
-
-
+    },
+    [memoizedParams, listName, list, filterDuplicateIdentifiers]
+  );
 
   const disabledVirutalizationStyles: CSSProperties = useMemo(() => {
     if (styles?.disabledVirutalizationStyles?.parentContainer)
@@ -454,6 +487,8 @@ function arePropsEqual(
     prevProps.disableVirtualization === nextProps.disableVirtualization &&
     prevProps.direction === nextProps.direction &&
     prevProps.onSeenLastItem === nextProps.onSeenLastItem &&
+    JSON.stringify(prevProps.filterDuplicateIdentifiers) ===
+      JSON.stringify(nextProps.filterDuplicateIdentifiers) &&
     JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&
     JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles) &&
     prevProps.listItem === nextProps.listItem &&
