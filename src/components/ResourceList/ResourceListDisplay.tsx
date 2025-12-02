@@ -78,10 +78,10 @@ interface BaseProps  {
   returnType: 'JSON' | 'BASE64'
   onResults?: (results: Results)=> void
   searchNewData?: {
-    interval: number
-    intervalSearch: QortalSearchParams
-  }
-  onNewData?: (hasNewData: boolean) => void;
+    interval: number;
+    intervalSearch: QortalSearchParams;
+  };
+  onNewData?: (hasNewData: boolean, newResources: QortalMetadata[]) => void;
   ref?: any;
   scrollerRef?: React.RefObject<HTMLElement | null> | null;
   filterDuplicateIdentifiers?: FilterDuplicateIdentifiersOptions;
@@ -183,15 +183,16 @@ const addItems = useListStore((s) => s.addItems);
     searchIntervalRef.current = setInterval(async () => {
       
       try {
-        if(!lastItemTimestampRef.current) return
-        if(isCalling) return
-        isCalling = true
-        const parsedParams = {...(JSON.parse(memoizedParamsSearchNewData))};
-        parsedParams.identifier = generatedIdentifier
-        parsedParams.after = lastItemTimestampRef.current
-        const responseData = await lists.fetchResourcesResultsOnly(parsedParams); // Awaiting the async function
-        if(onNewData && responseData?.length > 0){
-          onNewData(true)
+        if (!lastItemTimestampRef.current) return;
+        if (isCalling) return;
+        isCalling = true;
+        const parsedParams = { ...JSON.parse(memoizedParamsSearchNewData) };
+        parsedParams.identifier = generatedIdentifier;
+        parsedParams.after = lastItemTimestampRef.current;
+        const responseData =
+          await lists.fetchResourcesResultsOnly(parsedParams); // Awaiting the async function
+        if (onNewData && responseData?.length > 0) {
+          onNewData(true, responseData);
         }
       } catch (error) {
         console.error(error)
@@ -270,7 +271,7 @@ const addItems = useListStore((s) => s.addItems);
 
       addList(listName, responseData || []);
       if (onNewData) {
-        onNewData(false);
+        onNewData(false, []);
       }
     } catch (error) {
       console.error("Failed to fetch resources:", error);
@@ -286,10 +287,17 @@ const addItems = useListStore((s) => s.addItems);
     filterDuplicateIdentifiers,
   ]);
 
-  const resetSearch = useCallback(async ()=> {
+  const { elementRef, resetScroll } = useScrollTracker(
+    listName,
+    list?.length > 0,
+    scrollerRef ? true : !disableVirtualization ? true : disableScrollTracker
+  );
+
+  const resetSearch = useCallback(async () => {
+    resetScroll()
     lists.deleteList(listName);
-   getResourceList()
- }, [listName, getResourceList])
+    getResourceList();
+  }, [listName, getResourceList, resetScroll]);
 
  useEffect(()=> {
    if(ref){
@@ -320,10 +328,14 @@ const addItems = useListStore((s) => s.addItems);
     getResourceList();
   }, [getResourceList, listName]); // Runs when dependencies change
 
-  const {elementRef} = useScrollTracker(listName, list?.length > 0, scrollerRef ? true : !disableVirtualization ? true : disableScrollTracker);
-  useScrollTrackerRef(listName, list?.length > 0,  scrollerRef)
-  const setSearchCacheExpiryDuration = useCacheStore((s) => s.setSearchCacheExpiryDuration);
-const setResourceCacheExpiryDuration = useCacheStore((s) => s.setResourceCacheExpiryDuration);
+  
+  useScrollTrackerRef(listName, list?.length > 0, scrollerRef);
+  const setSearchCacheExpiryDuration = useCacheStore(
+    (s) => s.setSearchCacheExpiryDuration
+  );
+  const setResourceCacheExpiryDuration = useCacheStore(
+    (s) => s.setResourceCacheExpiryDuration
+  );
 
     useEffect(()=> {
       if(searchCacheDuration){
