@@ -14,10 +14,11 @@ import { ReturnType } from '../components/ResourceList/ResourceListDisplay';
 import { useListStore } from '../state/lists';
 import { usePublishStore } from '../state/publishes';
 
-export const requestQueueProductPublishes = new RequestQueueWithPromise(20);
+export const requestQueueProductPublishes = new RequestQueueWithPromise(12);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
-  10
+  6
 );
+export const requestQueueResourcesResultsOnly = new RequestQueueWithPromise(4);
 
 export interface Resource {
   qortalMetadata: QortalMetadata;
@@ -74,12 +75,12 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
     }
   };
 
-  const cancelAllRequests = () => {
+  const cancelAllRequests = useCallback(() => {
     requestControllers.forEach((controller, key) => {
       controller.abort();
     });
     requestControllers.clear();
-  };
+  }, []);
 
   const fetchIndividualPublishJson = useCallback(
     async (
@@ -352,14 +353,16 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
       const targetLimit = params.limit ?? 20; // Use `params.limit` if provided, else default to 20
       const isUnlimited = params.limit === 0;
       while (isUnlimited || filteredResults.length < targetLimit) {
-        const response = await qortalRequest({
-          action: 'SEARCH_QDN_RESOURCES',
-          mode: 'ALL',
-          ...params,
-          limit: targetLimit - filteredResults.length,
-          before: lastCreated,
-          excludeBlocked: true,
-        });
+        const response = await requestQueueResourcesResultsOnly.enqueue(() =>
+          qortalRequest({
+            action: 'SEARCH_QDN_RESOURCES',
+            mode: 'ALL',
+            ...params,
+            limit: targetLimit - filteredResults.length,
+            before: lastCreated,
+            excludeBlocked: true,
+          })
+        );
 
         if (!response || response.length === 0) break;
 
@@ -759,6 +762,7 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
       fetchResourcesResultsOnly,
       fetchPreloadedResources,
       fetchResourcesWithPriority,
+      cancelAllRequests,
     }),
     [
       fetchResources,
@@ -770,6 +774,7 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
       addList,
       fetchPreloadedResources,
       fetchResourcesWithPriority,
+      cancelAllRequests,
     ]
   );
 };
