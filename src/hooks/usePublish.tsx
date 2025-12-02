@@ -1,12 +1,25 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePublishStore } from "../state/publishes";
-import { QortalGetMetadata, QortalMetadata } from "../types/interfaces/resources";
-import { base64ToObject, retryTransaction } from "../utils/publish";
-import { useGlobal } from "../context/GlobalProvider";
-import { ReturnType } from "../components/ResourceList/ResourceListDisplay";
-import { useCacheStore } from "../state/cache";
-import { useMultiplePublishStore, usePublishStatusStore } from "../state/multiplePublish";
-import { ResourceToPublish } from "../types/qortalRequests/types";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { usePublishStore } from '../state/publishes';
+import {
+  QortalGetMetadata,
+  QortalMetadata,
+} from '../types/interfaces/resources';
+import { base64ToObject, retryTransaction } from '../utils/publish';
+import { useGlobal } from '../context/GlobalProvider';
+import { ReturnType } from '../components/ResourceList/ResourceListDisplay';
+import { useCacheStore } from '../state/cache';
+import {
+  useMultiplePublishStore,
+  usePublishStatusStore,
+} from '../state/multiplePublish';
+import { ResourceToPublish } from '../types/qortalRequests/types';
+import { requestQueueProductPublishes } from './useResources';
 
 interface StoredPublish {
     qortalMetadata: QortalMetadata;
@@ -81,15 +94,20 @@ interface StoredPublish {
    const setPublishResources = useMultiplePublishStore((state) => state.setPublishResources);
       const resetPublishResources = useMultiplePublishStore((state) => state.reset);
   const [hasResource, setHasResource] = useState<boolean | null>(null);
-  const fetchRawData = useCallback(async (item: QortalGetMetadata) => {
-    const url = `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`;
-    const res = await fetch(url);
-    const data = await res.text();
-    if(returnType === 'BASE64'){
-      return data
-    }
-    return base64ToObject(data);
-  }, [returnType]);
+  const fetchRawData = useCallback(
+    async (item: QortalGetMetadata) => {
+      const url = `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`;
+      const data = await requestQueueProductPublishes.enqueue(async () => {
+        const res = await fetch(url);
+        return await res.text();
+      });
+      if (returnType === 'BASE64') {
+        return data;
+      }
+      return base64ToObject(data);
+    },
+    [returnType]
+  );
 
   const getStorageKey = useCallback(() => {
     if (!username || !appNameHashed) return null;

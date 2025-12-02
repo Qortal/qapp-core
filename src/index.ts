@@ -12,8 +12,13 @@ export { useAllResourceStatus } from './hooks/useAllResourceStatus';
 export { useQortBalance } from './hooks/useBalance';
 export { useAuth } from './hooks/useAuth';
 export { useBlockedNames } from './hooks/useBlockedNames';
-import './index.css'
-export { executeEvent, subscribeToEvent, unsubscribeFromEvent } from './utils/events';
+import './index.css';
+export  { fileToBase64 } from './utils/base64';
+export {
+  executeEvent,
+  subscribeToEvent,
+  unsubscribeFromEvent,
+} from './utils/events';
 export { formatBytes, formatDuration } from './utils/numbers';
 export { createQortalLink } from './utils/qortal';
 export { IndexCategory } from './state/indexes';
