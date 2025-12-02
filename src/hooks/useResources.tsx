@@ -727,7 +727,35 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
     });
   }, []);
 
-  const deleteResource = useCallback(async (resourcesToDelete: (QortalMetadata | QortalGetMetadata)[]) => {
+  const deleteResource = useCallback(
+    async (resourcesToDelete: (QortalMetadata | QortalGetMetadata)[]) => {
+      const deletes = [];
+      for (const resource of resourcesToDelete) {
+        if (!resource?.service || !resource?.identifier)
+          throw new Error('Missing fields');
+        deletes.push({
+          name: resource?.name || '',
+          service: resource.service,
+          identifier: resource.identifier,
+          data64: 'RA==',
+        });
+      }
+
+      await qortalRequestWithTimeout(
+        {
+          action: 'PUBLISH_MULTIPLE_QDN_RESOURCES',
+          resources: deletes,
+        },
+        600000
+      );
+      resourcesToDelete.forEach((item) => {
+        markResourceAsDeleted(item);
+        setPublish(item, null);
+      });
+      return true;
+    },
+    []
+  );
 
   return useMemo(
     () => ({
