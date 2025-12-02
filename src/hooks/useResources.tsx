@@ -730,11 +730,13 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
         if (!resource?.service || !resource?.identifier)
           throw new Error('Missing fields');
         deletes.push({
+          name: resource?.name || '',
           service: resource.service,
           identifier: resource.identifier,
           data64: 'RA==',
         });
       }
+
       await qortalRequestWithTimeout(
         {
           action: 'PUBLISH_MULTIPLE_QDN_RESOURCES',
