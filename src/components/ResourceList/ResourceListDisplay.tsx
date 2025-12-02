@@ -80,7 +80,7 @@ interface BaseProps {
     interval: number;
     intervalSearch: QortalSearchParams;
   };
-  onNewData?: (hasNewData: boolean) => void;
+  onNewData?: (hasNewData: boolean, newResources: QortalMetadata[]) => void;
   ref?: any;
   scrollerRef?: React.RefObject<HTMLElement | null> | null;
   filterDuplicateIdentifiers?: FilterDuplicateIdentifiersOptions;
@@ -199,7 +199,7 @@ export const MemorizedComponent = ({
         const responseData =
           await lists.fetchResourcesResultsOnly(parsedParams); // Awaiting the async function
         if (onNewData && responseData?.length > 0) {
-          onNewData(true);
+          onNewData(true, responseData);
         }
       } catch (error) {
         console.error(error);
@@ -280,7 +280,7 @@ export const MemorizedComponent = ({
 
       addList(listName, responseData || []);
       if (onNewData) {
-        onNewData(false);
+        onNewData(false, []);
       }
     } catch (error) {
       console.error('Failed to fetch resources:', error);
@@ -296,10 +296,17 @@ export const MemorizedComponent = ({
     filterDuplicateIdentifiers,
   ]);
 
+  const { elementRef, resetScroll } = useScrollTracker(
+    listName,
+    list?.length > 0,
+    scrollerRef ? true : !disableVirtualization ? true : disableScrollTracker
+  );
+
   const resetSearch = useCallback(async () => {
+    resetScroll()
     lists.deleteList(listName);
     getResourceList();
-  }, [listName, getResourceList]);
+  }, [listName, getResourceList, resetScroll]);
 
   useEffect(() => {
     if (ref) {
@@ -329,11 +336,7 @@ export const MemorizedComponent = ({
     getResourceList();
   }, [getResourceList, listName]); // Runs when dependencies change
 
-  const { elementRef } = useScrollTracker(
-    listName,
-    list?.length > 0,
-    scrollerRef ? true : !disableVirtualization ? true : disableScrollTracker
-  );
+  
   useScrollTrackerRef(listName, list?.length > 0, scrollerRef);
   const setSearchCacheExpiryDuration = useCacheStore(
     (s) => s.setSearchCacheExpiryDuration

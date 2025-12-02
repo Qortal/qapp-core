@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCacheStore } from '../state/cache';
 
 export const useScrollTracker = (
@@ -9,6 +9,17 @@ export const useScrollTracker = (
   const elementRef = useRef<HTMLDivElement | null>(null);
   const [hasMount, setHasMount] = useState(false);
   const scrollPositionRef = useRef(0); // Store the last known scroll position
+
+  const resetScroll = useCallback(()=> {
+    scrollPositionRef.current = 0
+     const SCROLL_KEY = `scroll-position-${listName}`;
+sessionStorage.setItem(
+          SCROLL_KEY,
+          '0'
+        );
+  }, [listName])
+
+
 
   useEffect(() => {
     if (disableScrollTracker) return;
@@ -49,5 +60,5 @@ export const useScrollTracker = (
     };
   }, [listName, hasList, disableScrollTracker]);
 
-  return { elementRef, hasMount };
+  return { elementRef, hasMount, resetScroll };
 };
