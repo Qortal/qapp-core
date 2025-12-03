@@ -145,7 +145,8 @@ export async function buildIdentifier(
   appName: string,
   publicSalt: string,
   entityType: string, // ✅ Now takes only the entity type
-  parentId: string | null
+  parentId: string | null,
+  noUniqueId: boolean = false
 ): Promise<string> {
   // Hash app name (11 chars)
   const appHash: string = await hashWord(
@@ -172,6 +173,10 @@ export async function buildIdentifier(
       EnumCollisionStrength.PARENT_REF,
       publicSalt
     );
+  }
+
+  if(noUniqueId){
+    return `${appHash}-${entityPrefix}-${parentRef}-${IDENTIFIER_BUILDER_VERSION}`;
   }
 
   return `${appHash}-${entityPrefix}-${parentRef}-${entityUid}-${IDENTIFIER_BUILDER_VERSION}`;
