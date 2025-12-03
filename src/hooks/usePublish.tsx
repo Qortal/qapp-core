@@ -19,6 +19,7 @@ import {
   usePublishStatusStore,
 } from '../state/multiplePublish';
 import { ResourceToPublish } from '../types/qortalRequests/types';
+import { requestQueueProductPublishes } from './useResources';
 
 interface StoredPublish {
   qortalMetadata: QortalMetadata;
@@ -106,8 +107,10 @@ export function usePublish(
   const fetchRawData = useCallback(
     async (item: QortalGetMetadata) => {
       const url = `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`;
-      const res = await fetch(url);
-      const data = await res.text();
+      const data = await requestQueueProductPublishes.enqueue(async () => {
+        const res = await fetch(url);
+        return await res.text();
+      });
       if (returnType === 'BASE64') {
         return data;
       }

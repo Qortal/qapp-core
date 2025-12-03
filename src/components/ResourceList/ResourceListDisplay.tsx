@@ -9,6 +9,8 @@ import React, {
 import {
   QortalMetadata,
   QortalSearchParams,
+  EntityParams,
+  SecondaryDataSource,
 } from '../../types/interfaces/resources';
 import { VirtualizedList } from '../../common/VirtualizedList';
 import { ListLoader } from '../../common/ListLoader';
@@ -35,16 +37,18 @@ interface ResourceListStyles {
   };
 }
 
-interface EntityParams {
-  entityType: string;
-  parentId?: string | null;
-}
-
 export interface DefaultLoaderParams {
   listLoadingText?: string;
   listNoResultsText?: string;
   listItemLoadingText?: string;
   listItemErrorText?: string;
+}
+
+export interface FilterDuplicateIdentifiersOptions {
+  enabled: boolean;
+  // Future options can be added here
+  // e.g., strategy?: 'first' | 'last' | 'newest' | 'oldest';
+  // e.g., customCompare?: (a: QortalMetadata, b: QortalMetadata) => number;
 }
 
 export type ReturnType = 'JSON' | 'BASE64';
@@ -76,9 +80,11 @@ interface BaseProps {
     interval: number;
     intervalSearch: QortalSearchParams;
   };
-  onNewData?: (hasNewData: boolean) => void;
+  onNewData?: (hasNewData: boolean, newResources: QortalMetadata[]) => void;
   ref?: any;
   scrollerRef?: React.RefObject<HTMLElement | null> | null;
+  filterDuplicateIdentifiers?: FilterDuplicateIdentifiersOptions;
+  secondaryDataSources?: SecondaryDataSource[];
 }
 
 const defaultStyles = {
@@ -121,6 +127,8 @@ export const MemorizedComponent = ({
   onNewData,
   ref,
   scrollerRef,
+  filterDuplicateIdentifiers,
+  secondaryDataSources,
 }: PropsResourceListDisplay) => {
   const { identifierOperations, lists } = useGlobal();
   const [generatedIdentifier, setGeneratedIdentifier] = useState('');
@@ -161,6 +169,11 @@ export const MemorizedComponent = ({
     return JSON.stringify(entityParams);
   }, [entityParams]);
 
+  const stringifiedSecondaryDataSources = useMemo(() => {
+    if (!secondaryDataSources) return null;
+    return JSON.stringify(secondaryDataSources);
+  }, [secondaryDataSources]);
+
   useEffect(() => {
     if (list?.length > 0) {
       lastItemTimestampRef.current = list[0]?.created || null;
@@ -186,7 +199,7 @@ export const MemorizedComponent = ({
         const responseData =
           await lists.fetchResourcesResultsOnly(parsedParams); // Awaiting the async function
         if (onNewData && responseData?.length > 0) {
-          onNewData(true);
+          onNewData(true, responseData);
         }
       } catch (error) {
         console.error(error);
@@ -245,27 +258,55 @@ export const MemorizedComponent = ({
 
       lastItemTimestampRef.current = null;
       const parsedParams = { ...JSON.parse(memoizedParams) };
-      const responseData = await lists.fetchResources(
+
+      // Parse secondary sources if they exist
+      const parsedSecondarySources: SecondaryDataSource[] | undefined =
+        stringifiedSecondaryDataSources
+          ? JSON.parse(stringifiedSecondaryDataSources)
+          : undefined;
+
+      // Use the new priority-based fetching method
+      const responseData = await lists.fetchResourcesWithPriority(
         parsedParams,
+        parsedSecondarySources,
         listName,
         returnType,
-        true
-      ); // Awaiting the async function
+        true, // cancelRequests
+        'initial', // paginationMode
+        filterDuplicateIdentifiers?.enabled || false,
+        identifierOperations,
+        undefined // No current list on initial fetch
+      );
+
       addList(listName, responseData || []);
       if (onNewData) {
-        onNewData(false);
+        onNewData(false, []);
       }
     } catch (error) {
       console.error('Failed to fetch resources:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [memoizedParams, generatedIdentifier, lists.fetchResources]); // Added dependencies for re-fetching
+  }, [
+    memoizedParams,
+    generatedIdentifier,
+    stringifiedSecondaryDataSources,
+    lists.fetchResourcesWithPriority,
+    identifierOperations,
+    filterDuplicateIdentifiers,
+  ]);
+
+  const { elementRef, resetScroll } = useScrollTracker(
+    listName,
+    list?.length > 0,
+    scrollerRef ? true : !disableVirtualization ? true : disableScrollTracker
+  );
 
   const resetSearch = useCallback(async () => {
+    resetScroll()
     lists.deleteList(listName);
     getResourceList();
-  }, [listName, getResourceList]);
+  }, [listName, getResourceList, resetScroll]);
 
   useEffect(() => {
     if (ref) {
@@ -295,11 +336,7 @@ export const MemorizedComponent = ({
     getResourceList();
   }, [getResourceList, listName]); // Runs when dependencies change
 
-  const { elementRef } = useScrollTracker(
-    listName,
-    list?.length > 0,
-    scrollerRef ? true : !disableVirtualization ? true : disableScrollTracker
-  );
+  
   useScrollTrackerRef(listName, list?.length > 0, scrollerRef);
   const setSearchCacheExpiryDuration = useCacheStore(
     (s) => s.setSearchCacheExpiryDuration
@@ -336,23 +373,45 @@ export const MemorizedComponent = ({
       try {
         if (!generatedIdentifier) return;
         const parsedParams = { ...JSON.parse(memoizedParams) };
-        parsedParams.before =
-          list.length === 0 ? null : list[list.length - 1]?.created;
-        parsedParams.offset = null;
+
+        // Set limit for pagination request
         if (displayLimit) {
           parsedParams.limit = displayLimit;
         }
-        const responseData = await lists.fetchResources(
+
+        // Parse secondary sources if they exist
+        const parsedSecondarySources: SecondaryDataSource[] | undefined =
+          stringifiedSecondaryDataSources
+            ? JSON.parse(stringifiedSecondaryDataSources)
+            : undefined;
+
+        // Use the new priority-based fetching method with 'more' mode
+        const responseData = await lists.fetchResourcesWithPriority(
           parsedParams,
+          parsedSecondarySources,
           listName,
-          returnType
-        ); // Awaiting the async function
+          returnType,
+          false, // Don't cancel requests on pagination
+          'more', // paginationMode
+          filterDuplicateIdentifiers?.enabled || false,
+          identifierOperations,
+          list // Pass current list for pagination fallback
+        );
+
         addItems(listName, responseData || []);
       } catch (error) {
         console.error('Failed to fetch resources:', error);
       }
     },
-    [memoizedParams, listName, list]
+    [
+      memoizedParams,
+      listName,
+      list,
+      stringifiedSecondaryDataSources,
+      lists.fetchResourcesWithPriority,
+      identifierOperations,
+      filterDuplicateIdentifiers,
+    ]
   );
 
   const disabledVirutalizationStyles: CSSProperties = useMemo(() => {
@@ -502,13 +561,17 @@ function arePropsEqual(
     prevProps.disableVirtualization === nextProps.disableVirtualization &&
     prevProps.direction === nextProps.direction &&
     prevProps.onSeenLastItem === nextProps.onSeenLastItem &&
+    JSON.stringify(prevProps.filterDuplicateIdentifiers) ===
+      JSON.stringify(nextProps.filterDuplicateIdentifiers) &&
     JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&
     JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles) &&
     prevProps.listItem === nextProps.listItem &&
     JSON.stringify(prevProps.entityParams) ===
       JSON.stringify(nextProps.entityParams) &&
     JSON.stringify(prevProps.searchNewData) ===
-      JSON.stringify(nextProps.searchNewData)
+      JSON.stringify(nextProps.searchNewData) &&
+    JSON.stringify(prevProps.secondaryDataSources) ===
+      JSON.stringify(nextProps.secondaryDataSources)
   );
 }
 

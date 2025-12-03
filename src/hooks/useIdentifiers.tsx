@@ -10,8 +10,8 @@ import {
 
 export const useIdentifiers = (publicSalt: string, appName: string) => {
   const buildIdentifierFunc = useCallback(
-    (entityType: string, parentId: string | null) => {
-      return buildIdentifier(appName, publicSalt, entityType, parentId);
+    (entityType: string, parentId: string | null, noUniqueId?: boolean) => {
+      return buildIdentifier(appName, publicSalt, entityType, parentId, noUniqueId);
     },
     [appName, publicSalt]
   );
