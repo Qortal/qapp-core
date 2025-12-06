@@ -32,11 +32,13 @@ export const useAuth = () => {
             address: account.address,
           });
           setUser({ ...account, name: nameData || '' });
+          return true
         }
       } catch (error) {
         setErrorLoadingUser(
           error instanceof Error ? error.message : 'Unable to authenticate'
         );
+        return false
       } finally {
         setIsLoadingUser(false);
       }

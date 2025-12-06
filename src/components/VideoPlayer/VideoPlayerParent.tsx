@@ -1,5 +1,10 @@
 import React, { CSSProperties, useContext, useEffect, useRef } from 'react';
-import { TimelineAction, VideoPlayer, VideoPlayerProps } from './VideoPlayer';
+import {
+  EncryptionConfig,
+  TimelineAction,
+  VideoPlayer,
+  VideoPlayerProps,
+} from './VideoPlayer';
 import { useGlobalPlayerStore } from '../../state/pip';
 import Player from 'video.js/dist/types/player';
 import { useIsPlaying } from '../../state/video';
@@ -25,6 +30,7 @@ export interface VideoPlayerParentProps {
       trackColor?: CSSProperties['color'];
     };
   };
+  encryption?: EncryptionConfig;
 }
 export const VideoPlayerParent = ({
   videoRef,
@@ -39,6 +45,7 @@ export const VideoPlayerParent = ({
   path,
   filename,
   styling,
+  encryption,
 }: VideoPlayerParentProps) => {
   const context = useContext(GlobalContext);
   const playerRef = useRef<Player | null>(null);
@@ -117,6 +124,7 @@ export const VideoPlayerParent = ({
       onPlay={onPlay}
       onPause={onPause}
       styling={styling}
+      encryption={encryption}
     />
   );
 };
