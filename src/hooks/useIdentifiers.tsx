@@ -10,15 +10,15 @@ import {
 
 export const useIdentifiers = (publicSalt: string, appName: string) => {
   const buildIdentifierFunc = useCallback(
-    (entityType: string, parentId: string | null, noUniqueId?: boolean) => {
-      return buildIdentifier(appName, publicSalt, entityType, parentId, noUniqueId);
+    (entityType: string, parentId: string | null, noUniqueId?: boolean, preEntity?: string) => {
+      return buildIdentifier(appName, publicSalt, entityType, parentId, noUniqueId, preEntity);
     },
     [appName, publicSalt]
   );
 
   const buildSearchPrefixFunc = useCallback(
-    (entityType: string, parentId: string | null) => {
-      return buildSearchPrefix(appName, publicSalt, entityType, parentId);
+    (entityType: string | null, parentId: string | null, preEntity?: string) => {
+      return buildSearchPrefix(appName, publicSalt, entityType, parentId, preEntity);
     },
     [appName, publicSalt]
   );
