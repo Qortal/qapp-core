@@ -8,6 +8,16 @@ let isRegistering = false;
 let registrationAttempted = false;
 let registrationFailed = false;
 
+function toArbitraryPath(): string {
+  const qdnBase = window._qdnBase;
+  if (!qdnBase) return '/sw-video-decrypt.js';
+
+  if (!qdnBase.startsWith('/render/')) {
+    return '/sw-video-decrypt.js';
+  }
+  const origin = window.location.origin;
+  return `${origin}${qdnBase}/sw-video-decrypt.js`;
+}
 /**
  * Register the video decryption service worker
  * Note: Requires sw-video-decrypt.js to be in the public folder of the consuming app
@@ -50,10 +60,8 @@ export async function registerVideoDecryptionServiceWorker(): Promise<ServiceWor
     isRegistering = true;
     registrationAttempted = true;
 
-    serviceWorkerRegistration = await navigator.serviceWorker.register(
-      '/sw-video-decrypt.js',
-      { scope: '/' }
-    );
+    serviceWorkerRegistration =
+      await navigator.serviceWorker.register(toArbitraryPath());
 
     // Wait for service worker to be ready
     await navigator.serviceWorker.ready;
