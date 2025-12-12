@@ -1,6 +1,6 @@
 {
   "name": "qapp-core",
-  "version": "1.0.62",
+  "version": "1.0.67",
   "description": "Qortal's core React library with global state, UI components, and utilities",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -44,6 +44,7 @@
     "react-idle-timer": "^5.7.2",
     "react-intersection-observer": "^9.16.0",
     "react-rnd": "^10.5.2",
+    "aes-js": "^3.1.2",
     "short-unique-id": "^5.2.0",
     "srt-webvtt": "^2.0.0",
     "ts-key-enum": "^3.0.13",

@@ -7,12 +7,13 @@ export const useAuth = () => {
   const publicKey = useAuthStore((s) => s.publicKey);
   const name = useAuthStore((s) => s.name);
   const avatarUrl = useAuthStore((s) => s.avatarUrl);
-
+  const primaryName = useAuthStore((s) => s.primaryName);
   const isLoadingUser = useAuthStore((s) => s.isLoadingUser);
   const errorLoadingUser = useAuthStore((s) => s.errorLoadingUser);
   const setErrorLoadingUser = useAuthStore((s) => s.setErrorLoadingUser);
   const setIsLoadingUser = useAuthStore((s) => s.setIsLoadingUser);
   const setUser = useAuthStore((s) => s.setUser);
+  const setPrimaryName = useAuthStore((s) => s.setPrimaryName);
   const setName = useAuthStore((s) => s.setName);
   const authenticateUser = useCallback(
     async (userAccountInfo?: userAccountInfo) => {
@@ -31,12 +32,16 @@ export const useAuth = () => {
             action: 'GET_PRIMARY_NAME',
             address: account.address,
           });
+
           setUser({ ...account, name: nameData || '' });
+          setPrimaryName(nameData || '')
+          return true
         }
       } catch (error) {
         setErrorLoadingUser(
           error instanceof Error ? error.message : 'Unable to authenticate'
         );
+        return false
       } finally {
         setIsLoadingUser(false);
       }
@@ -68,6 +73,7 @@ export const useAuth = () => {
       errorMessageLoadingUser: errorLoadingUser,
       authenticateUser,
       switchName,
+      primaryName
     }),
     [
       address,
@@ -78,6 +84,7 @@ export const useAuth = () => {
       errorLoadingUser,
       authenticateUser,
       switchName,
+      primaryName
     ]
   );
 };
