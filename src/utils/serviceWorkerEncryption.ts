@@ -105,8 +105,10 @@ export async function setEncryptionConfig(
   return new Promise((resolve, reject) => {
     const messageChannel = new MessageChannel();
 
-    messageChannel.port1.onmessage = (event) => {
+    messageChannel.port1.onmessage = async (event) => {
       if (event.data.success) {
+        // Add a small delay to ensure the service worker has processed the config
+        await new Promise((res) => setTimeout(res, 100));
         resolve();
       } else {
         reject(new Error('Failed to set encryption config'));
@@ -163,6 +165,7 @@ export async function removeEncryptionConfig(videoId: string): Promise<void> {
  * This URL will be intercepted by the service worker
  */
 export function generateEncryptedVideoUrl(videoId: string): string {
+  // Use absolute URL for video.js compatibility
   return `/decrypt-video/${videoId}/video.mp4`;
 }
 

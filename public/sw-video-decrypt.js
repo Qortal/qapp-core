@@ -7,18 +7,22 @@ const ENCRYPTION_CACHE = new Map();
 // Listen for messages from the main thread
 self.addEventListener('message', (event) => {
   if (event.data.type === 'SET_ENCRYPTION') {
-    ENCRYPTION_CACHE.set(event.data.videoId, {
+    const videoId = event.data.videoId;
+    const config = {
       key: new Uint8Array(event.data.key),
       iv: new Uint8Array(event.data.iv),
       resourceUrl: event.data.resourceUrl,
       totalSize: event.data.totalSize,
       mimeType: event.data.mimeType || 'video/mp4',
-    });
+    };
+
+    ENCRYPTION_CACHE.set(videoId, config);
 
     // Respond back to confirm
     event.ports[0].postMessage({ success: true });
   } else if (event.data.type === 'REMOVE_ENCRYPTION') {
-    ENCRYPTION_CACHE.delete(event.data.videoId);
+    const videoId = event.data.videoId;
+    ENCRYPTION_CACHE.delete(videoId);
     event.ports[0].postMessage({ success: true });
   }
 });
@@ -41,6 +45,7 @@ async function handleEncryptedVideo(request, videoId) {
 
     if (!config) {
       console.error('[SW] Video config not found for:', videoId);
+
       return new Response('Video configuration not found', { status: 404 });
     }
 
@@ -90,7 +95,7 @@ async function handleEncryptedVideo(request, videoId) {
     const encrypted = new Uint8Array(await encryptedResponse.arrayBuffer());
 
     // Decrypt the chunk
-    const blockOffset = BigInt(Math.floor(start / 16));
+    const blockOffset = BigInt(start >> 4);
     const decrypted = await decryptAesCtrChunk(
       config.key,
       config.iv,

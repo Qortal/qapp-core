@@ -687,3 +687,15 @@ export type SaveFileQortalRequest =
       };
       blob?: never;
     } & BaseRequest & { filename: string });
+
+export interface PlayEncryptedMediaQortalRequest extends BaseRequest {
+  action: 'PLAY_ENCRYPTED_MEDIA';
+  mediaId: string;
+  key: string; // Base64 encoded key
+  iv: string; // Base64 encoded IV
+  location: {
+    service: Service;
+    identifier: string;
+    name: string;
+  };
+}

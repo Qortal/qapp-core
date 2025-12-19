@@ -62,6 +62,7 @@ import {
   ListQdnResourcesQortalRequest,
   MultiAssetPaymentWithPrivateData,
   OpenNewTabQortalRequest,
+  PlayEncryptedMediaQortalRequest,
   PublishMultipleQdnResourcesQortalRequest,
   PublishQdnResourceQortalRequest,
   RegisterNameQortalRequest,
@@ -152,6 +153,7 @@ declare global {
     | ListQdnResourcesQortalRequest
     | MultiAssetPaymentWithPrivateData
     | OpenNewTabQortalRequest
+    | PlayEncryptedMediaQortalRequest
     | PublishMultipleQdnResourcesQortalRequest
     | PublishQdnResourceQortalRequest
     | RegisterNameQortalRequest

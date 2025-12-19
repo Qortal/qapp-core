@@ -24,7 +24,7 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
 import { SubtitleManager, SubtitlePublishedData } from './SubtitleManager';
-import { base64ToBlobUrl } from '../../utils/base64';
+import { base64ToBlobUrl, uint8ArrayToBase64 } from '../../utils/base64';
 import convert from 'srt-webvtt';
 import { TimelineActionsComponent } from './TimelineActionsComponent';
 import { PlayBackMenu } from './VideoControls';
@@ -209,7 +209,7 @@ async function appendNextRange(
   }
 
   // 2. Compute AES-CTR block offset (based on encrypted byte position)
-  const blockOffset = BigInt(Math.floor(nextStart / 16));
+  const blockOffset = BigInt(nextStart >> 4);
 
   // 3. Decrypt
   const decrypted = await decryptAesCtrChunk(
@@ -275,7 +275,7 @@ function createEncryptedVideoStream({
         }
 
         // Decrypt with correct block offset
-        const blockOffset = BigInt(Math.floor(nextStart / 16));
+        const blockOffset = BigInt(nextStart >> 4);
         const decrypted = await decryptAesCtrChunk(
           keyBytes,
           ivBytes,
@@ -317,6 +317,11 @@ function createEncryptedVideoStream({
   });
 }
 
+/**
+ * @deprecated This function is no longer used. Use playEncryptedVideoWithQortalRequest or playEncryptedVideoWithNodeServer instead.
+ * Play encrypted video using in-memory blob approach (DEPRECATED - causes memory issues)
+ * This loads the entire video into memory before playing, which can cause issues with large files
+ */
 async function playEncryptedVideo({
   player,
   keyBytes,
@@ -563,7 +568,63 @@ async function playEncryptedVideo({
 }
 
 /**
- * Play encrypted video using Service Worker proxy
+ * Play encrypted video using Qortal native API with Node.js server (PRIMARY METHOD)
+ * This uses qortalRequest with PLAY_ENCRYPTED_MEDIA which internally uses a Node.js decryption server
+ * Returns streamUrl on success, null if not available
+ */
+async function playEncryptedVideoWithQortalRequest({
+  player,
+  keyBytes,
+  ivBytes,
+  qortalVideoResource,
+}: {
+  player: any;
+  keyBytes: Uint8Array;
+  ivBytes: Uint8Array;
+  qortalVideoResource: any;
+}): Promise<string | null> {
+  try {
+    console.log('[Encrypted Video] Attempting Qortal native playback...');
+
+    const mediaId = `${qortalVideoResource.service}-${qortalVideoResource.name}-${qortalVideoResource.identifier}`;
+
+    // Convert key and iv to base64 for qortalRequest
+    const keyBase64 = uint8ArrayToBase64(keyBytes);
+    const ivBase64 = uint8ArrayToBase64(ivBytes);
+
+    const response = await qortalRequest({
+      action: 'PLAY_ENCRYPTED_MEDIA',
+      mediaId,
+      key: keyBase64,
+      iv: ivBase64,
+      location: {
+        service: qortalVideoResource.service,
+        identifier: qortalVideoResource.identifier,
+        name: qortalVideoResource.name,
+      },
+    });
+
+    if (response && response.streamUrl) {
+      console.log(
+        '[Encrypted Video] Qortal native playback URL received:',
+        response.streamUrl
+      );
+      return response.streamUrl;
+    }
+
+    console.warn('[Encrypted Video] No streamUrl in response');
+    return null;
+  } catch (error) {
+    console.warn(
+      '[Encrypted Video] Qortal native playback not available:',
+      error
+    );
+    return null;
+  }
+}
+
+/**
+ * Play encrypted video using Service Worker proxy (FALLBACK)
  * This approach allows true streaming without loading everything into memory
  * Works with videos of any size
  * Returns videoId on success, null if Service Worker not available
@@ -621,9 +682,6 @@ async function playEncryptedVideoWithServiceWorker({
     throw error;
   }
 
-  // Generate virtual URL that service worker will intercept
-  const virtualUrl = generateEncryptedVideoUrl(videoId);
-
   return videoId; // Return videoId for cleanup later
 }
 
@@ -651,6 +709,7 @@ export interface EncryptionConfig {
   key: Uint8Array;
   iv: Uint8Array;
   encryptionType: string;
+  mimeType: string;
 }
 
 export interface VideoPlayerProps {
@@ -753,6 +812,7 @@ export const VideoPlayer = ({
   const [currentSubTrack, setCurrentSubTrack] = useState<null | string>(null);
   const location = useLocation();
   const [encryptedVideoId, setEncryptedVideoId] = useState<string | null>(null);
+  const pendingPlayRef = useRef(false); // Track if user clicked play during setup
 
   const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false);
   const isVideoPlayerSmall = width < 600 || isTouchDevice;
@@ -949,6 +1009,7 @@ export const VideoPlayer = ({
       onPauseParent();
     }
   }, [setIsPlaying]);
+
   const onVolumeChangeHandler = useCallback(
     (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
       try {
@@ -1067,7 +1128,7 @@ export const VideoPlayer = ({
       if (encryptedVideoId) {
         removeEncryptionConfig(encryptedVideoId).catch((err) => {
           console.warn(
-            '[Encrypted Video] Failed to cleanup encryption config:',
+            '[Encrypted Video] Failed to cleanup Service Worker config:',
             err
           );
         });
@@ -1210,127 +1271,216 @@ export const VideoPlayer = ({
       const setupPlayer = async () => {
         const ref = videoRef as any;
         if (!ref.current) return;
-
         // Check if encryption is enabled
         if (
           encryption &&
           encryption.key &&
           encryption.iv &&
-          encryption.encryptionType
+          encryption.encryptionType &&
+          encryption.mimeType
         ) {
           // Encrypted video playback path
           if (!playerRef.current && ref.current) {
-            // Initialize Video.js with empty source (MediaSource will be attached)
-            playerRef.current = videojs(ref.current, {
-              autoplay: false,
-              controls: false,
-              responsive: true,
-              poster: startPlay ? '' : poster,
-            });
-
-            setIsPlayerInitialized(true);
-            ref.current.tabIndex = -1;
-            ref.current.style.outline = 'none';
-            playerRef.current?.poster('');
-            playerRef.current?.playbackRate(playbackRate);
-            playerRef.current?.volume(volume);
-
-            const key = `${resource.service}-${resource.name}-${resource.identifier}`;
-            if (key) {
-              const savedProgress = getProgress(key);
-              if (typeof savedProgress === 'number') {
-                playerRef.current?.currentTime(savedProgress);
-              }
-            }
-
-            // Setup encrypted playback with Service Worker
+            // Setup encrypted playback with new fallback chain
             try {
-              // Get mime type for proper codec string
-              const type = await getVideoMimeTypeFromUrl(resource);
+              // STEP 1: Try Qortal native playback with Node.js server (PRIMARY)
+              console.log(
+                '[Encrypted Video] Step 1: Trying Qortal native playback...'
+              );
+              const qortalStreamUrl = await playEncryptedVideoWithQortalRequest(
+                {
+                  player: playerRef.current,
+                  keyBytes: encryption.key,
+                  ivBytes: encryption.iv,
+                  qortalVideoResource: resource,
+                }
+              );
 
-              // Try Service Worker approach first
-              const videoId = await playEncryptedVideoWithServiceWorker({
-                player: playerRef.current,
-                keyBytes: encryption.key,
-                ivBytes: encryption.iv,
-                resourceUrl: resourceUrl || '',
-                mimeType: type,
-              });
+              if (qortalStreamUrl) {
+                const options = {
+                  autoplay: true,
+                  controls: false,
+                  responsive: true,
+                  // fluid: true,
+                  poster: startPlay ? '' : poster,
+                  // aspectRatio: "16:9",
+                  sources: [
+                    {
+                      src: qortalStreamUrl,
+                      type: encryption.mimeType || 'video/mp4', // fallback
+                    },
+                  ],
+                };
+                if (!playerRef.current && ref.current) {
+                  playerRef.current = videojs(ref.current, options, () => {
+                    setIsPlayerInitialized(true);
+                    ref.current.tabIndex = -1; // Prevents focus entirely
+                    ref.current.style.outline = 'none'; // Backup
+                    playerRef.current?.poster('');
+                    playerRef.current?.playbackRate(playbackRate);
+                    playerRef.current?.volume(volume);
+                    const key = `${resource.service}-${resource.name}-${resource.identifier}`;
+                    if (key) {
+                      const savedProgress = getProgress(key);
+                      if (typeof savedProgress === 'number') {
+                        playerRef.current?.currentTime(savedProgress);
+                      }
+                    }
 
-              if (videoId) {
-                // Service Worker approach succeeded
+                    playerRef.current?.play();
 
-                // Store video ID for cleanup
-                setEncryptedVideoId(videoId);
+                    const tracksInfo = playerRef.current?.textTracks();
 
-                // Generate virtual URL that service worker will intercept
-                const virtualUrl = generateEncryptedVideoUrl(videoId);
+                    const checkActiveSubtitle = () => {
+                      let activeTrack = null;
 
-                // Set the virtual URL as the video source
-                const videoEl = playerRef.current?.tech()?.el_;
-                if (videoEl) {
-                  videoEl.src = virtualUrl;
+                      const tracks = Array.from(
+                        { length: (tracksInfo as any).length },
+                        (_, i) => (tracksInfo as any)[i]
+                      );
+                      for (const track of tracks) {
+                        if (
+                          track.kind === 'subtitles' ||
+                          track.kind === 'captions'
+                        ) {
+                          if (track.mode === 'showing') {
+                            activeTrack = track;
+                            break;
+                          }
+                        }
+                      }
+
+                      if (activeTrack) {
+                        setCurrentSubTrack(
+                          activeTrack.language || activeTrack.srclang
+                        );
+                      } else {
+                        setCurrentSubTrack(null);
+                      }
+                    };
+
+                    // Initial check in case one is auto-enabled
+                    checkActiveSubtitle();
+
+                    // Use Video.js event system
+                    tracksInfo?.on('change', checkActiveSubtitle);
+                  });
+                  playerRef.current?.on('error', () => {
+                    const error = playerRef.current?.error();
+                    console.error('Video.js playback error:', error);
+                  });
+                  return;
                 }
 
-                // Wait a bit for video to be ready
-                await new Promise((resolve) => setTimeout(resolve, 300));
-
-                // Load the video
-                playerRef.current?.load();
-
-                // Wait for video to be ready
-                await new Promise((resolve) => {
-                  const videoEl = playerRef.current?.el();
-                  if (!videoEl) {
-                    resolve(null);
-                    return;
-                  }
-
-                  const onCanPlay = () => {
-                    videoEl.removeEventListener('canplay', onCanPlay);
-                    resolve(null);
-                  };
-
-                  const onError = (e: any) => {
-                    console.error('[Encrypted Video] Video element error:', e);
-                  };
-
-                  videoEl.addEventListener('canplay', onCanPlay);
-                  videoEl.addEventListener('error', onError);
-
-                  // Timeout after 10 seconds
-                  setTimeout(() => {
-                    videoEl.removeEventListener('canplay', onCanPlay);
-                    videoEl.removeEventListener('error', onError);
-                    console.warn(
-                      '[Encrypted Video] Video ready events timeout'
-                    );
-                    resolve(null);
-                  }, 10000);
-                });
-
-                // Try to play
-                const playPromise = playerRef.current?.play();
-                if (playPromise) {
-                  await playPromise;
-                }
+                // Don't auto-play - let user control playback
               } else {
-                // Service Worker not available, fall back to in-memory approach
-                console.warn(
-                  '[Encrypted Video] Falling back to in-memory decryption'
+                // STEP 2: Try Service Worker as fallback
+                console.log(
+                  '[Encrypted Video] Step 2: Trying Service Worker fallback...'
                 );
-                console.warn(
-                  '[Encrypted Video] Large videos (>100MB) may cause memory issues'
-                );
-
-                // Use the old playEncryptedVideo function
-                await playEncryptedVideo({
+                const swVideoId = await playEncryptedVideoWithServiceWorker({
                   player: playerRef.current,
                   keyBytes: encryption.key,
                   ivBytes: encryption.iv,
                   resourceUrl: resourceUrl || '',
-                  mimeType: type,
+                  mimeType: encryption.mimeType,
                 });
+
+                if (swVideoId) {
+                  // Service Worker approach succeeded
+                  console.log(
+                    '[Encrypted Video] Using Service Worker for decryption'
+                  );
+                  setEncryptedVideoId(swVideoId);
+
+                  // Generate virtual URL that service worker will intercept
+                  const virtualUrl = generateEncryptedVideoUrl(swVideoId);
+
+                  const options = {
+                    autoplay: true,
+                    controls: false,
+                    responsive: true,
+                    // fluid: true,
+                    poster: startPlay ? '' : poster,
+                    // aspectRatio: "16:9",
+                    sources: [
+                      {
+                        src: virtualUrl,
+                        type: encryption.mimeType || 'video/mp4', // fallback
+                      },
+                    ],
+                  };
+                  if (!playerRef.current && ref.current) {
+                    playerRef.current = videojs(ref.current, options, () => {
+                      setIsPlayerInitialized(true);
+                      ref.current.tabIndex = -1; // Prevents focus entirely
+                      ref.current.style.outline = 'none'; // Backup
+                      playerRef.current?.poster('');
+                      playerRef.current?.playbackRate(playbackRate);
+                      playerRef.current?.volume(volume);
+                      const key = `${resource.service}-${resource.name}-${resource.identifier}`;
+                      if (key) {
+                        const savedProgress = getProgress(key);
+                        if (typeof savedProgress === 'number') {
+                          playerRef.current?.currentTime(savedProgress);
+                        }
+                      }
+
+                      playerRef.current?.play();
+
+                      const tracksInfo = playerRef.current?.textTracks();
+
+                      const checkActiveSubtitle = () => {
+                        let activeTrack = null;
+
+                        const tracks = Array.from(
+                          { length: (tracksInfo as any).length },
+                          (_, i) => (tracksInfo as any)[i]
+                        );
+                        for (const track of tracks) {
+                          if (
+                            track.kind === 'subtitles' ||
+                            track.kind === 'captions'
+                          ) {
+                            if (track.mode === 'showing') {
+                              activeTrack = track;
+                              break;
+                            }
+                          }
+                        }
+
+                        if (activeTrack) {
+                          setCurrentSubTrack(
+                            activeTrack.language || activeTrack.srclang
+                          );
+                        } else {
+                          setCurrentSubTrack(null);
+                        }
+                      };
+
+                      // Initial check in case one is auto-enabled
+                      checkActiveSubtitle();
+
+                      // Use Video.js event system
+                      tracksInfo?.on('change', checkActiveSubtitle);
+                    });
+                    playerRef.current?.on('error', () => {
+                      const error = playerRef.current?.error();
+                      console.error('Video.js playback error:', error);
+                    });
+                    return;
+                  }
+
+                  // Don't auto-play - let user control playback
+                } else {
+                  // Both methods failed
+                  console.error(
+                    '[Encrypted Video] All playback methods failed'
+                  );
+                  throw new Error(
+                    'No encrypted video playback method available'
+                  );
+                }
               }
 
               // Setup subtitle tracking
@@ -1535,7 +1685,6 @@ export const VideoPlayer = ({
           ref={videoRef}
           tabIndex={-1}
           className="video-js"
-          src={isReady && startPlay ? resourceUrl || undefined : undefined}
           poster={poster}
           onTimeUpdate={updateProgress}
           autoPlay={autoPlay}

@@ -240,11 +240,32 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
   const reloadVideo = useCallback(async () => {
     try {
       const player = playerRef.current;
-      if (!player || !isReady || !resourceUrl) return;
+      if (!player || !isReady) return;
 
       const currentTime = player.currentTime();
 
-      player.src({ src: resourceUrl, type: 'video/mp4' }); // Adjust type if needed
+      // Get the actual source URL that the player is currently using
+      // This works for both encrypted (Service Worker/Qortal native) and non-encrypted videos
+      const currentSrc = player.currentSrc();
+
+      if (!currentSrc) {
+        console.warn('[Video Reload] No current source available');
+        return;
+      }
+
+      // For Service Worker URLs, we need to ensure the player fully resets
+      // This prevents caching issues with the virtual URL
+      player.pause();
+
+      // Reset the source completely
+      player.src({ src: '', type: 'video/mp4' });
+      player.load();
+
+      // Wait a moment for the reset to take effect
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Now set the actual source (use the same source the player was using)
+      player.src({ src: currentSrc, type: 'video/mp4' });
       player.load();
 
       player.ready(() => {
@@ -254,9 +275,9 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
         });
       });
     } catch (error) {
-      console.error(error);
+      console.error('reloadVideo error:', error);
     }
-  }, [isReady, resourceUrl]);
+  }, [isReady]);
 
   useEffect(() => {
     if (autoPlay) togglePlay();
