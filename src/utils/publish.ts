@@ -1,3 +1,5 @@
+import { uint8ArrayToBase64 } from './base64';
+
 const MAX_RETRIES = 3; // Define your max retries constant
 
 export async function retryTransaction<T>(
@@ -55,4 +57,15 @@ export function base64ToObject(base64: string) {
   const toObject = uint8ArrayToObject(toUint);
 
   return toObject;
+}
+
+export function createIvAndKey() {
+  const iv = crypto.getRandomValues(new Uint8Array(16));
+  const key = crypto.getRandomValues(new Uint8Array(32));
+  return { iv, key };
+}
+
+export function createIvAndKeyBase64() {
+  const { iv, key } = createIvAndKey();
+  return { iv: uint8ArrayToBase64(iv), key: uint8ArrayToBase64(key) };
 }

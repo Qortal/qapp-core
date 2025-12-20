@@ -65,6 +65,11 @@ export type ResourceToPublish =
       file: File;
       filename?: string;
       disableEncrypt?: boolean;
+      encryption?: {
+        encryptionType: 'streamed-v1';
+        iv: string;
+        key: string;
+      };
     };
 
 export interface ResourcePointer {
