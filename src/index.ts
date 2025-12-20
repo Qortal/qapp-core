@@ -18,7 +18,8 @@ export { useQortBalance } from './hooks/useBalance';
 export { useAuth } from './hooks/useAuth';
 export { useBlockedNames } from './hooks/useBlockedNames';
 import './index.css';
-export  { fileToBase64 } from './utils/base64';
+export { createIvAndKeyBase64 } from './utils/publish';
+export { fileToBase64 } from './utils/base64';
 export {
   executeEvent,
   subscribeToEvent,

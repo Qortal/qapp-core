@@ -60,11 +60,13 @@ import {
   ListAtsQortalRequest,
   ListGroupsQortalRequest,
   ListQdnResourcesQortalRequest,
+  lockTabQortalRequest,
   MultiAssetPaymentWithPrivateData,
   OpenNewTabQortalRequest,
   PlayEncryptedMediaQortalRequest,
   PublishMultipleQdnResourcesQortalRequest,
   PublishQdnResourceQortalRequest,
+  reencryptGroupKeysQortalRequest,
   RegisterNameQortalRequest,
   RemoveForeignServerQortalRequest,
   RemoveGroupAdminQortalRequest,
@@ -77,15 +79,18 @@ import {
   SellNameQortalRequest,
   SendChatMessageQortalRequest,
   SendCoinQortalRequest,
+  sessionPermissionsQortalRequest,
   SetCurrentForeignServerQortalRequest,
   ShowActionsQortalRequest,
   ShowPdfReaderQortalRequest,
   SignTransactionQortalRequest,
   TransferAssetQortalRequest,
+  unlockTabQortalRequest,
   UpdateForeignFeeQortalRequest,
   UpdateGroupQortalRequest,
   UpdateNameQortalRequest,
   VoteOnPollQortalRequest,
+  whichUIQortalRequest,
 } from './types/qortalRequests/interfaces';
 
 declare global {
@@ -144,6 +149,7 @@ declare global {
     | GetWalletBalanceQortalRequest
     | InviteToGroupQortalRequest
     | IsUsingPublicNodeQortalRequest
+    | whichUIQortalRequest
     | JoinGroupQortalRequest
     | KickFromGroupQortalRequest
     | LeaveGroupQortalRequest
@@ -176,7 +182,11 @@ declare global {
     | UpdateForeignFeeQortalRequest
     | UpdateGroupQortalRequest
     | UpdateNameQortalRequest
-    | VoteOnPollQortalRequest;
+    | VoteOnPollQortalRequest
+    | unlockTabQortalRequest
+    | lockTabQortalRequest
+    | reencryptGroupKeysQortalRequest
+    | sessionPermissionsQortalRequest;
 
   function qortalRequest(options: QortalRequestOptions): Promise<any>;
 

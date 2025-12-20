@@ -247,6 +247,11 @@ export interface PublishQdnResourceQortalRequestBase extends BaseRequest {
   category?: string;
   tags?: string[];
   filename?: string;
+  encryption?: {
+    encryptionType: 'streamed-v1';
+    iv: string;
+    key: string;
+  };
 }
 
 export type PublishQdnResourceQortalRequest =
@@ -698,4 +703,53 @@ export interface PlayEncryptedMediaQortalRequest extends BaseRequest {
     identifier: string;
     name: string;
   };
+}
+
+export interface whichUIQortalRequest extends BaseRequest {
+  action: 'WHICH_UI';
+}
+
+export interface unlockTabQortalRequest extends BaseRequest {
+  action: 'UNLOCK_TAB';
+}
+
+export interface lockTabQortalRequest extends BaseRequest {
+  action: 'LOCK_TAB';
+  lockMessage: string;
+}
+
+export interface reencryptGroupKeysQortalRequest extends BaseRequest {
+  action: 'REENCRYPT_GROUP_KEYS';
+  groupId: number;
+}
+
+export type SessionPermissions =
+  | 'JOIN_GROUP'
+  | 'GET_USER_WALLET'
+  | 'GET_WALLET_BALANCE'
+  | 'GET_USER_WALLET_TRANSACTIONS'
+  | 'GET_USER_WALLET_INFO'
+  | 'UPDATE_FOREIGN_FEE'
+  | 'GET_SERVER_CONNECTION_HISTORY'
+  | 'SET_CURRENT_FOREIGN_SERVER'
+  | 'ADD_FOREIGN_SERVER'
+  | 'REMOVE_FOREIGN_SERVER'
+  | 'LOCK_TAB'
+  | 'INVITE_TO_GROUP'
+  | 'KICK_FROM_GROUP'
+  | 'BAN_FROM_GROUP'
+  | 'CANCEL_GROUP_BAN'
+  | 'REMOVE_GROUP_ADMIN'
+  | 'ADD_GROUP_ADMIN'
+  | 'CREATE_GROUP'
+  | 'PUBLISH_QDN_RESOURCE'
+  | 'PUBLISH_MULTIPLE_QDN_RESOURCES'
+  | 'GET_USER_ACCOUNT'
+  | 'GET_LIST_ITEMS'
+  | 'SIGN_FOREIGN_FEES'
+  | 'REENCRYPT_GROUP_KEYS';
+
+export interface sessionPermissionsQortalRequest extends BaseRequest {
+  action: 'SESSION_PERMISSIONS';
+  permissions: SessionPermissions[];
 }
