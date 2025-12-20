@@ -82,8 +82,9 @@ interface EntityConfig {
 export async function buildSearchPrefix(
   appName: string,
   publicSalt: string,
-  entityType: string,
-  parentId: string | null
+  entityType: string | null,
+  parentId: string | null,
+  preEntity?: string
 ): Promise<string> {
   // Hash app name (11 chars)
   const appHash: string = await hashWord(
@@ -93,11 +94,15 @@ export async function buildSearchPrefix(
   );
 
   // Hash entity type (4 chars)
-  const entityPrefix: string = await hashWord(
+  let entityPrefix: string = ''
+  if(entityType){
+     entityPrefix = await hashWord(
     entityType,
     EnumCollisionStrength.ENTITY_LABEL,
     publicSalt
   );
+  }
+ 
 
   // Determine parent reference
   let parentRef = '';
@@ -109,6 +114,20 @@ export async function buildSearchPrefix(
       EnumCollisionStrength.PARENT_REF,
       publicSalt
     );
+  }
+
+  if(preEntity){
+    const preEntityPrefix  = await hashWord(
+      preEntity,
+      EnumCollisionStrength.ENTITY_LABEL,
+      publicSalt
+    );
+    if(entityType === null){
+        return `${appHash}-${preEntityPrefix}-`; // ✅ Global search for entity type
+    }
+    return parentRef
+    ? `${appHash}-${preEntityPrefix}-${entityPrefix}-${parentRef}-` // ✅ Normal case with a parent
+    : `${appHash}-${preEntityPrefix}-${entityPrefix}-`; // ✅ Global search for entity type
   }
 
   // ✅ If there's no parentRef, return without it
@@ -146,7 +165,8 @@ export async function buildIdentifier(
   publicSalt: string,
   entityType: string, // ✅ Now takes only the entity type
   parentId: string | null,
-  noUniqueId: boolean = false
+  noUniqueId: boolean = false,
+  preEntity?: string
 ): Promise<string> {
   // Hash app name (11 chars)
   const appHash: string = await hashWord(
@@ -173,6 +193,21 @@ export async function buildIdentifier(
       EnumCollisionStrength.PARENT_REF,
       publicSalt
     );
+  }
+
+
+  if(preEntity){
+    const preEntityPrefix  = await hashWord(
+      preEntity,
+      EnumCollisionStrength.ENTITY_LABEL,
+      publicSalt
+    );
+
+      if(noUniqueId){
+        return `${appHash}-${preEntityPrefix}-${entityPrefix}-${parentRef}-${IDENTIFIER_BUILDER_VERSION}`;
+      }
+
+      return `${appHash}-${preEntityPrefix}-${entityPrefix}-${parentRef}-${entityUid}-${IDENTIFIER_BUILDER_VERSION}`;
   }
 
   if(noUniqueId){

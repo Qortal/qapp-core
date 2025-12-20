@@ -24,7 +24,7 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
 import { SubtitleManager, SubtitlePublishedData } from './SubtitleManager';
-import { base64ToBlobUrl, uint8ArrayToBase64 } from '../../utils/base64';
+import { base64ToBlobUrl } from '../../utils/base64';
 import convert from 'srt-webvtt';
 import { TimelineActionsComponent } from './TimelineActionsComponent';
 import { PlayBackMenu } from './VideoControls';
@@ -34,12 +34,6 @@ import { MobileControls } from './MobileControls';
 import { useLocation } from 'react-router-dom';
 // @ts-ignore - aes-js doesn't have type definitions
 import * as aesjs from 'aes-js';
-import {
-  setEncryptionConfig,
-  removeEncryptionConfig,
-  generateEncryptedVideoUrl,
-  tryRegisterServiceWorker,
-} from '../../utils/serviceWorkerEncryption';
 
 export async function srtBase64ToVttBlobUrl(
   base64Srt: string
@@ -209,7 +203,7 @@ async function appendNextRange(
   }
 
   // 2. Compute AES-CTR block offset (based on encrypted byte position)
-  const blockOffset = BigInt(nextStart >> 4);
+  const blockOffset = BigInt(Math.floor(nextStart / 16));
 
   // 3. Decrypt
   const decrypted = await decryptAesCtrChunk(
@@ -231,97 +225,6 @@ async function appendNextRange(
   return nextStart + encrypted.length;
 }
 
-// Create a ReadableStream that fetches and decrypts encrypted ranges on-demand
-function createEncryptedVideoStream({
-  resourceUrl,
-  keyBytes,
-  ivBytes,
-  totalSize,
-  chunkSize,
-}: {
-  resourceUrl: string;
-  keyBytes: Uint8Array;
-  ivBytes: Uint8Array;
-  totalSize: number | null;
-  chunkSize: number;
-}): ReadableStream<Uint8Array> {
-  let nextStart = 0;
-  let firstChunkProcessed = false;
-
-  return new ReadableStream<Uint8Array>({
-    async pull(controller) {
-      try {
-        // Check if we've reached the end
-        if (totalSize && nextStart >= totalSize) {
-          controller.close();
-          return;
-        }
-
-        // Calculate next range
-        const nextEnd = totalSize
-          ? Math.min(nextStart + chunkSize - 1, totalSize - 1)
-          : nextStart + chunkSize - 1;
-
-        // Fetch encrypted range
-        const encrypted = await fetchEncryptedRange(
-          nextStart,
-          nextEnd,
-          resourceUrl
-        );
-
-        if (encrypted.length === 0) {
-          controller.close();
-          return;
-        }
-
-        // Decrypt with correct block offset
-        const blockOffset = BigInt(nextStart >> 4);
-        const decrypted = await decryptAesCtrChunk(
-          keyBytes,
-          ivBytes,
-          blockOffset,
-          encrypted
-        );
-
-        // Log first chunk info
-        if (!firstChunkProcessed) {
-          const firstBytes = Array.from(decrypted.slice(0, 12))
-            .map((b) => b.toString(16).padStart(2, '0'))
-            .join(' ');
-
-          const firstFourBytes = String.fromCharCode(...decrypted.slice(4, 8));
-          firstChunkProcessed = true;
-        }
-
-        // Enqueue decrypted data
-        controller.enqueue(decrypted);
-
-        nextStart += encrypted.length;
-
-        const progress = totalSize
-          ? `${((nextStart / totalSize) * 100).toFixed(1)}%`
-          : '?';
-
-        // Check if we've reached the end
-        if (totalSize && nextStart >= totalSize) {
-          controller.close();
-        } else if (encrypted.length < nextEnd - nextStart + 1) {
-          // Got less than requested, probably end of file
-          controller.close();
-        }
-      } catch (error) {
-        console.error('Error in encrypted video stream:', error);
-        controller.error(error);
-      }
-    },
-  });
-}
-
-/**
- * @deprecated This function is no longer used. Use playEncryptedVideoWithQortalRequest or playEncryptedVideoWithNodeServer instead.
- * Play encrypted video using in-memory blob approach (DEPRECATED - causes memory issues)
- * This loads the entire video into memory before playing, which can cause issues with large files
- */
 async function playEncryptedVideo({
   player,
   keyBytes,
@@ -337,352 +240,123 @@ async function playEncryptedVideo({
   mimeType?: string | null;
   chunkSize?: number;
 }): Promise<void> {
-  // Step 1: Get file size using HEAD request
-  let totalSize: number | null = null;
-  try {
-    const headResponse = await fetch(resourceUrl, { method: 'HEAD' });
-    const contentLength = headResponse.headers.get('content-length');
-    if (contentLength) {
-      totalSize = parseInt(contentLength, 10);
+  const mediaSource = await createMediaSource(player);
+
+  // Use provided mimeType or default to a common MP4 codec
+  // If mimeType is provided, use it; otherwise try to detect from first bytes
+  let codecString = 'video/mp4; codecs="avc1.42E01E,mp4a.40.2"'; // Default H.264 + AAC
+
+  if (mimeType) {
+    // If mimeType includes codecs, use it directly
+    if (mimeType.includes('codecs=')) {
+      codecString = mimeType;
     } else {
-      console.warn('Could not determine file size from HEAD request');
+      // Otherwise construct a codec string
+      codecString = `${mimeType}; codecs="avc1.42E01E,mp4a.40.2"`;
     }
-  } catch (error) {
-    console.warn(
-      'HEAD request failed, will determine size from first range request:',
-      error
-    );
   }
 
-  // Step 2: Create ReadableStream for fetching and decrypting
-  const encryptedStream = createEncryptedVideoStream({
-    resourceUrl,
-    keyBytes,
-    ivBytes,
-    totalSize,
-    chunkSize,
-  });
-
-  // Step 3: Try MediaSource approach with ReadableStream (works with fragmented MP4)
+  let sourceBuffer: SourceBuffer;
   try {
-    const mediaSource = await createMediaSource(player);
-
-    // Try different codec strings
-    const codecOptions = [
-      mimeType || 'video/mp4',
-      'video/mp4; codecs="avc1.42E01E,mp4a.40.2"',
-      'video/mp4',
-    ];
-
-    let sourceBuffer: SourceBuffer | null = null;
-    for (const codec of codecOptions) {
-      try {
-        sourceBuffer = mediaSource.addSourceBuffer(codec);
-        break;
-      } catch (error) {
-        console.warn('Failed to create SourceBuffer with codec:', codec, error);
-        continue;
-      }
-    }
-
-    if (!sourceBuffer) {
-      throw new Error('Failed to create SourceBuffer with any codec');
-    }
-
-    // Add error listeners
-    sourceBuffer.addEventListener('error', (e) => {
-      console.error('SourceBuffer error:', e);
-    });
-
-    // Read from stream and append to SourceBuffer with backpressure
-    const reader = encryptedStream.getReader();
-    let chunksAppended = 0;
-    let hasBufferedData = false;
-
+    sourceBuffer = mediaSource.addSourceBuffer(codecString);
+  } catch (error) {
+    console.error(
+      'Failed to create SourceBuffer with codec:',
+      codecString,
+      error
+    );
+    // Try with a more generic codec string
     try {
-      while (true) {
-        // Wait for SourceBuffer to be ready (backpressure)
-        while (sourceBuffer.updating) {
-          await new Promise((resolve) => setTimeout(resolve, 50));
-        }
-
-        // Read next chunk from stream
-        const { done, value } = await reader.read();
-
-        if (done) {
-          break;
-        }
-
-        // Append to SourceBuffer
-        await appendToBuffer(sourceBuffer, value);
-        chunksAppended++;
-
-        // Check if we have buffered data (indicates MediaSource is working)
-        if (chunksAppended === 1) {
-          // Wait a bit for first chunk to be processed
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          if (sourceBuffer.buffered.length > 0) {
-            hasBufferedData = true;
-          }
-        }
-      }
-
-      // Wait for SourceBuffer to finish updating
-      while (sourceBuffer.updating) {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      }
-
-      if (sourceBuffer.buffered.length > 0) {
-        for (let i = 0; i < sourceBuffer.buffered.length; i++) {}
-
-        // If we have buffered data, MediaSource worked!
-        if (mediaSource.readyState === 'open') {
-          mediaSource.endOfStream();
-          return; // Success with MediaSource!
-        }
-      } else {
-        console.warn(
-          'No buffered ranges - MediaSource may not work with this file format'
-        );
-        throw new Error(
-          'SourceBuffer rejected data - file may not be fragmented MP4'
-        );
-      }
-    } finally {
-      reader.releaseLock();
+      codecString = 'video/mp4';
+      sourceBuffer = mediaSource.addSourceBuffer(codecString);
+    } catch (fallbackError) {
+      console.error(
+        'Failed to create SourceBuffer with fallback codec:',
+        fallbackError
+      );
+      mediaSource.endOfStream();
+      throw new Error('Failed to create SourceBuffer. Codec not supported.');
     }
-  } catch (error) {
-    console.warn(
-      'MediaSource approach failed, trying ReadableStream Blob URL fallback:',
-      error
-    );
-    // Fall through to ReadableStream Blob URL approach
   }
 
-  // Step 4: Fallback to ReadableStream Blob URL approach
-  // Uses the same stream but creates smaller Blob URLs incrementally
-  // This is more memory-efficient than loading the entire file
-
-  const decryptedChunks: Blob[] = [];
-  const maxChunksInMemory = 10; // Smaller limit for better memory management
-  let totalBytesProcessed = 0;
-  let blobUrlCreated = false;
+  let nextStart = 0;
+  let consecutiveNoProgress = 0;
+  const maxNoProgress = 3; // Stop after 3 consecutive no-progress iterations
 
   try {
-    // Create a new stream (the previous one was consumed)
-    const fallbackStream = createEncryptedVideoStream({
-      resourceUrl,
+    // First, fetch a small chunk to verify decryption works
+    const firstChunk = await fetchEncryptedRange(
+      0,
+      Math.min(chunkSize - 1, 1024 * 1024 - 1),
+      resourceUrl
+    );
+
+    if (firstChunk.length === 0) {
+      throw new Error('Failed to fetch initial data from encrypted resource');
+    }
+
+    // Decrypt first chunk to verify
+    const blockOffset = BigInt(0);
+    const decryptedFirst = await decryptAesCtrChunk(
       keyBytes,
       ivBytes,
-      totalSize,
-      chunkSize,
-    });
+      blockOffset,
+      firstChunk
+    );
 
-    const reader = fallbackStream.getReader();
+    // Check if decrypted data looks like MP4 (should start with ftyp box)
+    const firstBytes = Array.from(decryptedFirst.slice(0, 8))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join(' ');
 
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
+    // Append first chunk
+    await appendToBuffer(sourceBuffer, decryptedFirst);
+    nextStart = decryptedFirst.length;
 
-        if (done) {
+    // Continue with remaining chunks
+    while (true) {
+      const newStart = await appendNextRange(
+        sourceBuffer,
+        keyBytes,
+        ivBytes,
+        resourceUrl,
+        nextStart,
+        chunkSize
+      );
+
+      // Check if we made progress
+      if (newStart === nextStart) {
+        consecutiveNoProgress++;
+
+        if (consecutiveNoProgress >= maxNoProgress) {
+          // No more data or reached end
           break;
         }
-
-        // Create Blob from decrypted chunk
-        const decryptedBuffer = new Uint8Array(value).buffer;
-        decryptedChunks.push(
-          new Blob([decryptedBuffer], { type: mimeType || 'video/mp4' })
-        );
-
-        totalBytesProcessed += value.length;
-
-        const progress = totalSize
-          ? `${((totalBytesProcessed / totalSize) * 100).toFixed(1)}%`
-          : '?';
-
-        // Create Blob URL periodically to limit memory usage
-        if (
-          decryptedChunks.length >= maxChunksInMemory ||
-          (totalSize && totalBytesProcessed >= totalSize)
-        ) {
-          const blob = new Blob(decryptedChunks, {
-            type: mimeType || 'video/mp4',
-          });
-          const blobUrl = URL.createObjectURL(blob);
-
-          const videoEl = player.tech().el_;
-          if (videoEl) {
-            // Clean up any existing source
-            if (videoEl.srcObject) {
-              const existingMS = videoEl.srcObject as MediaSource;
-              if (existingMS.readyState === 'open') {
-                existingMS.endOfStream();
-              }
-            }
-            if (videoEl.src && (player as any)._encryptedBlobUrl) {
-              URL.revokeObjectURL((player as any)._encryptedBlobUrl);
-            }
-
-            videoEl.src = blobUrl;
-            (player as any)._encryptedBlobUrl = blobUrl;
-            blobUrlCreated = true;
-          }
-
-          // Clear chunks to free memory (if not at end)
-          if (totalSize && totalBytesProcessed < totalSize) {
-            decryptedChunks.length = 0;
-          } else {
-            // At the end, keep the chunks for final blob
-            break;
-          }
-        }
+        // Small delay before retry
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        continue;
       }
 
-      // Create final blob URL if there are remaining chunks
-      if (decryptedChunks.length > 0) {
-        const blob = new Blob(decryptedChunks, {
-          type: mimeType || 'video/mp4',
-        });
-        const blobUrl = URL.createObjectURL(blob);
+      // Reset no-progress counter on successful progress
+      consecutiveNoProgress = 0;
+      nextStart = newStart;
 
-        const videoEl = player.tech().el_;
-        if (videoEl) {
-          if (
-            videoEl.src &&
-            (player as any)._encryptedBlobUrl &&
-            blobUrlCreated
-          ) {
-            URL.revokeObjectURL((player as any)._encryptedBlobUrl);
-          }
-          videoEl.src = blobUrl;
-          (player as any)._encryptedBlobUrl = blobUrl;
-        }
+      // Optional: Add buffer length check to avoid buffering too much
+      // You can pause fetching if sourceBuffer.buffered.length > some threshold
+    }
+
+    mediaSource.endOfStream();
+  } catch (error) {
+    console.error('Error during encrypted video playback:', error);
+    try {
+      if (mediaSource.readyState === 'open') {
+        mediaSource.endOfStream();
       }
-    } finally {
-      reader.releaseLock();
+    } catch (e) {
+      console.error('Error ending MediaSource stream:', e);
     }
-  } catch (error) {
-    console.error('ReadableStream Blob URL approach failed:', error);
     throw error;
   }
-}
-
-/**
- * Play encrypted video using Qortal native API with Node.js server (PRIMARY METHOD)
- * This uses qortalRequest with PLAY_ENCRYPTED_MEDIA which internally uses a Node.js decryption server
- * Returns streamUrl on success, null if not available
- */
-async function playEncryptedVideoWithQortalRequest({
-  player,
-  keyBytes,
-  ivBytes,
-  qortalVideoResource,
-}: {
-  player: any;
-  keyBytes: Uint8Array;
-  ivBytes: Uint8Array;
-  qortalVideoResource: any;
-}): Promise<string | null> {
-  try {
-    console.log('[Encrypted Video] Attempting Qortal native playback...');
-
-    const mediaId = `${qortalVideoResource.service}-${qortalVideoResource.name}-${qortalVideoResource.identifier}`;
-
-    // Convert key and iv to base64 for qortalRequest
-    const keyBase64 = uint8ArrayToBase64(keyBytes);
-    const ivBase64 = uint8ArrayToBase64(ivBytes);
-
-    const response = await qortalRequest({
-      action: 'PLAY_ENCRYPTED_MEDIA',
-      mediaId,
-      key: keyBase64,
-      iv: ivBase64,
-      location: {
-        service: qortalVideoResource.service,
-        identifier: qortalVideoResource.identifier,
-        name: qortalVideoResource.name,
-      },
-    });
-
-    if (response && response.streamUrl) {
-      console.log(
-        '[Encrypted Video] Qortal native playback URL received:',
-        response.streamUrl
-      );
-      return response.streamUrl;
-    }
-
-    console.warn('[Encrypted Video] No streamUrl in response');
-    return null;
-  } catch (error) {
-    console.warn(
-      '[Encrypted Video] Qortal native playback not available:',
-      error
-    );
-    return null;
-  }
-}
-
-/**
- * Play encrypted video using Service Worker proxy (FALLBACK)
- * This approach allows true streaming without loading everything into memory
- * Works with videos of any size
- * Returns videoId on success, null if Service Worker not available
- */
-async function playEncryptedVideoWithServiceWorker({
-  player,
-  keyBytes,
-  ivBytes,
-  resourceUrl,
-  mimeType,
-}: {
-  player: any;
-  keyBytes: Uint8Array;
-  ivBytes: Uint8Array;
-  resourceUrl: string;
-  mimeType?: string | null;
-}): Promise<string | null> {
-  // Try to register service worker
-  const swAvailable = await tryRegisterServiceWorker();
-  if (!swAvailable) {
-    console.warn(
-      '[Encrypted Video] Service Worker not available, will use fallback'
-    );
-    return null;
-  }
-
-  // Get file size using HEAD request
-  let totalSize: number;
-  try {
-    const headResponse = await fetch(resourceUrl, { method: 'HEAD' });
-    const contentLength = headResponse.headers.get('content-length');
-    if (!contentLength) {
-      throw new Error('Could not determine file size from HEAD request');
-    }
-    totalSize = parseInt(contentLength, 10);
-  } catch (error) {
-    console.error('[Encrypted Video] Failed to get file size:', error);
-    throw error;
-  }
-
-  // Generate unique video ID
-  const videoId = `video-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-
-  // Send encryption config to service worker
-  try {
-    await setEncryptionConfig(videoId, {
-      key: keyBytes,
-      iv: ivBytes,
-      resourceUrl,
-      totalSize,
-      mimeType: mimeType || 'video/mp4',
-    });
-  } catch (error) {
-    console.error('[Encrypted Video] Failed to set encryption config:', error);
-    throw error;
-  }
-
-  return videoId; // Return videoId for cleanup later
 }
 
 type StretchVideoType = 'contain' | 'fill' | 'cover' | 'none' | 'scale-down';
@@ -709,7 +383,6 @@ export interface EncryptionConfig {
   key: Uint8Array;
   iv: Uint8Array;
   encryptionType: string;
-  mimeType: string;
 }
 
 export interface VideoPlayerProps {
@@ -811,8 +484,6 @@ export const VideoPlayer = ({
   const subtitleBtnRef = useRef(null);
   const [currentSubTrack, setCurrentSubTrack] = useState<null | string>(null);
   const location = useLocation();
-  const [encryptedVideoId, setEncryptedVideoId] = useState<string | null>(null);
-  const pendingPlayRef = useRef(false); // Track if user clicked play during setup
 
   const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false);
   const isVideoPlayerSmall = width < 600 || isTouchDevice;
@@ -1009,7 +680,6 @@ export const VideoPlayer = ({
       onPauseParent();
     }
   }, [setIsPlaying]);
-
   const onVolumeChangeHandler = useCallback(
     (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
       try {
@@ -1123,18 +793,8 @@ export const VideoPlayer = ({
         URL.revokeObjectURL(previousSubtitleUrlRef.current);
         previousSubtitleUrlRef.current = null;
       }
-
-      // Cleanup encrypted video Service Worker config
-      if (encryptedVideoId) {
-        removeEncryptionConfig(encryptedVideoId).catch((err) => {
-          console.warn(
-            '[Encrypted Video] Failed to cleanup Service Worker config:',
-            err
-          );
-        });
-      }
     };
-  }, [encryptedVideoId]);
+  }, []);
 
   const onSelectSubtitle = useCallback(
     async (subtitle: SubtitlePublishedData) => {
@@ -1271,217 +931,56 @@ export const VideoPlayer = ({
       const setupPlayer = async () => {
         const ref = videoRef as any;
         if (!ref.current) return;
+
         // Check if encryption is enabled
         if (
           encryption &&
           encryption.key &&
           encryption.iv &&
-          encryption.encryptionType &&
-          encryption.mimeType
+          encryption.encryptionType
         ) {
           // Encrypted video playback path
           if (!playerRef.current && ref.current) {
-            // Setup encrypted playback with new fallback chain
-            try {
-              // STEP 1: Try Qortal native playback with Node.js server (PRIMARY)
-              console.log(
-                '[Encrypted Video] Step 1: Trying Qortal native playback...'
-              );
-              const qortalStreamUrl = await playEncryptedVideoWithQortalRequest(
-                {
-                  player: playerRef.current,
-                  keyBytes: encryption.key,
-                  ivBytes: encryption.iv,
-                  qortalVideoResource: resource,
-                }
-              );
+            // Initialize Video.js with empty source (MediaSource will be attached)
+            playerRef.current = videojs(ref.current, {
+              autoplay: false,
+              controls: false,
+              responsive: true,
+              poster: startPlay ? '' : poster,
+            });
 
-              if (qortalStreamUrl) {
-                const options = {
-                  autoplay: true,
-                  controls: false,
-                  responsive: true,
-                  // fluid: true,
-                  poster: startPlay ? '' : poster,
-                  // aspectRatio: "16:9",
-                  sources: [
-                    {
-                      src: qortalStreamUrl,
-                      type: encryption.mimeType || 'video/mp4', // fallback
-                    },
-                  ],
-                };
-                if (!playerRef.current && ref.current) {
-                  playerRef.current = videojs(ref.current, options, () => {
-                    setIsPlayerInitialized(true);
-                    ref.current.tabIndex = -1; // Prevents focus entirely
-                    ref.current.style.outline = 'none'; // Backup
-                    playerRef.current?.poster('');
-                    playerRef.current?.playbackRate(playbackRate);
-                    playerRef.current?.volume(volume);
-                    const key = `${resource.service}-${resource.name}-${resource.identifier}`;
-                    if (key) {
-                      const savedProgress = getProgress(key);
-                      if (typeof savedProgress === 'number') {
-                        playerRef.current?.currentTime(savedProgress);
-                      }
-                    }
+            setIsPlayerInitialized(true);
+            ref.current.tabIndex = -1;
+            ref.current.style.outline = 'none';
+            playerRef.current?.poster('');
+            playerRef.current?.playbackRate(playbackRate);
+            playerRef.current?.volume(volume);
 
-                    playerRef.current?.play();
-
-                    const tracksInfo = playerRef.current?.textTracks();
-
-                    const checkActiveSubtitle = () => {
-                      let activeTrack = null;
-
-                      const tracks = Array.from(
-                        { length: (tracksInfo as any).length },
-                        (_, i) => (tracksInfo as any)[i]
-                      );
-                      for (const track of tracks) {
-                        if (
-                          track.kind === 'subtitles' ||
-                          track.kind === 'captions'
-                        ) {
-                          if (track.mode === 'showing') {
-                            activeTrack = track;
-                            break;
-                          }
-                        }
-                      }
-
-                      if (activeTrack) {
-                        setCurrentSubTrack(
-                          activeTrack.language || activeTrack.srclang
-                        );
-                      } else {
-                        setCurrentSubTrack(null);
-                      }
-                    };
-
-                    // Initial check in case one is auto-enabled
-                    checkActiveSubtitle();
-
-                    // Use Video.js event system
-                    tracksInfo?.on('change', checkActiveSubtitle);
-                  });
-                  playerRef.current?.on('error', () => {
-                    const error = playerRef.current?.error();
-                    console.error('Video.js playback error:', error);
-                  });
-                  return;
-                }
-
-                // Don't auto-play - let user control playback
-              } else {
-                // STEP 2: Try Service Worker as fallback
-                console.log(
-                  '[Encrypted Video] Step 2: Trying Service Worker fallback...'
-                );
-                const swVideoId = await playEncryptedVideoWithServiceWorker({
-                  player: playerRef.current,
-                  keyBytes: encryption.key,
-                  ivBytes: encryption.iv,
-                  resourceUrl: resourceUrl || '',
-                  mimeType: encryption.mimeType,
-                });
-
-                if (swVideoId) {
-                  // Service Worker approach succeeded
-                  console.log(
-                    '[Encrypted Video] Using Service Worker for decryption'
-                  );
-                  setEncryptedVideoId(swVideoId);
-
-                  // Generate virtual URL that service worker will intercept
-                  const virtualUrl = generateEncryptedVideoUrl(swVideoId);
-
-                  const options = {
-                    autoplay: true,
-                    controls: false,
-                    responsive: true,
-                    // fluid: true,
-                    poster: startPlay ? '' : poster,
-                    // aspectRatio: "16:9",
-                    sources: [
-                      {
-                        src: virtualUrl,
-                        type: encryption.mimeType || 'video/mp4', // fallback
-                      },
-                    ],
-                  };
-                  if (!playerRef.current && ref.current) {
-                    playerRef.current = videojs(ref.current, options, () => {
-                      setIsPlayerInitialized(true);
-                      ref.current.tabIndex = -1; // Prevents focus entirely
-                      ref.current.style.outline = 'none'; // Backup
-                      playerRef.current?.poster('');
-                      playerRef.current?.playbackRate(playbackRate);
-                      playerRef.current?.volume(volume);
-                      const key = `${resource.service}-${resource.name}-${resource.identifier}`;
-                      if (key) {
-                        const savedProgress = getProgress(key);
-                        if (typeof savedProgress === 'number') {
-                          playerRef.current?.currentTime(savedProgress);
-                        }
-                      }
-
-                      playerRef.current?.play();
-
-                      const tracksInfo = playerRef.current?.textTracks();
-
-                      const checkActiveSubtitle = () => {
-                        let activeTrack = null;
-
-                        const tracks = Array.from(
-                          { length: (tracksInfo as any).length },
-                          (_, i) => (tracksInfo as any)[i]
-                        );
-                        for (const track of tracks) {
-                          if (
-                            track.kind === 'subtitles' ||
-                            track.kind === 'captions'
-                          ) {
-                            if (track.mode === 'showing') {
-                              activeTrack = track;
-                              break;
-                            }
-                          }
-                        }
-
-                        if (activeTrack) {
-                          setCurrentSubTrack(
-                            activeTrack.language || activeTrack.srclang
-                          );
-                        } else {
-                          setCurrentSubTrack(null);
-                        }
-                      };
-
-                      // Initial check in case one is auto-enabled
-                      checkActiveSubtitle();
-
-                      // Use Video.js event system
-                      tracksInfo?.on('change', checkActiveSubtitle);
-                    });
-                    playerRef.current?.on('error', () => {
-                      const error = playerRef.current?.error();
-                      console.error('Video.js playback error:', error);
-                    });
-                    return;
-                  }
-
-                  // Don't auto-play - let user control playback
-                } else {
-                  // Both methods failed
-                  console.error(
-                    '[Encrypted Video] All playback methods failed'
-                  );
-                  throw new Error(
-                    'No encrypted video playback method available'
-                  );
-                }
+            const key = `${resource.service}-${resource.name}-${resource.identifier}`;
+            if (key) {
+              const savedProgress = getProgress(key);
+              if (typeof savedProgress === 'number') {
+                playerRef.current?.currentTime(savedProgress);
               }
+            }
+
+            // Setup encrypted playback
+            try {
+              // Get mime type for proper codec string
+              const type = await getVideoMimeTypeFromUrl(resource);
+
+              await playEncryptedVideo({
+                player: playerRef.current,
+                keyBytes: encryption.key,
+                ivBytes: encryption.iv,
+                resourceUrl: resourceUrl || '',
+                mimeType: type,
+              });
+
+              // Play after setup
+              playerRef.current?.play().catch((err: any) => {
+                console.warn('Encrypted video play failed:', err);
+              });
 
               // Setup subtitle tracking
               const tracksInfo = playerRef.current?.textTracks();
@@ -1685,6 +1184,7 @@ export const VideoPlayer = ({
           ref={videoRef}
           tabIndex={-1}
           className="video-js"
+          src={isReady && startPlay ? resourceUrl || undefined : undefined}
           poster={poster}
           onTimeUpdate={updateProgress}
           autoPlay={autoPlay}

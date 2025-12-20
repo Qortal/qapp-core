@@ -39,10 +39,11 @@ export const useAuth = ({
   const publicKey = useAuthStore((s) => s.publicKey);
   const name = useAuthStore((s) => s.name);
   const avatarUrl = useAuthStore((s) => s.avatarUrl);
-
+ const primaryName = useAuthStore((s) => s.primaryName);
   const isLoadingUser = useAuthStore((s) => s.isLoadingUser);
   const errorLoadingUser = useAuthStore((s) => s.errorLoadingUser);
   const setIsLoadingBalance = useAuthStore((s) => s.setIsLoadingBalance);
+  const setPrimaryName = useAuthStore((s) => s.setPrimaryName);
 
   const setErrorLoadingUser = useAuthStore((s) => s.setErrorLoadingUser);
   const setIsLoadingUser = useAuthStore((s) => s.setIsLoadingUser);
@@ -70,6 +71,7 @@ export const useAuth = ({
             action: 'GET_PRIMARY_NAME',
             address: account.address,
           });
+           setPrimaryName(nameData || '')
           setUser({ ...account, name: nameData || '' });
         }
       } catch (error) {
@@ -171,6 +173,7 @@ export const useAuth = ({
       isLoadingUser,
       errorMessageLoadingUser: errorLoadingUser,
       authenticateUser,
+      primaryName
     }),
     [
       address,
@@ -180,6 +183,7 @@ export const useAuth = ({
       isLoadingUser,
       errorLoadingUser,
       authenticateUser,
+      primaryName
     ]
   );
 };
