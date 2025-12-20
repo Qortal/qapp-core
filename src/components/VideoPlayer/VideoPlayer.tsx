@@ -584,8 +584,6 @@ async function playEncryptedVideoWithQortalRequest({
   qortalVideoResource: any;
 }): Promise<string | null> {
   try {
-    console.log('[Encrypted Video] Attempting Qortal native playback...');
-
     const mediaId = `${qortalVideoResource.service}-${qortalVideoResource.name}-${qortalVideoResource.identifier}`;
 
     // Convert key and iv to base64 for qortalRequest
@@ -605,10 +603,6 @@ async function playEncryptedVideoWithQortalRequest({
     });
 
     if (response && response.streamUrl) {
-      console.log(
-        '[Encrypted Video] Qortal native playback URL received:',
-        response.streamUrl
-      );
       return response.streamUrl;
     }
 
