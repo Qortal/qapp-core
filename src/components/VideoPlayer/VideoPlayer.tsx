@@ -24,7 +24,11 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
 import { SubtitleManager, SubtitlePublishedData } from './SubtitleManager';
-import { base64ToBlobUrl, uint8ArrayToBase64 } from '../../utils/base64';
+import {
+  base64ToBlobUrl,
+  uint8ArrayToBase64,
+  base64ToUint8Array,
+} from '../../utils/base64';
 import convert from 'srt-webvtt';
 import { TimelineActionsComponent } from './TimelineActionsComponent';
 import { PlayBackMenu } from './VideoControls';
@@ -699,9 +703,10 @@ export type TimelineAction =
       onClick: () => void; // ✅ Required for CUSTOM
       placement?: 'TOP-RIGHT' | 'TOP-LEFT' | 'BOTTOM-LEFT' | 'BOTTOM-RIGHT';
     };
+
 export interface EncryptionConfig {
-  key: Uint8Array;
-  iv: Uint8Array;
+  key: string; // base64 encoded key
+  iv: string; // base64 encoded iv
   encryptionType: string;
   mimeType: string;
 }
@@ -1275,6 +1280,10 @@ export const VideoPlayer = ({
         ) {
           // Encrypted video playback path
           if (!playerRef.current && ref.current) {
+            // Convert base64 encoded key and iv to Uint8Array
+            const keyBytes = base64ToUint8Array(encryption.key);
+            const ivBytes = base64ToUint8Array(encryption.iv);
+
             // Setup encrypted playback with new fallback chain
             try {
               // STEP 1: Try Qortal native playback with Node.js server (PRIMARY)
@@ -1284,8 +1293,8 @@ export const VideoPlayer = ({
               const qortalStreamUrl = await playEncryptedVideoWithQortalRequest(
                 {
                   player: playerRef.current,
-                  keyBytes: encryption.key,
-                  ivBytes: encryption.iv,
+                  keyBytes: keyBytes,
+                  ivBytes: ivBytes,
                   qortalVideoResource: resource,
                 }
               );
@@ -1374,8 +1383,8 @@ export const VideoPlayer = ({
                 );
                 const swVideoId = await playEncryptedVideoWithServiceWorker({
                   player: playerRef.current,
-                  keyBytes: encryption.key,
-                  ivBytes: encryption.iv,
+                  keyBytes: keyBytes,
+                  ivBytes: ivBytes,
                   resourceUrl: resourceUrl || '',
                   mimeType: encryption.mimeType,
                 });
