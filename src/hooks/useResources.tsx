@@ -19,6 +19,7 @@ export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
   6
 );
 export const requestQueueResourcesResultsOnly = new RequestQueueWithPromise(4);
+export const requestQueueSearchResources = new RequestQueueWithPromise(8);
 
 export interface Resource {
   qortalMetadata: QortalMetadata;
@@ -239,14 +240,16 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
         : null;
 
       while (isUnlimited || filteredResults.length < targetLimit) {
-        const response = await qortalRequest({
-          action: 'SEARCH_QDN_RESOURCES',
-          mode: 'ALL',
-          ...params,
-          limit: targetLimit - filteredResults.length, // Adjust limit dynamically
-          before: lastCreated,
-          excludeBlocked: true,
-        });
+        const response = await requestQueueSearchResources.enqueue(() =>
+          qortalRequest({
+            action: 'SEARCH_QDN_RESOURCES',
+            mode: 'ALL',
+            ...params,
+            limit: targetLimit - filteredResults.length,
+            before: lastCreated,
+            excludeBlocked: true,
+          })
+        );
         if (!response || response.length === 0) {
           break; // No more data available
         }
@@ -560,129 +563,79 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
         })
       );
 
-      // Weighted distribution merge
+      // Chronological merge: Combine all items from all sources and sort by timestamp
+      // Step 1: Merge all items from all sources
+      const allFetchedItems: QortalMetadata[] = [];
+      allFetches.forEach((fetch) => {
+        allFetchedItems.push(...fetch.data);
+      });
+
+      // Step 2: Sort by created timestamp DESC (newest first)
+      allFetchedItems.sort((a, b) => b.created - a.created);
+
+      // Step 3: Deduplicate while maintaining chronological order
       const allResults: QortalMetadata[] = [];
       const seenKeys = new Set<string>();
       const seenIdentifiersForFilter = filterDuplicateIdentifiers
         ? new Set<string>(existingIdentifiers || [])
         : null;
 
-      // Track last item actually used from each source for pagination
-      const lastUsedPerSource = new Map<string, QortalMetadata>();
+      for (const item of allFetchedItems) {
+        // Check if we've reached the target limit
+        if (allResults.length >= targetLimit) break;
 
-      // Calculate total weight (priority as weight)
-      const totalWeight = allFetches.reduce(
-        (sum, fetch) => sum + (fetch.priority || 1),
-        0
-      );
-
-      // Calculate target count for each source based on weight
-      const sourcesWithTargets = allFetches.map((fetch) => {
-        const weight = fetch.priority || 1;
-        const targetCount = Math.floor((weight / totalWeight) * targetLimit);
-        return {
-          ...fetch,
-          targetCount,
-          currentIndex: 0,
-        };
-      });
-
-      // Distribute items proportionally using round-robin with weights
-      let remainingSlots = targetLimit;
-      let sourcesExhausted = 0;
-
-      while (
-        remainingSlots > 0 &&
-        sourcesExhausted < sourcesWithTargets.length
-      ) {
-        sourcesExhausted = 0;
-
-        for (const source of sourcesWithTargets) {
-          if (remainingSlots <= 0) break;
-
-          // Skip if this source has no more data
-          if (source.currentIndex >= source.data.length) {
-            sourcesExhausted++;
-            continue;
-          }
-
-          // Calculate how many items this source should contribute this round
-          const weight = source.priority || 1;
-          const itemsToTake = Math.max(
-            1,
-            Math.floor((weight / totalWeight) * 10)
-          );
-
-          let taken = 0;
-          while (
-            taken < itemsToTake &&
-            source.currentIndex < source.data.length &&
-            remainingSlots > 0
-          ) {
-            const item = source.data[source.currentIndex];
-            source.currentIndex++;
-
-            // If filterDuplicateIdentifiers is enabled, check identifier first
-            if (filterDuplicateIdentifiers && seenIdentifiersForFilter) {
-              if (seenIdentifiersForFilter.has(item.identifier)) {
-                continue; // Skip - identifier already seen
-              }
-            }
-
-            // Always deduplicate by full key
-            const fullKey = `${item.service}-${item.name}-${item.identifier}`;
-            if (seenKeys.has(fullKey)) continue;
-
-            // Add item
-            seenKeys.add(fullKey);
-            if (seenIdentifiersForFilter) {
-              seenIdentifiersForFilter.add(item.identifier);
-            }
-            allResults.push(item);
-
-            // Track this as the last used item from this source
-            if (source.sourceKey) {
-              lastUsedPerSource.set(source.sourceKey, item);
-            }
-
-            remainingSlots--;
-            taken++;
-          }
-
-          if (source.currentIndex >= source.data.length) {
-            sourcesExhausted++;
+        // If filterDuplicateIdentifiers is enabled, check identifier first
+        if (filterDuplicateIdentifiers && seenIdentifiersForFilter) {
+          if (seenIdentifiersForFilter.has(item.identifier)) {
+            continue; // Skip - identifier already seen
           }
         }
+
+        // Always deduplicate by full key
+        const fullKey = `${item.service}-${item.name}-${item.identifier}`;
+        if (seenKeys.has(fullKey)) continue;
+
+        // Add item
+        seenKeys.add(fullKey);
+        if (seenIdentifiersForFilter) {
+          seenIdentifiersForFilter.add(item.identifier);
+        }
+        allResults.push(item);
       }
 
-      // Update pagination state for each source based on last item actually USED
-      sourcesWithTargets.forEach((source) => {
-        if (!source.sourceKey) return; // Skip if no sourceKey
+      // Step 4: Update pagination state for ALL sources with the same timestamp
+      // This ensures continuity in the timeline - all sources will fetch items before the oldest item in the current result set
+      const oldestItemInResults =
+        allResults.length > 0 ? allResults[allResults.length - 1] : null;
 
-        const lastUsedItem = lastUsedPerSource.get(source.sourceKey);
+      allFetches.forEach((fetch) => {
+        if (!fetch.sourceKey) return; // Skip if no sourceKey
 
-        if (lastUsedItem) {
-          // We used items from this source - update pagination state
-          setPaginationState(listName, source.sourceKey, {
-            before: lastUsedItem.created,
-            hasMore:
-              source.currentIndex < source.data.length ||
-              source.data.length === (source.fetchParams?.limit || 20),
-            lastFetchedCount: source.data.length,
+        if (oldestItemInResults) {
+          // All sources use the same "before" timestamp (oldest item from merged results)
+          // This ensures no gaps in the timeline during pagination
+          const hasMoreData =
+            fetch.data.length > 0 &&
+            (fetch.data.length === (fetch.fetchParams?.limit || 20) ||
+              // Check if this source has items older than our cutoff
+              fetch.data.some(
+                (item) => item.created < oldestItemInResults.created
+              ));
+
+          setPaginationState(listName, fetch.sourceKey, {
+            before: oldestItemInResults.created,
+            hasMore: hasMoreData,
+            lastFetchedCount: fetch.data.length,
           });
-        } else if (source.data.length === 0) {
+        } else if (fetch.data.length === 0) {
           // No data from this source
-          const paginationState = getPaginationState(
-            listName,
-            source.sourceKey
-          );
-          setPaginationState(listName, source.sourceKey, {
+          const paginationState = getPaginationState(listName, fetch.sourceKey);
+          setPaginationState(listName, fetch.sourceKey, {
             before: paginationState?.before || null,
             hasMore: false,
             lastFetchedCount: 0,
           });
         }
-        // If we fetched data but didn't use any (all filtered out), keep existing pagination state
       });
 
       return allResults;
