@@ -1,4 +1,3 @@
-import React from 'react'
 import { usePublishStore } from '../state/publishes';
 import { Service } from '../types/interfaces/resources';
 
@@ -18,7 +17,7 @@ export const useAllResourceStatus = () =>
           metadata: { service, name, identifier },
           status: rest,
           path,
-          filename
+          filename,
         };
       })
   );

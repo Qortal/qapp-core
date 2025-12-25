@@ -1,18 +1,19 @@
-import { useCallback, useMemo } from "react";
-import { useAuthStore } from "../state/auth";
-import { userAccountInfo } from "./useInitializeAuth";
+import { useCallback, useMemo } from 'react';
+import { useAuthStore } from '../state/auth';
+import { userAccountInfo } from './useInitializeAuth';
 
 export const useAuth = () => {
   const address = useAuthStore((s) => s.address);
   const publicKey = useAuthStore((s) => s.publicKey);
   const name = useAuthStore((s) => s.name);
   const avatarUrl = useAuthStore((s) => s.avatarUrl);
-
+  const primaryName = useAuthStore((s) => s.primaryName);
   const isLoadingUser = useAuthStore((s) => s.isLoadingUser);
   const errorLoadingUser = useAuthStore((s) => s.errorLoadingUser);
   const setErrorLoadingUser = useAuthStore((s) => s.setErrorLoadingUser);
   const setIsLoadingUser = useAuthStore((s) => s.setIsLoadingUser);
   const setUser = useAuthStore((s) => s.setUser);
+  const setPrimaryName = useAuthStore((s) => s.setPrimaryName);
   const setName = useAuthStore((s) => s.setName);
   const authenticateUser = useCallback(
     async (userAccountInfo?: userAccountInfo) => {
@@ -23,20 +24,24 @@ export const useAuth = () => {
         const account =
           userAccountInfo ||
           (await qortalRequest({
-            action: "GET_USER_ACCOUNT",
+            action: 'GET_USER_ACCOUNT',
           }));
 
         if (account?.address) {
           const nameData = await qortalRequest({
-            action: "GET_PRIMARY_NAME",
+            action: 'GET_PRIMARY_NAME',
             address: account.address,
           });
-          setUser({ ...account, name: nameData || "" });
+
+          setUser({ ...account, name: nameData || '' });
+          setPrimaryName(nameData || '')
+          return true
         }
       } catch (error) {
         setErrorLoadingUser(
-          error instanceof Error ? error.message : "Unable to authenticate"
+          error instanceof Error ? error.message : 'Unable to authenticate'
         );
+        return false
       } finally {
         setIsLoadingUser(false);
       }
@@ -46,9 +51,9 @@ export const useAuth = () => {
 
   const switchName = useCallback(
     async (name: string) => {
-      if (!name) throw new Error("No name provided");
+      if (!name) throw new Error('No name provided');
       const response = await fetch(`/names/${name}`);
-      if (!response?.ok) throw new Error("Error fetching name details");
+      if (!response?.ok) throw new Error('Error fetching name details');
       const nameInfo = await response.json();
       const currentAddress = useAuthStore.getState().address;
 
@@ -68,6 +73,7 @@ export const useAuth = () => {
       errorMessageLoadingUser: errorLoadingUser,
       authenticateUser,
       switchName,
+      primaryName
     }),
     [
       address,
@@ -78,6 +84,7 @@ export const useAuth = () => {
       errorLoadingUser,
       authenticateUser,
       switchName,
+      primaryName
     ]
   );
 };

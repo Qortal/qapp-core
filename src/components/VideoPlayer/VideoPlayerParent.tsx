@@ -1,10 +1,15 @@
-import React, { CSSProperties, useContext, useEffect, useRef } from "react";
-import { TimelineAction, VideoPlayer, VideoPlayerProps } from "./VideoPlayer";
-import { useGlobalPlayerStore } from "../../state/pip";
-import Player from "video.js/dist/types/player";
-import { useIsPlaying } from "../../state/video";
-import { QortalGetMetadata } from "../../types/interfaces/resources";
-import { GlobalContext } from "../../context/GlobalProvider";
+import React, { CSSProperties, useContext, useEffect, useRef } from 'react';
+import {
+  EncryptionConfig,
+  TimelineAction,
+  VideoPlayer,
+  VideoPlayerProps,
+} from './VideoPlayer';
+import { useGlobalPlayerStore } from '../../state/pip';
+import Player from 'video.js/dist/types/player';
+import { useIsPlaying } from '../../state/video';
+import { QortalGetMetadata } from '../../types/interfaces/resources';
+import { GlobalContext } from '../../context/GlobalProvider';
 
 export interface VideoPlayerParentProps {
   qortalVideoResource: QortalGetMetadata;
@@ -20,11 +25,12 @@ export interface VideoPlayerParentProps {
   filename?: string;
   styling?: {
     progressSlider?: {
-      thumbColor?: CSSProperties["color"];
-      railColor?: CSSProperties["color"];
-      trackColor?: CSSProperties["color"];
+      thumbColor?: CSSProperties['color'];
+      railColor?: CSSProperties['color'];
+      trackColor?: CSSProperties['color'];
     };
   };
+  encryption?: EncryptionConfig;
 }
 export const VideoPlayerParent = ({
   videoRef,
@@ -39,6 +45,7 @@ export const VideoPlayerParent = ({
   path,
   filename,
   styling,
+  encryption,
 }: VideoPlayerParentProps) => {
   const context = useContext(GlobalContext);
   const playerRef = useRef<Player | null>(null);
@@ -70,10 +77,10 @@ export const VideoPlayerParent = ({
           videoSrc: currentSrc,
           currentTime: current ?? 0,
           isPlaying: true,
-          mode: "floating",
+          mode: 'floating',
           videoId: videoLocationRef.current,
-          location: locationRef.current || "",
-          type: currentSource || "video/mp4",
+          location: locationRef.current || '',
+          type: currentSource || 'video/mp4',
         });
       }
     };
@@ -84,11 +91,11 @@ export const VideoPlayerParent = ({
 
       setIsPlaying(false);
 
-      if (player && typeof player.dispose === "function") {
+      if (player && typeof player.dispose === 'function') {
         try {
           player.dispose();
         } catch (err) {
-          console.error("Error disposing Video.js player:", err);
+          console.error('Error disposing Video.js player:', err);
         }
         playerRef.current = null;
       }
@@ -117,6 +124,7 @@ export const VideoPlayerParent = ({
       onPlay={onPlay}
       onPause={onPause}
       styling={styling}
+      encryption={encryption}
     />
   );
 };

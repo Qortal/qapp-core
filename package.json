@@ -1,12 +1,13 @@
 {
   "name": "qapp-core",
-  "version": "1.0.55",
+  "version": "1.0.74",
   "description": "Qortal's core React library with global state, UI components, and utilities",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
@@ -19,7 +20,10 @@
   ],
   "scripts": {
     "generate-i18n": "node ./scripts/generate_locales.js",
-    "build": "npm run generate-i18n && tsup",
+    "build": "npm run build:types && npm run generate-i18n && tsup",
+    "build:types": "tsc -p tsconfig.build.json",
+    "format": "prettier --write .",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "prepare": "npm run build",
     "clean": "rm -rf dist"
   },
@@ -40,6 +44,7 @@
     "react-idle-timer": "^5.7.2",
     "react-intersection-observer": "^9.16.0",
     "react-rnd": "^10.5.2",
+    "aes-js": "^3.1.2",
     "short-unique-id": "^5.2.0",
     "srt-webvtt": "^2.0.0",
     "ts-key-enum": "^3.0.13",
@@ -63,7 +68,9 @@
     "@types/crypto-js": "^4.2.2",
     "@types/react": "^19.0.10",
     "cpy-cli": "^5.0.0",
-    "fast-glob": "^3.3.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
     "react": "^19.0.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",

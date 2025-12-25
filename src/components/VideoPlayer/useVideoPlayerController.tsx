@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useVideoStore } from "../../state/video";
-import { QortalGetMetadata } from "../../types/interfaces/resources";
-import { useResourceStatus } from "../../hooks/useResourceStatus";
-import useIdleTimeout from "../../common/useIdleTimeout";
-import { useGlobalPlayerStore } from "../../state/pip";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useVideoStore } from '../../state/video';
+import { QortalGetMetadata } from '../../types/interfaces/resources';
+import { useResourceStatus } from '../../hooks/useResourceStatus';
+import useIdleTimeout from '../../common/useIdleTimeout';
+import { useGlobalPlayerStore } from '../../state/pip';
 
-const controlsHeight = "42px";
+const controlsHeight = '42px';
 const minSpeed = 0.25;
 const maxSpeed = 4.0;
 const speedChange = 0.25;
@@ -17,8 +17,8 @@ interface UseVideoControls {
   retryAttempts?: number;
   isMuted: boolean;
   videoRef: any;
-  filename?: string
-  path?: string
+  filename?: string;
+  path?: string;
 }
 
 export const useVideoPlayerController = (props: UseVideoControls) => {
@@ -29,28 +29,35 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     qortalVideoResource,
     retryAttempts,
     isMuted,
-    filename = "",
-    path = ""
+    filename = '',
+    path = '',
   } = props;
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControlsFullScreen, setShowControlsFullScreen] = useState(false);
-  const [videoObjectFit, setVideoObjectFit] = useState<"contain" | "fill">(
-    "contain"
+  const [videoObjectFit, setVideoObjectFit] = useState<'contain' | 'fill'>(
+    'contain'
   );
   const [startPlay, setStartPlay] = useState(false);
   const [startedFetch, setStartedFetch] = useState(false);
   const startedFetchRef = useRef(false);
   const { playbackSettings, setPlaybackRate } = useVideoStore();
 
-  const { isReady, resourceUrl, status, localChunkCount, totalChunkCount , percentLoaded, downloadResource } =
-    useResourceStatus({
-      resource: !startedFetch ? null : qortalVideoResource,
-      retryAttempts,
-      filename,
-      path,
-      isGlobal: true
-    });
+  const {
+    isReady,
+    resourceUrl,
+    status,
+    localChunkCount,
+    totalChunkCount,
+    percentLoaded,
+    downloadResource,
+  } = useResourceStatus({
+    resource: !startedFetch ? null : qortalVideoResource,
+    retryAttempts,
+    filename,
+    path,
+    isGlobal: true,
+  });
 
   const idleTime = 5000; // Time in milliseconds
   useIdleTimeout({
@@ -70,7 +77,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
         const clampedSpeed = Math.min(Math.max(newSpeed, minSpeed), maxSpeed);
         player.playbackRate(clampedSpeed); // ✅ Video.js API
       } catch (error) {
-        console.error("updatePlaybackRate", error);
+        console.error('updatePlaybackRate', error);
       }
     },
     [setPlaybackRate, minSpeed, maxSpeed]
@@ -85,7 +92,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
           : Math.min(changedSpeed, maxSpeed);
         updatePlaybackRate(newSpeed);
       } catch (error) {
-        console.error("increaseSpeed", increaseSpeed);
+        console.error('increaseSpeed', increaseSpeed);
       }
     },
     [updatePlaybackRate, playbackSettings.playbackRate]
@@ -99,9 +106,9 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () =>
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
   const onVolumeChange = useCallback((_: any, value: number | number[]) => {
@@ -113,7 +120,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
         playerRef.current?.volume(newVolume);
       }
     } catch (error) {
-      console.error("onVolumeChange", error);
+      console.error('onVolumeChange', error);
     }
   }, []);
 
@@ -124,14 +131,14 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
 
       ref.current?.muted(!isMuted);
     } catch (error) {
-      console.error("toggleMute", toggleMute);
+      console.error('toggleMute', toggleMute);
     }
   }, [isMuted]);
 
   const changeVolume = useCallback((delta: number) => {
     try {
       const player = playerRef.current;
-      if (!player || typeof player.volume !== "function") return;
+      if (!player || typeof player.volume !== 'function') return;
 
       const currentVolume = player.volume(); // Get current volume (0–1)
       let newVolume = Math.max(0, Math.min(currentVolume + delta, 1));
@@ -140,7 +147,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
       player.volume(newVolume); // Set new volume
       player.muted(false); // Ensure it's unmuted
     } catch (error) {
-      console.error("changeVolume", error);
+      console.error('changeVolume', error);
     }
   }, []);
 
@@ -149,8 +156,8 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
       const player = playerRef.current;
       if (
         !player ||
-        typeof player.currentTime !== "function" ||
-        typeof player.duration !== "function"
+        typeof player.currentTime !== 'function' ||
+        typeof player.duration !== 'function'
       )
         return;
 
@@ -160,7 +167,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
 
       player.currentTime(newTime);
     } catch (error) {
-      console.error("setProgressRelative", error);
+      console.error('setProgressRelative', error);
     }
   }, []);
 
@@ -169,8 +176,8 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
       const player = playerRef.current;
       if (
         !player ||
-        typeof player.duration !== "function" ||
-        typeof player.currentTime !== "function"
+        typeof player.duration !== 'function' ||
+        typeof player.currentTime !== 'function'
       )
         return;
 
@@ -180,7 +187,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
 
       player.currentTime(finalTime);
     } catch (error) {
-      console.error("setProgressAbsolute", error);
+      console.error('setProgressAbsolute', error);
     }
   }, []);
 
@@ -189,19 +196,19 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
       const player = playerRef.current;
       if (
         !player ||
-        typeof player.duration !== "function" ||
-        typeof player.currentTime !== "function"
+        typeof player.duration !== 'function' ||
+        typeof player.currentTime !== 'function'
       )
         return;
 
       player.currentTime(time);
     } catch (error) {
-      console.error("setProgressAbsolute", error);
+      console.error('setProgressAbsolute', error);
     }
   }, []);
 
   const toggleObjectFit = useCallback(() => {
-    setVideoObjectFit(videoObjectFit === "contain" ? "fill" : "contain");
+    setVideoObjectFit(videoObjectFit === 'contain' ? 'fill' : 'contain');
   }, [setVideoObjectFit]);
 
   const togglePlay = useCallback(async () => {
@@ -219,37 +226,58 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
           try {
             await player.play();
           } catch (err) {
-            console.warn("Play failed:", err);
+            console.warn('Play failed:', err);
           }
         } else {
           player.pause();
         }
       }
     } catch (error) {
-      console.error("togglePlay", error);
+      console.error('togglePlay', error);
     }
   }, [setStartedFetch, isReady]);
 
   const reloadVideo = useCallback(async () => {
     try {
       const player = playerRef.current;
-      if (!player || !isReady || !resourceUrl) return;
+      if (!player || !isReady) return;
 
       const currentTime = player.currentTime();
 
-      player.src({ src: resourceUrl, type: "video/mp4" }); // Adjust type if needed
+      // Get the actual source URL that the player is currently using
+      // This works for both encrypted (Service Worker/Qortal native) and non-encrypted videos
+      const currentSrc = player.currentSrc();
+
+      if (!currentSrc) {
+        console.warn('[Video Reload] No current source available');
+        return;
+      }
+
+      // For Service Worker URLs, we need to ensure the player fully resets
+      // This prevents caching issues with the virtual URL
+      player.pause();
+
+      // Reset the source completely
+      player.src({ src: '', type: 'video/mp4' });
+      player.load();
+
+      // Wait a moment for the reset to take effect
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Now set the actual source (use the same source the player was using)
+      player.src({ src: currentSrc, type: 'video/mp4' });
       player.load();
 
       player.ready(() => {
         player.currentTime(currentTime);
         player.play().catch((err: any) => {
-          console.warn("Playback failed after reload:", err);
+          console.warn('Playback failed after reload:', err);
         });
       });
     } catch (error) {
-      console.error(error);
+      console.error('reloadVideo error:', error);
     }
-  }, [isReady, resourceUrl]);
+  }, [isReady]);
 
   useEffect(() => {
     if (autoPlay) togglePlay();
@@ -266,8 +294,8 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     const player = playerRef.current;
     if (
       !player ||
-      typeof player.currentTime !== "function" ||
-      typeof player.duration !== "function"
+      typeof player.currentTime !== 'function' ||
+      typeof player.duration !== 'function'
     )
       return;
 
@@ -276,7 +304,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
       videoSrc: videoRef.current.src,
       currentTime: current,
       isPlaying: true,
-      mode: "floating", // or 'floating'
+      mode: 'floating', // or 'floating'
     });
   };
 
@@ -304,6 +332,10 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     seekTo,
     togglePictureInPicture,
     downloadResource,
-    isStatusWrong: !isNaN(totalChunkCount) && !isNaN(localChunkCount) &&  totalChunkCount === 2 && (totalChunkCount < localChunkCount)
+    isStatusWrong:
+      !isNaN(totalChunkCount) &&
+      !isNaN(localChunkCount) &&
+      totalChunkCount === 2 &&
+      totalChunkCount < localChunkCount,
   };
 };

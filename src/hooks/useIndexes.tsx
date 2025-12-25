@@ -1,23 +1,25 @@
-import React, { useCallback, useMemo } from "react";
-import { OpenIndex, useIndexStore } from "../state/indexes";
+import React, { useCallback, useMemo } from 'react';
+import { OpenIndex, useIndexStore } from '../state/indexes';
 
 export const useIndexes = () => {
   const setOpen = useIndexStore((state) => state.setOpen);
   const openPageIndexManager = useCallback(
     ({ link, name, category, rootName }: OpenIndex) => {
-        if(!link || !name || !category) return
+      if (!link || !name || !category) return;
       setOpen({
         name,
         link,
         category,
-        rootName
+        rootName,
       });
     },
     [setOpen]
   );
 
-
-  return useMemo(() => ({
-    openPageIndexManager
-  }), [openPageIndexManager]);
+  return useMemo(
+    () => ({
+      openPageIndexManager,
+    }),
+    [openPageIndexManager]
+  );
 };

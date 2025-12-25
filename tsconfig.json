@@ -9,9 +9,6 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
-
-   
   },
-    "include": ["src"]
-  }
-  
+  "include": ["src"]
+}

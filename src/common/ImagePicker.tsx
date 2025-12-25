@@ -1,14 +1,14 @@
-import React, { useCallback } from "react";
-import { Box } from "@mui/material";
+import React, { useCallback } from 'react';
+import { Box } from '@mui/material';
 import {
   useDropzone,
   DropzoneRootProps,
   DropzoneInputProps,
-} from "react-dropzone";
-import Compressor from "compressorjs";
-import { fileToBase64 } from "../utils/base64";
+} from 'react-dropzone';
+import Compressor from 'compressorjs';
+import { fileToBase64 } from '../utils/base64';
 
-type Mode = "single" | "multi";
+type Mode = 'single' | 'multi';
 
 interface ImageResult {
   base64: string;
@@ -25,12 +25,12 @@ interface CommonProps {
 }
 
 interface SingleModeProps extends CommonProps {
-  mode?: "single";
+  mode?: 'single';
   onPick: (result: ImageResult) => void;
 }
 
 interface MultiModeProps extends CommonProps {
-  mode: "multi";
+  mode: 'multi';
   onPick: (results: ImageResult[]) => void;
 }
 
@@ -41,11 +41,12 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
   onPick,
   quality = 0.6,
   maxWidth = 1200,
-  mode = "single",
+  mode = 'single',
 }) => {
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      const images = mode === "single" ? acceptedFiles.slice(0, 1) : acceptedFiles;
+      const images =
+        mode === 'single' ? acceptedFiles.slice(0, 1) : acceptedFiles;
 
       const results: ImageResult[] = [];
 
@@ -53,9 +54,9 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
         try {
           let fileToConvert: Blob;
 
-          if (image.type === "image/gif") {
+          if (image.type === 'image/gif') {
             if (image.size > 500 * 1024) {
-              console.error("GIF file size exceeds 500KB limit.");
+              console.error('GIF file size exceeds 500KB limit.');
               continue;
             }
             fileToConvert = image;
@@ -64,12 +65,12 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
               new Compressor(image, {
                 quality,
                 maxWidth,
-                mimeType: "image/webp",
+                mimeType: 'image/webp',
                 success(result) {
                   resolve(result);
                 },
                 error(err) {
-                  console.error("Compression error:", err);
+                  console.error('Compression error:', err);
                   reject(err);
                 },
               });
@@ -85,11 +86,11 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
             size: image.size,
           });
         } catch (error) {
-          console.error("File processing error:", error);
+          console.error('File processing error:', error);
         }
       }
 
-      if (mode === "single") {
+      if (mode === 'single') {
         if (results[0]) {
           (onPick as (result: ImageResult) => void)(results[0]);
         }
@@ -110,12 +111,12 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
   } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [],
+      'image/*': [],
     },
   });
 
   return (
-    <Box {...getRootProps()} sx={{ display: "flex" }}>
+    <Box {...getRootProps()} sx={{ display: 'flex' }}>
       <input {...getInputProps()} />
       {children}
     </Box>

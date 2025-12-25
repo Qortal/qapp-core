@@ -3,13 +3,15 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: ['src/index.ts', 'src/global.ts'],
   format: ['esm', 'cjs'],
-  dts: true,
+  clean: false,
+  dts: false,
   external: [
     'react',
     '@mui/material',
     '@mui/system',
     '@emotion/react',
     '@emotion/styled',
-    'react-dom', 'react-router-dom'
+    'react-dom',
+    'react-router-dom',
   ],
 });

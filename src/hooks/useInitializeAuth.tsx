@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { useAuthStore } from "../state/auth";
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useAuthStore } from '../state/auth';
 
 // ✅ Define Types
 /**
@@ -39,10 +39,11 @@ export const useAuth = ({
   const publicKey = useAuthStore((s) => s.publicKey);
   const name = useAuthStore((s) => s.name);
   const avatarUrl = useAuthStore((s) => s.avatarUrl);
-
+ const primaryName = useAuthStore((s) => s.primaryName);
   const isLoadingUser = useAuthStore((s) => s.isLoadingUser);
   const errorLoadingUser = useAuthStore((s) => s.errorLoadingUser);
   const setIsLoadingBalance = useAuthStore((s) => s.setIsLoadingBalance);
+  const setPrimaryName = useAuthStore((s) => s.setPrimaryName);
 
   const setErrorLoadingUser = useAuthStore((s) => s.setErrorLoadingUser);
   const setIsLoadingUser = useAuthStore((s) => s.setIsLoadingUser);
@@ -62,19 +63,20 @@ export const useAuth = ({
         const account =
           userAccountInfo ||
           (await qortalRequest({
-            action: "GET_USER_ACCOUNT",
+            action: 'GET_USER_ACCOUNT',
           }));
 
         if (account?.address) {
           const nameData = await qortalRequest({
-            action: "GET_PRIMARY_NAME",
+            action: 'GET_PRIMARY_NAME',
             address: account.address,
           });
-          setUser({ ...account, name: nameData || "" });
+           setPrimaryName(nameData || '')
+          setUser({ ...account, name: nameData || '' });
         }
       } catch (error) {
         setErrorLoadingUser(
-          error instanceof Error ? error.message : "Unable to authenticate"
+          error instanceof Error ? error.message : 'Unable to authenticate'
         );
       } finally {
         setIsLoadingUser(false);
@@ -88,7 +90,7 @@ export const useAuth = ({
       try {
         setIsLoadingBalance(true);
         const response = await qortalRequest({
-          action: "GET_BALANCE",
+          action: 'GET_BALANCE',
           address,
         });
         const userBalance = Number(response) || 0;
@@ -171,6 +173,7 @@ export const useAuth = ({
       isLoadingUser,
       errorMessageLoadingUser: errorLoadingUser,
       authenticateUser,
+      primaryName
     }),
     [
       address,
@@ -180,6 +183,7 @@ export const useAuth = ({
       isLoadingUser,
       errorLoadingUser,
       authenticateUser,
+      primaryName
     ]
   );
 };

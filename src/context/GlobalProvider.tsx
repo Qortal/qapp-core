@@ -4,20 +4,20 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-} from "react";
-import { useAuth, UseAuthProps } from "../hooks/useInitializeAuth";
-import { useResources } from "../hooks/useResources";
-import { useAppInfo } from "../hooks/useAppInfo";
-import { useIdentifiers } from "../hooks/useIdentifiers";
-import { Toaster } from "react-hot-toast";
-import { usePersistentStore } from "../hooks/usePersistentStore";
-import { IndexManager } from "../components/IndexManager/IndexManager";
-import { useIndexes } from "../hooks/useIndexes";
-import { useProgressStore } from "../state/video";
-import { GlobalPipPlayer } from "../hooks/useGlobalPipPlayer";
-import { MultiPublishDialog } from "../components/MultiPublish/MultiPublishDialog";
-import { useMultiplePublishStore } from "../state/multiplePublish";
-import { useIframe } from "../hooks/useIframe";
+} from 'react';
+import { useAuth, UseAuthProps } from '../hooks/useInitializeAuth';
+import { useResources } from '../hooks/useResources';
+import { useAppInfo } from '../hooks/useAppInfo';
+import { useIdentifiers } from '../hooks/useIdentifiers';
+import { Toaster } from 'react-hot-toast';
+import { usePersistentStore } from '../hooks/usePersistentStore';
+import { IndexManager } from '../components/IndexManager/IndexManager';
+import { useIndexes } from '../hooks/useIndexes';
+import { useProgressStore } from '../state/video';
+import { GlobalPipPlayer } from '../hooks/useGlobalPipPlayer';
+import { MultiPublishDialog } from '../components/MultiPublish/MultiPublishDialog';
+import { useMultiplePublishStore } from '../state/multiplePublish';
+import { useIframe } from '../hooks/useIframe';
 
 // ✅ Define Global Context Type
 interface GlobalContextType {
@@ -53,8 +53,7 @@ export const GlobalProvider = ({
   config,
   toastStyle = {},
 }: GlobalProviderProps) => {
- 
-  useIframe()
+  useIframe();
   // ✅ Call hooks and pass in options dynamically
   const auth = useAuth(config?.auth || {});
   const isPublishing = useMultiplePublishStore((s) => s.isPublishing);
@@ -97,7 +96,6 @@ export const GlobalProvider = ({
 
   return (
     <GlobalContext.Provider value={contextValue}>
-
       {config?.enableGlobalVideoFeature && <GlobalPipPlayer />}
 
       {isPublishing && <MultiPublishDialog />}
@@ -112,7 +110,6 @@ export const GlobalProvider = ({
       <IndexManager username={auth?.name} />
 
       {children}
-
     </GlobalContext.Provider>
   );
 };
@@ -121,7 +118,7 @@ export const GlobalProvider = ({
 export const useGlobal = () => {
   const context = useContext(GlobalContext);
   if (!context) {
-    throw new Error("useGlobal must be used within a GlobalProvider");
+    throw new Error('useGlobal must be used within a GlobalProvider');
   }
   return context;
 };

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { TextField, Button, Chip, Box, Stack } from "@mui/material";
+import { useState } from 'react';
+import { TextField, Button, Chip, Box, Stack } from '@mui/material';
 
 interface PropsOptionsManager {
   items: string[];
@@ -12,11 +12,11 @@ interface PropsOptionsManager {
 export function OptionsManager({
   items,
   setItems,
-  label = "Keyword",
+  label = 'Keyword',
   maxLength,
   onlyStrings,
 }: PropsOptionsManager) {
-  const [inputValue, setInputValue] = useState<string>("");
+  const [inputValue, setInputValue] = useState<string>('');
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
   const handleAddOrUpdateItem = () => {
@@ -42,7 +42,7 @@ export function OptionsManager({
       }
     }
 
-    setInputValue("");
+    setInputValue('');
   };
 
   const handleDeleteItem = (index: number) => {
@@ -64,16 +64,20 @@ export function OptionsManager({
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") handleAddOrUpdateItem();
+            if (e.key === 'Enter') handleAddOrUpdateItem();
           }}
-          sx={{ width: "240px" }}
+          sx={{ width: '240px' }}
         />
-        <Button size="small" variant="contained" onClick={handleAddOrUpdateItem}>
-          {editIndex !== null ? "Update" : "Add"}
+        <Button
+          size="small"
+          variant="contained"
+          onClick={handleAddOrUpdateItem}
+        >
+          {editIndex !== null ? 'Update' : 'Add'}
         </Button>
       </Stack>
 
-      <Box mt={2} sx={{ maxWidth: "400px", flexWrap: "wrap", display: "flex" }}>
+      <Box mt={2} sx={{ maxWidth: '400px', flexWrap: 'wrap', display: 'flex' }}>
         {items.map((item, index) => (
           <Chip
             key={index}

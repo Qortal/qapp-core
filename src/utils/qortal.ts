@@ -1,8 +1,10 @@
 export const createAvatarLink = (qortalName: string): string => {
-   if (!qortalName?.trim()) return '';
+  if (!qortalName?.trim()) return '';
 
-    return `/arbitrary/THUMBNAIL/${encodeURIComponent(qortalName)}/qortal_avatar?async=true`
-}
+  return `/arbitrary/THUMBNAIL/${encodeURIComponent(
+    qortalName
+  )}/qortal_avatar?async=true`;
+};
 
 const removeTrailingSlash = (str: string) => str.replace(/\/$/, '');
 
