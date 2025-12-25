@@ -79,7 +79,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Qortal/qapp-core.git"
+    "url": "git+https://github.com/Qortal/qapp-core.git"
   },
   "keywords": [
     "qortal",
@@ -88,6 +88,6 @@
     "global state",
     "qapp"
   ],
-  "author": "Your Name",
+  "author": "Qortal Developers",
   "license": "MIT"
 }
