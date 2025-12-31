@@ -51,6 +51,8 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        env:
+          REGISTRY_URL: https://registry.npmjs.org/
 
       - name: Verify package.json version matches release tag
         run: |
@@ -71,4 +73,4 @@ jobs:
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          REGISTRY_URL: ${{ env.REGISTRY_URL }}
+          REGISTRY_URL: ${{ vars.REGISTRY_URL || 'https://registry.npmjs.org' }}
