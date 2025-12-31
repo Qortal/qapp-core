@@ -24,13 +24,13 @@ jobs:
       contents: read
       id-token: write
 
-    environment: production
+    environment: production # the secret NPM_TOKEN is stored in this enviroment at repository level
 
     env:
       PUBLISH_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       NODE_OPTIONS: --max-old-space-size=4096
-      REGISTRY_URL: ${{ vars.REGISTRY_URL }}
+      REGISTRY_URL: ${{ vars.REGISTRY_URL || 'https://registry.npmjs.org/' }}
 
     defaults:
       run:
@@ -51,8 +51,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        env:
-          REGISTRY_URL: https://registry.npmjs.org/
 
       - name: Verify package.json version matches release tag
         run: |
@@ -73,4 +71,4 @@ jobs:
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          REGISTRY_URL: ${{ vars.REGISTRY_URL || 'https://registry.npmjs.org' }}
+          REGISTRY_URL: ${{ env.REGISTRY_URL }}
