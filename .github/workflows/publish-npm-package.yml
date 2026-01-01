@@ -1,18 +1,12 @@
-name: Release → Build & Publish core
+name: Publish qapp-core
 
 on:
   release:
     types: [published] # runs when a release is published (not just created as a draft)
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Tag to publish (e.g. v1.2.3)"
-        required: true
-        type: string
 
 concurrency:
-  group: publish-core-${{ github.ref }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   publish:
@@ -27,7 +21,7 @@ jobs:
     environment: production # the secret NPM_TOKEN is stored in this enviroment at repository level
 
     env:
-      PUBLISH_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag }}
+      PUBLISH_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name }}
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       NODE_OPTIONS: --max-old-space-size=4096
       REGISTRY_URL: ${{ vars.REGISTRY_URL || 'https://registry.npmjs.org/' }}
@@ -44,7 +38,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "22.x"
           registry-url: ${{ env.REGISTRY_URL }}
           cache: "npm"
           cache-dependency-path: package-lock.json

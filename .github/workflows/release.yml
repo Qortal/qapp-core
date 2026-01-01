@@ -1,0 +1,119 @@
+name: Build New Release
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "The branch to build"
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  build-and-release:
+    if: ${{ github.repository == 'Qortal/qapp-core' }}
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: ${{ github.event.repository.name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build
+        run: npm run build
+
+      - name: Get version from package.json
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create zip artifact
+        run: |
+          cd dist
+          zip -r ../${{ env.APP_NAME }}-${{ steps.package-version.outputs.version }}.zip .
+          cd ..
+
+      - name: Delete existing release if exists
+        run: |
+          gh release delete v${{ steps.package-version.outputs.version }} --yes --cleanup-tag || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get previous tag
+        id: previous_tag
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "tag=$PREV_TAG" >> $GITHUB_OUTPUT
+
+      - name: Build Changelog
+        id: github_changelog
+        continue-on-error: true
+        uses: mikepenz/release-changelog-builder-action@v6.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fromTag: ${{ steps.previous_tag.outputs.tag }}
+          toTag: ${{ github.sha }}
+          configurationJson: |
+            {
+              "categories": [
+                {
+                  "title": "## 🚀 Features",
+                  "labels": ["enhancement"]
+                },
+                {
+                  "title": "## 🐛 Fixes",
+                  "labels": ["bug"]
+                },
+                {
+                  "title": "## 🧪 Tests",
+                  "labels": ["test"]
+                },
+                {
+                  "title": "## 📦 Other",
+                  "labels": []
+                }
+              ],
+              "template": "#{{CHANGELOG}}\n\n**Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.previous_tag.outputs.tag }}...v${{ steps.package-version.outputs.version }}",
+              "pr_template": "- #{{TITLE}} (PR ##{{NUMBER}}) by @#{{AUTHOR}}",
+              "max_pull_requests": 100,
+              "max_back_track_time_days": 180
+            }
+
+      - name: Set default changelog if build failed
+        id: default_changelog
+        if: steps.github_changelog.outcome == 'failure'
+        run: echo "changelog=Initial release" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: Release v${{ steps.package-version.outputs.version }}
+          body: ${{ steps.github_changelog.outcome == 'success' && steps.github_changelog.outputs.changelog || steps.default_changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+          files: |
+            ${{ env.APP_NAME }}-${{ steps.package-version.outputs.version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
