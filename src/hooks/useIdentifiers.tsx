@@ -10,15 +10,58 @@ import {
 
 export const useIdentifiers = (publicSalt: string, appName: string) => {
   const buildIdentifierFunc = useCallback(
-    (entityType: string, parentId: string | null, noUniqueId?: boolean, preEntity?: string) => {
-      return buildIdentifier(appName, publicSalt, entityType, parentId, noUniqueId, preEntity);
+    (
+      entityType: string,
+      parentId: string | null,
+      noUniqueId?: boolean,
+      preEntity?: string
+    ) => {
+      return buildIdentifier(
+        appName,
+        publicSalt,
+        entityType,
+        parentId,
+        noUniqueId,
+        preEntity
+      );
     },
     [appName, publicSalt]
   );
 
+  const buildIdentifierFromRawFunc = useCallback(
+    (
+      appNameFromExternal: string,
+      publicSaltFromExternal: string,
+      entityType: string,
+      parentId: string | null,
+      noUniqueId?: boolean,
+      preEntity?: string
+    ) => {
+      return buildIdentifier(
+        appNameFromExternal,
+        publicSaltFromExternal,
+        entityType,
+        parentId,
+        noUniqueId,
+        preEntity
+      );
+    },
+    []
+  );
+
   const buildSearchPrefixFunc = useCallback(
-    (entityType: string | null, parentId: string | null, preEntity?: string) => {
-      return buildSearchPrefix(appName, publicSalt, entityType, parentId, preEntity);
+    (
+      entityType: string | null,
+      parentId: string | null,
+      preEntity?: string
+    ) => {
+      return buildSearchPrefix(
+        appName,
+        publicSalt,
+        entityType,
+        parentId,
+        preEntity
+      );
     },
     [appName, publicSalt]
   );
@@ -64,6 +107,7 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
       hashString,
       buildLooseSearchPrefix,
       buildLooseIdentifier,
+      buildIdentifierFromRaw: buildIdentifierFromRawFunc,
     }),
     [
       buildIdentifierFunc,
@@ -71,6 +115,7 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
       createSingleIdentifier,
       hashQortalName,
       hashString,
+      buildIdentifierFromRawFunc,
     ]
   );
 };

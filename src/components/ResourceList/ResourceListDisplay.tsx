@@ -483,7 +483,7 @@ export const MemorizedComponent = ({
             width: '100%',
           }}
         >
-          <div style={{ display: 'flex', flexGrow: 1 }}>
+          <div style={{ display: 'flex', flexGrow: 1, maxWidth: '100%' }}>
             {!disableVirtualization && (
               <VirtualizedList
                 listName={listName}
