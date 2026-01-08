@@ -91,8 +91,16 @@ export const useIdentifiers = (publicSalt: string, appName: string) => {
   );
 
   const hashString = useCallback(
-    async (string: string, strength: EnumCollisionStrength) => {
-      const hashedQortalName = await hashWord(string, strength, publicSalt);
+    async (
+      string: string,
+      strength: EnumCollisionStrength,
+      customPublicSalt?: string
+    ) => {
+      const hashedQortalName = await hashWord(
+        string,
+        strength,
+        customPublicSalt || publicSalt
+      );
       return hashedQortalName;
     },
     [publicSalt]
