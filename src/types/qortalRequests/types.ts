@@ -10,9 +10,13 @@ export enum Coin {
   RVN = 'RVN',
 }
 
-export type ForeignCoin = 'BTC' | 'LTC' | 'DOGE' | 'DGB' | 'RVN' | 'ARRR';
+export type CoinType = `${Coin}`;
 
-export type CoinType = 'QORT' | 'BTC' | 'LTC' | 'DOGE' | 'DGB' | 'RVN' | 'ARRR';
+export function getAvailableCoins(): Coin[] {
+  return Object.values(Coin);
+}
+
+export type ForeignCoin = 'BTC' | 'LTC' | 'DOGE' | 'DGB' | 'RVN' | 'ARRR';
 
 export type ForeignBlockchain =
   | 'LITECOIN'
