@@ -1640,7 +1640,7 @@ export const VideoPlayer = ({
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     hideTimeoutRef.current = setTimeout(() => {
       setShowControlsMobile(false);
-    }, 3000);
+    }, 3000) as unknown as number;
   };
 
   useEffect(() => {
