@@ -1,4 +1,11 @@
-import { uint8ArrayToBase64 } from './base64';
+import {
+  uint8ArrayToBase64,
+  base64ToUint8Array as base64ToUint8ArrayFromBase64,
+  uint8ArrayToObject as uint8ArrayToObjectFromBase64,
+  base64ToObject as base64ToObjectFromBase64,
+  objectToBase64UTF8,
+  base64UTF8ToObject,
+} from './base64';
 
 const MAX_RETRIES = 3; // Define your max retries constant
 
@@ -34,31 +41,20 @@ export async function retryTransaction<T>(
   return null; // This should never be reached, but added for type safety
 }
 
+// Re-export from base64.ts for backwards compatibility
 export function base64ToUint8Array(base64: string) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
+  return base64ToUint8ArrayFromBase64(base64);
 }
 
 export function uint8ArrayToObject(uint8Array: Uint8Array) {
-  // Decode the byte array using TextDecoder
-  const decoder = new TextDecoder();
-  const jsonString = decoder.decode(uint8Array);
-  // Convert the JSON string back into an object
-  return JSON.parse(jsonString);
+  return uint8ArrayToObjectFromBase64(uint8Array);
 }
 
 export function base64ToObject(base64: string) {
-  const toUint = base64ToUint8Array(base64);
-  const toObject = uint8ArrayToObject(toUint);
-
-  return toObject;
+  return base64ToObjectFromBase64(base64);
 }
 
+// Encryption key generation functions
 export function createIvAndKey() {
   const iv = crypto.getRandomValues(new Uint8Array(16));
   const key = crypto.getRandomValues(new Uint8Array(32));
@@ -68,4 +64,51 @@ export function createIvAndKey() {
 export function createIvAndKeyBase64() {
   const { iv, key } = createIvAndKey();
   return { iv: uint8ArrayToBase64(iv), key: uint8ArrayToBase64(key) };
+}
+
+// UTF8 versions for publishing with metadata
+export function objectToBase64ForPublish(obj: object): string {
+  return objectToBase64UTF8(obj);
+}
+
+export function base64ToObjectFromPublish(base64: string): object {
+  return base64UTF8ToObject(base64);
+}
+
+// Create IV and Key with metadata object support
+export interface EncryptionMetadata {
+  iv: string;
+  key: string;
+  [key: string]: any;
+}
+
+export function createEncryptionMetadataBase64(
+  additionalData?: object
+): EncryptionMetadata {
+  const { iv, key } = createIvAndKeyBase64();
+  return {
+    ...additionalData,
+    iv,
+    key,
+  };
+}
+
+export function packDataForPublish(
+  data: object,
+  encryptionMetadata: EncryptionMetadata
+): string {
+  const dataBase64 = objectToBase64ForPublish(data);
+  const metadataBase64 = objectToBase64ForPublish(encryptionMetadata);
+  return JSON.stringify({ data: dataBase64, metadata: metadataBase64 });
+}
+
+export function unpackDataFromPublish(encryptedString: string): {
+  data: object;
+  metadata: EncryptionMetadata;
+} {
+  const parsed = JSON.parse(encryptedString);
+  return {
+    data: base64ToObjectFromPublish(parsed.data),
+    metadata: base64ToObjectFromPublish(parsed.metadata) as EncryptionMetadata,
+  };
 }

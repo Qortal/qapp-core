@@ -21,8 +21,31 @@ export { useQortBalance } from './hooks/useBalance';
 export { useAuth } from './hooks/useAuth';
 export { useBlockedNames } from './hooks/useBlockedNames';
 import './index.css';
-export { createIvAndKeyBase64 } from './utils/publish';
-export { fileToBase64 } from './utils/base64';
+export {
+  createIvAndKeyBase64,
+  createIvAndKey,
+  objectToBase64ForPublish,
+  base64ToObjectFromPublish,
+  createEncryptionMetadataBase64,
+  packDataForPublish as encryptDataForPublish,
+  unpackDataFromPublish as decryptDataFromPublish,
+  retryTransaction,
+  base64ToObject,
+  base64ToUint8Array,
+  uint8ArrayToObject,
+  EncryptionMetadata,
+} from './utils/publish';
+export {
+  fileToBase64,
+  objectToBase64,
+  objectToBase64UTF8,
+  base64UTF8ToObject,
+  base64ToUint8Array as base64ToUint8ArrayBase64,
+  uint8ArrayToBase64,
+  uint8ArrayToObject as uint8ArrayToObjectBase64,
+  base64ToObject as base64ToObjectBase64,
+  base64ToBlobUrl,
+} from './utils/base64';
 export {
   executeEvent,
   subscribeToEvent,
@@ -33,14 +56,12 @@ export { createQortalLink } from './utils/qortal';
 export { IndexCategory } from './state/indexes';
 export { hashWordWithoutPublicSalt } from './utils/encryption';
 export { createAvatarLink } from './utils/qortal';
-export { objectToBase64 } from './utils/base64';
 
 export {
   addAndEncryptSymmetricKeys,
   decryptWithSymmetricKeys,
   encryptWithSymmetricKeys,
 } from './utils/encryption';
-export { base64ToObject } from './utils/publish';
 export { formatTimestamp } from './utils/time';
 export { EnumCollisionStrength } from './utils/encryption';
 export {

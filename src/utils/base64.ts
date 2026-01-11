@@ -54,6 +54,7 @@ export const fileToBase64 = (file: File | Blob): Promise<string> =>
     };
   });
 
+// manage only latin chars
 export function objectToBase64(obj: object): Promise<string> {
   // Step 1: Convert the object to a JSON string
   const jsonString = JSON.stringify(obj);
@@ -81,14 +82,68 @@ export function objectToBase64(obj: object): Promise<string> {
   });
 }
 
+// manage UTF8 chars
+export function objectToBase64UTF8(obj: object): string {
+  const jsonString = JSON.stringify(obj);
+  const encoder = new TextEncoder();
+  const uint8Array = encoder.encode(jsonString);
+  const base64Result = uint8ArrayToBase64(uint8Array);
+  return base64Result;
+}
+
+export function base64UTF8ToObject(base64: string): object {
+  const uint8Array = base64ToUint8Array(base64);
+  const decoder = new TextDecoder();
+  const jsonString = decoder.decode(uint8Array);
+  const result = JSON.parse(jsonString);
+  return result;
+}
+
 export function base64ToUint8Array(base64: string) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+  // Normalize base64 string (handle URL-safe variants and cleanup)
+  let normalized = base64.replace(/-/g, '+').replace(/_/g, '/').trim();
+
+  // Add padding if needed
+  while (normalized.length % 4 !== 0) {
+    normalized += '=';
   }
-  return bytes;
+
+  try {
+    const binaryString = atob(normalized);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  } catch (err) {
+    // If atob fails, the base64 string might contain UTF-8 characters
+    // Try decoding using TextEncoder/TextDecoder approach
+    console.warn(
+      'Standard base64 decode failed, attempting UTF-8-aware decode:',
+      err
+    );
+    try {
+      // First, encode the potentially UTF-8 string to bytes
+      const encoder = new TextEncoder();
+      const utf8Bytes = encoder.encode(normalized);
+
+      // Then try to decode it as base64
+      const binaryString = String.fromCharCode(...utf8Bytes);
+      const decodedString = atob(binaryString);
+
+      const len = decodedString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = decodedString.charCodeAt(i);
+      }
+      return bytes;
+    } catch (fallbackErr) {
+      throw new Error(
+        `Failed to decode base64 string: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
 }
 
 export function uint8ArrayToBase64(uint8Array: Uint8Array) {
@@ -130,13 +185,7 @@ export const base64ToBlobUrl = (
       : base64 + '='.repeat(4 - (base64.length % 4));
 
   try {
-    const binary = atob(cleanedBase64);
-    const len = binary.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-
+    const bytes = base64ToUint8Array(cleanedBase64);
     const blob = new Blob([bytes], { type: mimeType });
     return URL.createObjectURL(blob);
   } catch (err) {
