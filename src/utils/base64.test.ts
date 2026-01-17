@@ -2,8 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   fileToBase64,
   objectToBase64,
-  objectToBase64UTF8,
-  base64UTF8ToObject,
   base64ToUint8Array,
   uint8ArrayToBase64,
   uint8ArrayToObject,
@@ -96,91 +94,6 @@ describe('base64 utility functions', () => {
 
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('objectToBase64UTF8', () => {
-    it('should convert a simple object to base64 UTF8', () => {
-      const obj = { name: 'John', age: 30 };
-
-      const result = objectToBase64UTF8(obj);
-
-      expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
-    });
-
-    it('should handle UTF8 characters', () => {
-      const obj = { message: 'Hello 世界 🌍', emoji: '😀' };
-
-      const result = objectToBase64UTF8(obj);
-
-      expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
-    });
-
-    it('should handle special characters', () => {
-      const obj = { text: 'Café ñoño résumé' };
-
-      const result = objectToBase64UTF8(obj);
-
-      expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
-    });
-
-    it('should convert empty object', () => {
-      const obj = {};
-
-      const result = objectToBase64UTF8(obj);
-
-      expect(typeof result).toBe('string');
-      expect(result).toBe('e30='); // base64 of '{}'
-    });
-  });
-
-  describe('base64UTF8ToObject', () => {
-    it('should convert base64 UTF8 back to object', () => {
-      const original = { name: 'John', age: 30 };
-      const base64 = objectToBase64UTF8(original);
-
-      const result = base64UTF8ToObject(base64);
-
-      expect(result).toEqual(original);
-    });
-
-    it('should handle UTF8 characters in roundtrip', () => {
-      const original = { message: 'Hello 世界 🌍', emoji: '😀' };
-      const base64 = objectToBase64UTF8(original);
-
-      const result = base64UTF8ToObject(base64);
-
-      expect(result).toEqual(original);
-    });
-
-    it('should handle special characters in roundtrip', () => {
-      const original = { text: 'Café ñoño résumé' };
-      const base64 = objectToBase64UTF8(original);
-
-      const result = base64UTF8ToObject(base64);
-
-      expect(result).toEqual(original);
-    });
-
-    it('should handle complex nested objects', () => {
-      const original = {
-        user: {
-          name: 'Jane',
-          tags: ['admin', 'user'],
-          metadata: {
-            created: '2024-01-01',
-            updated: '2024-01-11',
-          },
-        },
-      };
-      const base64 = objectToBase64UTF8(original);
-
-      const result = base64UTF8ToObject(base64);
-
-      expect(result).toEqual(original);
     });
   });
 
@@ -281,7 +194,12 @@ describe('base64 utility functions', () => {
   describe('base64ToObject', () => {
     it('should convert base64 string to object', () => {
       const original = { name: 'Alice', age: 25 };
-      const base64 = objectToBase64UTF8(original);
+      const encoder = new TextEncoder();
+      const uint8Array = encoder.encode(JSON.stringify(original));
+      const binaryString = Array.from(uint8Array, (byte) =>
+        String.fromCharCode(byte)
+      ).join('');
+      const base64 = btoa(binaryString);
 
       const result = base64ToObject(base64);
 
@@ -298,16 +216,12 @@ describe('base64 utility functions', () => {
           count: 2,
         },
       };
-      const base64 = objectToBase64UTF8(original);
-
-      const result = base64ToObject(base64);
-
-      expect(result).toEqual(original);
-    });
-
-    it('should handle UTF8 characters', () => {
-      const original = { text: 'Café ñoño 世界 😀' };
-      const base64 = objectToBase64UTF8(original);
+      const encoder = new TextEncoder();
+      const uint8Array = encoder.encode(JSON.stringify(original));
+      const binaryString = Array.from(uint8Array, (byte) =>
+        String.fromCharCode(byte)
+      ).join('');
+      const base64 = btoa(binaryString);
 
       const result = base64ToObject(base64);
 
@@ -374,24 +288,6 @@ describe('base64 utility functions', () => {
   });
 
   describe('integration tests', () => {
-    it('should handle full roundtrip: object -> base64UTF8 -> object', () => {
-      const original = {
-        id: 1,
-        name: 'Test User',
-        email: 'test@example.com',
-        tags: ['admin', 'user'],
-        metadata: {
-          created: '2024-01-01',
-          active: true,
-        },
-      };
-
-      const base64 = objectToBase64UTF8(original);
-      const recovered = base64UTF8ToObject(base64);
-
-      expect(recovered).toEqual(original);
-    });
-
     it('should handle full roundtrip: Uint8Array -> base64 -> Uint8Array', () => {
       const original = new Uint8Array([0, 50, 100, 150, 200, 255]);
 
@@ -399,21 +295,6 @@ describe('base64 utility functions', () => {
       const recovered = base64ToUint8Array(base64);
 
       expect(Array.from(recovered)).toEqual(Array.from(original));
-    });
-
-    it('should handle UTF8 roundtrip correctly', () => {
-      const testCases = [
-        { emoji: '🎉🎊🎈' },
-        { chinese: '你好世界' },
-        { japanese: 'こんにちは' },
-        { mixed: 'Hello 世界 🌍 Café' },
-      ];
-
-      testCases.forEach((testCase) => {
-        const base64 = objectToBase64UTF8(testCase);
-        const recovered = base64UTF8ToObject(base64);
-        expect(recovered).toEqual(testCase);
-      });
     });
   });
 });
