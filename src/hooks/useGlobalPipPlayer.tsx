@@ -221,7 +221,7 @@ export const GlobalPipPlayer = () => {
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     hideTimeoutRef.current = setTimeout(() => {
       setShowControls(false);
-    }, 3000);
+    }, 3000) as unknown as number;
   };
 
   useEffect(() => {

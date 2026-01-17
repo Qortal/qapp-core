@@ -1,6 +1,6 @@
 {
   "name": "qapp-core",
-  "version": "1.0.74",
+  "version": "1.0.75",
   "description": "Qortal's core React library with global state, UI components, and utilities",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -25,10 +25,14 @@
     "format": "prettier --write .",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "prepare": "npm run build",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.2",
+    "aes-js": "^3.1.2",
     "buffer": "^6.0.3",
     "compressorjs": "^1.2.1",
     "crypto-js": "^4.2.0",
@@ -44,7 +48,6 @@
     "react-idle-timer": "^5.7.2",
     "react-intersection-observer": "^9.16.0",
     "react-rnd": "^10.5.2",
-    "aes-js": "^3.1.2",
     "short-unique-id": "^5.2.0",
     "srt-webvtt": "^2.0.0",
     "ts-key-enum": "^3.0.13",
@@ -65,17 +68,23 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.0.1",
     "@mui/material": "^7.0.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
     "@types/crypto-js": "^4.2.2",
     "@types/react": "^19.0.10",
+    "@vitest/ui": "^4.0.16",
     "cpy-cli": "^5.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "happy-dom": "^20.1.0",
+    "jsdom": "^27.4.0",
     "prettier": "^3.6.2",
     "react": "^19.0.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
     "tsup": "^8.4.0",
-    "typescript": "^5.2.0"
+    "typescript": "^5.2.0",
+    "vitest": "^4.0.16"
   },
   "repository": {
     "type": "git",
