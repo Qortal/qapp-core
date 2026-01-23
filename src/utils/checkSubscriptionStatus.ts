@@ -342,6 +342,7 @@ export async function checkSubscriptionStatus(
       );
       return {
         ...defaultResult,
+        status: 'not-subscribed',
         hasSubscriptionEnabled: true, // Subscription exists, user just isn't a member
       };
     }
