@@ -322,6 +322,8 @@ export const useResourceStatus = ({
       localChunkCount: status?.localChunkCount || 0,
       totalChunkCount: status?.totalChunkCount || 0,
       percentLoaded: status?.percentLoaded || 0,
+      numberOfPeers: status?.numberOfPeers,
+      estimatedTimeRemaining: status?.estimatedTimeRemaining,
       isReady: status?.status === 'READY',
       resourceUrl,
       downloadResource: handledownloadResource,
@@ -331,6 +333,8 @@ export const useResourceStatus = ({
       status?.localChunkCount,
       status?.totalChunkCount,
       status?.percentLoaded,
+      status?.numberOfPeers,
+      status?.estimatedTimeRemaining,
       resourceUrl,
       downloadResource,
     ]

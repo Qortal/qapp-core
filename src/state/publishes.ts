@@ -34,6 +34,9 @@ export interface ResourceStatus {
   percentLoaded: number;
   path?: string;
   filename?: string;
+  numberOfPeers?: number;
+  estimatedTimeRemaining?: number; // in seconds
+  downloadSpeed?: number; // in percentage per second
 }
 
 interface GlobalDownloadEntry {
@@ -199,10 +202,56 @@ export const usePublishStore = create<PublishState>((set, get) => ({
 
     let isCalling = false;
     let percentLoaded = 0;
-    let timer = 29;
+    let timer = 14;
     let tries = 0;
     let calledFirstTime = false;
     let isPaused = false;
+    let calledBuildOnDownloaded = false; // Track if we've called build on DOWNLOADED status
+    
+    // Track progress for ETA calculation
+    let progressHistory: Array<{ percent: number; timestamp: number }> = [];
+    let lastProgressUpdate = Date.now();
+
+    const calculateETA = (currentPercent: number) => {
+      const now = Date.now();
+      
+      // Add current progress to history
+      progressHistory.push({ percent: currentPercent, timestamp: now });
+      
+      // Keep only last 6 data points (30 seconds of data at 5-second intervals)
+      if (progressHistory.length > 6) {
+        progressHistory = progressHistory.slice(-6);
+      }
+      
+      // Need at least 2 data points to calculate speed
+      if (progressHistory.length < 2) {
+        return undefined;
+      }
+      
+      // Calculate average speed from history
+      const firstPoint = progressHistory[0];
+      const lastPoint = progressHistory[progressHistory.length - 1];
+      const percentDiff = lastPoint.percent - firstPoint.percent;
+      const timeDiff = (lastPoint.timestamp - firstPoint.timestamp) / 1000; // in seconds
+      
+      // If no progress or negative progress, return undefined
+      if (percentDiff <= 0 || timeDiff <= 0) {
+        return undefined;
+      }
+      
+      const speed = percentDiff / timeDiff; // percent per second
+      const remainingPercent = 100 - currentPercent;
+      
+      if (speed <= 0.001) {
+        // Very slow or stalled
+        return undefined;
+      }
+      
+      const estimatedSeconds = remainingPercent / speed;
+      
+      // Cap at reasonable maximum (1 hour)
+      return Math.min(estimatedSeconds, 3600);
+    };
     const callFunction = async (build?: boolean, isRecalling?: boolean) => {
       try {
         if ((isCalling || isPaused) && !build) return;
@@ -246,6 +295,29 @@ export const usePublishStore = create<PublishState>((set, get) => ({
           // res = await resCall.json();
           setResourceStatus({ service, name, identifier }, { ...res });
 
+          // Fetch number of peers non-blocking
+          fetch(
+            `/arbitrary/resource/request/peers/${service}/${name}/${identifier}`
+          )
+            .then((response) => response.json())
+            .then((peersData) => {
+              const numberOfPeers = peersData?.uniquePeerCount ?? 0;
+              const currentStatus = getResourceStatus(resourceId);
+              if (currentStatus) {
+                setResourceStatus(
+                  { service, name, identifier },
+                  {
+                    ...currentStatus,
+                    numberOfPeers,
+                  }
+                );
+              }
+            })
+            .catch((error) => {
+              // Silently fail - don't block on peers fetch
+              console.debug('Failed to fetch peers count:', error);
+            });
+
           if (tries > retryAttempts) {
             if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
             if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
@@ -283,17 +355,20 @@ export const usePublishStore = create<PublishState>((set, get) => ({
 
         if (res.localChunkCount) {
           if (res.percentLoaded) {
+            // Calculate ETA
+            const eta = calculateETA(res.percentLoaded);
+            
             if (
               res.percentLoaded === percentLoaded &&
               res.percentLoaded !== 100
             ) {
               timer -= 5;
             } else {
-              timer = 29;
+              timer = 14;
             }
 
             if (timer < 0) {
-              timer = 29;
+              timer = 14;
               isCalling = true;
               isPaused = true;
               tries += 1;
@@ -302,20 +377,30 @@ export const usePublishStore = create<PublishState>((set, get) => ({
                 {
                   ...res,
                   status: 'REFETCHING',
+                  estimatedTimeRemaining: eta,
                 }
               );
 
               timeoutMap[resourceId] = setTimeout(() => {
                 callFunction(true, true);
-              }, 10000);
+              }, 200);
 
               return;
             }
 
             percentLoaded = res.percentLoaded;
+            
+            // Update status with ETA
+            setResourceStatus(
+              { service, name, identifier },
+              {
+                ...res,
+                estimatedTimeRemaining: eta,
+              }
+            );
+          } else {
+            setResourceStatus({ service, name, identifier }, { ...res });
           }
-
-          setResourceStatus({ service, name, identifier }, { ...res });
         }
 
         if (res?.status === 'READY') {
@@ -329,13 +414,19 @@ export const usePublishStore = create<PublishState>((set, get) => ({
         }
 
         if (res?.status === 'DOWNLOADED') {
-          res = await qortalRequest({
-            action: 'GET_QDN_RESOURCE_STATUS',
-            name: name,
-            service: service,
-            identifier: identifier,
-            build: true,
-          });
+          // Only call build once for DOWNLOADED status
+          if (!calledBuildOnDownloaded) {
+            calledBuildOnDownloaded = true;
+            res = await qortalRequest({
+              action: 'GET_QDN_RESOURCE_STATUS',
+              name: name,
+              service: service,
+              identifier: identifier,
+              build: true,
+            });
+            // Update status with the build result
+            setResourceStatus({ service, name, identifier }, { ...res });
+          }
         }
       } catch (error) {
         console.error('Error during resource fetch:', error);

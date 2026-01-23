@@ -833,6 +833,8 @@ export const VideoPlayer = ({
     setProgressAbsolute,
     status,
     percentLoaded,
+    numberOfPeers,
+    estimatedTimeRemaining,
     showControlsFullScreen,
     onSelectPlaybackRate,
     seekTo,
@@ -1679,6 +1681,8 @@ export const VideoPlayer = ({
           isReady={isReady}
           status={status}
           percentLoaded={percentLoaded}
+          numberOfPeers={numberOfPeers}
+          estimatedTimeRemaining={estimatedTimeRemaining}
           isLoading={isLoading}
           startPlay={startPlay}
           downloadResource={downloadResource}
