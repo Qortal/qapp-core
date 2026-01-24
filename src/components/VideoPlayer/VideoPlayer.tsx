@@ -1635,8 +1635,7 @@ export const VideoPlayer = ({
       player.off('ratechange', handleRateChange);
     };
   }, [isPlayerInitialized]);
-  const hideTimeoutRef = useRef<number | null>(null);
-
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resetHideTimeout = () => {
     setShowControlsMobile(true);
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);

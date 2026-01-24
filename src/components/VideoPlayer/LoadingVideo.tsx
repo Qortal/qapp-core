@@ -74,7 +74,7 @@ export const LoadingVideo = ({
       return 'Reconnecting to peers...';
     }
     if (status === 'SEARCHING') {
-      return 'Searching for peers...';
+      return '';
     }
     if (status === 'DOWNLOADING') {
       return 'Downloading from network';
@@ -95,21 +95,19 @@ export const LoadingVideo = ({
     <>
       {isLoading && status !== 'INITIAL' && (
         <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          zIndex={500}
-          bgcolor={alpha('#000000', !startPlay ? 0 : 0.95)}
           sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 500,
+            bgcolor: alpha('#000000', !startPlay ? 0 : 0.95),
             flexDirection: 'column',
             gap: 2,
-            height: '100%',
             padding: 3,
           }}
         >

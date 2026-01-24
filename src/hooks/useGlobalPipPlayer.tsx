@@ -32,7 +32,7 @@ export const GlobalPipPlayer = () => {
   const context = useContext(GlobalContext);
   const navigate = useNavigate();
   const videoNode = useRef<HTMLVideoElement>(null);
-  const hideTimeoutRef = useRef<number | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { setProgress } = useProgressStore();
 
   const updateProgress = useCallback(() => {

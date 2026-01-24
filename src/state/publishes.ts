@@ -42,6 +42,7 @@ export interface ResourceStatus {
 interface GlobalDownloadEntry {
   interval: ReturnType<typeof setInterval> | null;
   timeout: ReturnType<typeof setTimeout> | null;
+  retryTimeout: ReturnType<typeof setTimeout> | null;
 }
 
 interface ResourceStatusEntry {
@@ -196,7 +197,9 @@ export const usePublishStore = create<PublishState>((set, get) => ({
 
     const intervalMap: Record<string, any> = {};
     const timeoutMap: Record<string, any> = {};
+    const retryTimeoutMap: Record<string, any> = {};
     const statusMap: Record<string, ResourceStatus | null> = {};
+    const calledBuildMap: Record<string, boolean> = {};
 
     statusMap[resourceId] = getResourceStatus(resourceId);
 
@@ -206,7 +209,6 @@ export const usePublishStore = create<PublishState>((set, get) => ({
     let tries = 0;
     let calledFirstTime = false;
     let isPaused = false;
-    let calledBuildOnDownloaded = false; // Track if we've called build on DOWNLOADED status
     
     // Track progress for ETA calculation
     let progressHistory: Array<{ percent: number; timestamp: number }> = [];
@@ -261,8 +263,10 @@ export const usePublishStore = create<PublishState>((set, get) => ({
         if (statusMap[resourceId]?.status === 'READY') {
           if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
           if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
+          if (retryTimeoutMap[resourceId]) clearTimeout(retryTimeoutMap[resourceId]);
           intervalMap[resourceId] = null;
           timeoutMap[resourceId] = null;
+          retryTimeoutMap[resourceId] = null;
           stopGlobalDownload(resourceId);
           return;
         }
@@ -321,8 +325,10 @@ export const usePublishStore = create<PublishState>((set, get) => ({
           if (tries > retryAttempts) {
             if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
             if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
+            if (retryTimeoutMap[resourceId]) clearTimeout(retryTimeoutMap[resourceId]);
             intervalMap[resourceId] = null;
             timeoutMap[resourceId] = null;
+            retryTimeoutMap[resourceId] = null;
             stopGlobalDownload(resourceId);
             setResourceStatus(
               { service, name, identifier },
@@ -406,8 +412,10 @@ export const usePublishStore = create<PublishState>((set, get) => ({
         if (res?.status === 'READY') {
           if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
           if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
+          if (retryTimeoutMap[resourceId]) clearTimeout(retryTimeoutMap[resourceId]);
           intervalMap[resourceId] = null;
           timeoutMap[resourceId] = null;
+          retryTimeoutMap[resourceId] = null;
           stopGlobalDownload(resourceId);
           setResourceStatus({ service, name, identifier }, { ...res });
           return;
@@ -415,8 +423,8 @@ export const usePublishStore = create<PublishState>((set, get) => ({
 
         if (res?.status === 'DOWNLOADED') {
           // Only call build once for DOWNLOADED status
-          if (!calledBuildOnDownloaded) {
-            calledBuildOnDownloaded = true;
+          if (!calledBuildMap[resourceId]) {
+            calledBuildMap[resourceId] = true;
             res = await qortalRequest({
               action: 'GET_QDN_RESOURCE_STATUS',
               name: name,
@@ -426,6 +434,65 @@ export const usePublishStore = create<PublishState>((set, get) => ({
             });
             // Update status with the build result
             setResourceStatus({ service, name, identifier }, { ...res });
+
+            if(res?.status === 'READY') {
+              // cleanup
+              if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
+              if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
+              if (retryTimeoutMap[resourceId]) clearTimeout(retryTimeoutMap[resourceId]);
+              intervalMap[resourceId] = null;
+              timeoutMap[resourceId] = null;
+              retryTimeoutMap[resourceId] = null;
+              stopGlobalDownload(resourceId);
+              setResourceStatus({ service, name, identifier }, { ...res });
+              return;
+            }
+
+            if (res?.status !== 'READY') {
+              retryTimeoutMap[resourceId] = setTimeout(async () => {
+                try {
+                  const isReadyResponseFallback = await qortalRequest({
+                    action: 'GET_QDN_RESOURCE_STATUS',
+                    name: name,
+                    service: service,
+                    identifier: identifier,
+                  });
+                  if(isReadyResponseFallback?.status === 'READY') {
+                    if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
+                    if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
+                    if (retryTimeoutMap[resourceId]) clearTimeout(retryTimeoutMap[resourceId]);
+                    intervalMap[resourceId] = null;
+                    timeoutMap[resourceId] = null;
+                    retryTimeoutMap[resourceId] = null;
+                    stopGlobalDownload(resourceId);
+                    setResourceStatus({ service, name, identifier }, { ...isReadyResponseFallback });
+                    return;
+                  }
+                  const retryRes = await qortalRequest({
+                    action: 'GET_QDN_RESOURCE_STATUS',
+                    name: name,
+                    service: service,
+                    identifier: identifier,
+                    build: true,
+                  });
+                  
+                  if(retryRes?.status === 'READY') {  
+                    if (intervalMap[resourceId]) clearInterval(intervalMap[resourceId]);
+                    if (timeoutMap[resourceId]) clearTimeout(timeoutMap[resourceId]);
+                    if (retryTimeoutMap[resourceId]) clearTimeout(retryTimeoutMap[resourceId]);
+                    intervalMap[resourceId] = null;
+                    timeoutMap[resourceId] = null;
+                    retryTimeoutMap[resourceId] = null;
+                    stopGlobalDownload(resourceId);
+                    setResourceStatus({ service, name, identifier }, { ...retryRes });
+                    return; 
+                  };
+                
+                } catch (error) {
+                  console.error('Error during retry build:', error);
+                }
+              }, 7000);
+            }
           }
         }
       } catch (error) {
@@ -447,6 +514,7 @@ export const usePublishStore = create<PublishState>((set, get) => ({
         [resourceId]: {
           interval: intervalMap[resourceId],
           timeout: timeoutMap[resourceId],
+          retryTimeout: retryTimeoutMap[resourceId],
         },
       },
     }));
@@ -457,6 +525,7 @@ export const usePublishStore = create<PublishState>((set, get) => ({
     if (entry) {
       if (entry.interval !== null) clearInterval(entry.interval);
       if (entry.timeout !== null) clearTimeout(entry.timeout);
+      if (entry.retryTimeout !== null) clearTimeout(entry.retryTimeout);
       set((state) => {
         const updated = { ...state.globalDownloads };
         delete updated[resourceId];
