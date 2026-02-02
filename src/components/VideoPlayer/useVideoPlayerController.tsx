@@ -51,6 +51,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     totalChunkCount,
     percentLoaded,
     numberOfPeers,
+    peers,
     estimatedTimeRemaining,
     downloadResource,
   } = useResourceStatus({
@@ -330,6 +331,7 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     status,
     percentLoaded,
     numberOfPeers,
+    peers,
     estimatedTimeRemaining,
     showControlsFullScreen,
     onSelectPlaybackRate: updatePlaybackRate,

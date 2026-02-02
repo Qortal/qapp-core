@@ -91,6 +91,18 @@ import {
   UpdateNameQortalRequest,
   VoteOnPollQortalRequest,
   whichUIQortalRequest,
+  ChromecastInitializeQortalRequest,
+  ChromecastIsAvailableQortalRequest,
+  ChromecastIsConnectedQortalRequest,
+  ChromecastConnectQortalRequest,
+  ChromecastDisconnectQortalRequest,
+  ChromecastCastVideoQortalRequest,
+  ChromecastPlayQortalRequest,
+  ChromecastPauseQortalRequest,
+  ChromecastStopQortalRequest,
+  ChromecastSeekQortalRequest,
+  ChromecastSetVolumeQortalRequest,
+  ChromecastGetPlaybackStateQortalRequest,
 } from './types/qortalRequests/interfaces';
 
 declare global {
@@ -186,7 +198,19 @@ declare global {
     | unlockTabQortalRequest
     | lockTabQortalRequest
     | reencryptGroupKeysQortalRequest
-    | sessionPermissionsQortalRequest;
+    | sessionPermissionsQortalRequest
+    | ChromecastInitializeQortalRequest
+    | ChromecastIsAvailableQortalRequest
+    | ChromecastIsConnectedQortalRequest
+    | ChromecastConnectQortalRequest
+    | ChromecastDisconnectQortalRequest
+    | ChromecastCastVideoQortalRequest
+    | ChromecastPlayQortalRequest
+    | ChromecastPauseQortalRequest
+    | ChromecastStopQortalRequest
+    | ChromecastSeekQortalRequest
+    | ChromecastSetVolumeQortalRequest
+    | ChromecastGetPlaybackStateQortalRequest;
 
   function qortalRequest(options: QortalRequestOptions): Promise<any>;
 

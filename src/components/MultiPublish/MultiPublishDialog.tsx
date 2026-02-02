@@ -169,7 +169,7 @@ export const MultiPublishDialogComponent = () => {
         processed,
       } = data;
 
-      const key = `${publishLocation?.service}-${publishLocation?.name}-${publishLocation?.identifier}`;
+      const key = `${publishLocation?.service}-${decodeURIComponent(publishLocation?.name)}-${decodeURIComponent(publishLocation?.identifier)}`;
 
       const update: any = {
         publishLocation,

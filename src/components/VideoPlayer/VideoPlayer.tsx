@@ -38,6 +38,8 @@ import { MobileControls } from './MobileControls';
 import { useLocation } from 'react-router-dom';
 // @ts-ignore - aes-js doesn't have type definitions
 import * as aesjs from 'aes-js';
+import { useChromecast } from '../../hooks/useChromecast';
+import { ChromecastControls } from './ChromecastControls';
 import {
   setEncryptionConfig,
   removeEncryptionConfig,
@@ -812,6 +814,10 @@ export const VideoPlayer = ({
   const location = useLocation();
   const [encryptedVideoId, setEncryptedVideoId] = useState<string | null>(null);
   const pendingPlayRef = useRef(false); // Track if user clicked play during setup
+  
+  // Chromecast integration
+  const chromecast = useChromecast();
+  const [isCasting, setIsCasting] = useState(false);
 
   const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false);
   const isVideoPlayerSmall = width < 600 || isTouchDevice;
@@ -834,6 +840,7 @@ export const VideoPlayer = ({
     status,
     percentLoaded,
     numberOfPeers,
+    peers,
     estimatedTimeRemaining,
     showControlsFullScreen,
     onSelectPlaybackRate,
@@ -1665,6 +1672,77 @@ export const VideoPlayer = ({
     togglePlay();
   }, [isVideoPlayerSmall, togglePlay]);
 
+  // Chromecast handlers
+  const handleChromecastConnect = useCallback(async () => {
+    try {
+     if (resourceUrl && qortalVideoResource) {
+ 
+       const connected = await chromecast.connect();
+       if(!connected) return;
+       // Automatically cast the current video
+       const videoInfo = {
+         url: resourceUrl,
+         title: qortalVideoResource.identifier || 'Video',
+         subtitle: `By ${qortalVideoResource.name}`,
+         contentType: 'video/mp4',
+       };
+       
+       const success = await chromecast.castVideo(videoInfo);
+       console.log('success', success);
+       if (success) {
+         setIsCasting(true);
+         // Pause local playback
+         if (playerRef.current) {
+           playerRef.current.pause();
+         }
+       }
+     }
+    } catch (error) {
+     console.error('Failed to connect to Chromecast:', error);
+    }
+     
+   }, [chromecast, resourceUrl, qortalVideoResource, playerRef]);
+  const handleChromecastDisconnect = useCallback(async () => {
+    await chromecast.disconnect();
+    setIsCasting(false);
+  }, [chromecast]);
+
+  const handleChromecastPlay = useCallback(async () => {
+    await chromecast.play();
+  }, [chromecast]);
+
+  const handleChromecastPause = useCallback(async () => {
+    await chromecast.pause();
+  }, [chromecast]);
+
+  const handleChromecastStop = useCallback(async () => {
+    await chromecast.stop();
+    setIsCasting(false);
+  }, [chromecast]);
+
+  const handleChromecastSeek = useCallback(async (position: number) => {
+    await chromecast.seek(position);
+  }, [chromecast]);
+
+  const handleChromecastSkipForward = useCallback(async () => {
+    await chromecast.skipForward(10);
+  }, [chromecast]);
+
+  const handleChromecastSkipBackward = useCallback(async () => {
+    await chromecast.skipBackward(10);
+  }, [chromecast]);
+
+  const handleChromecastVolumeChange = useCallback(async (volume: number) => {
+    await chromecast.setVolume(volume);
+  }, [chromecast]);
+
+  // Update isCasting state when connection changes
+  useEffect(() => {
+    if (!chromecast.state.isConnected && isCasting) {
+      setIsCasting(false);
+    }
+  }, [chromecast.state.isConnected, isCasting]);
+
   return (
     <>
       <VideoContainer
@@ -1675,12 +1753,25 @@ export const VideoPlayer = ({
         ref={containerRef}
         isVideoPlayerSmall={isVideoPlayerSmall}
       >
+        {/* Chromecast Controls - Only show on mobile Android when video is ready */}
+        {chromecast.isMobile &&  (
+          <ChromecastControls
+            url={`/arbitrary/${qortalVideoResource.service}/${qortalVideoResource.name}/${qortalVideoResource.identifier}`}
+            title={filename || qortalVideoResource.identifier || 'Video'}
+            qortalRequest={qortalRequest}
+            status={status}
+            service={qortalVideoResource.service}
+            name={qortalVideoResource.name}
+            identifier={qortalVideoResource.identifier}
+          />
+        )}
         <LoadingVideo
           togglePlay={togglePlay}
           isReady={isReady}
           status={status}
           percentLoaded={percentLoaded}
           numberOfPeers={numberOfPeers}
+          peers={peers}
           estimatedTimeRemaining={estimatedTimeRemaining}
           isLoading={isLoading}
           startPlay={startPlay}

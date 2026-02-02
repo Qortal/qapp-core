@@ -7,15 +7,19 @@ import {
   Typography,
   LinearProgress,
   Chip,
+  Tooltip,
 } from '@mui/material';
 
 import { PlayArrow, People, Download, Schedule } from '@mui/icons-material';
-import { Status } from '../../state/publishes';
+import { Status, PeerDetail } from '../../state/publishes';
+import { useState } from 'react';
+import { PeerDetailsModal } from './PeerDetailsModal';
 
 interface LoadingVideoProps {
   status: Status | null;
   percentLoaded: number;
   numberOfPeers?: number;
+  peers?: PeerDetail[];
   estimatedTimeRemaining?: number;
   isReady: boolean;
   isLoading: boolean;
@@ -28,6 +32,7 @@ export const LoadingVideo = ({
   status,
   percentLoaded,
   numberOfPeers,
+  peers,
   estimatedTimeRemaining,
   isReady,
   isLoading,
@@ -36,6 +41,7 @@ export const LoadingVideo = ({
   downloadResource,
   isStatusWrong,
 }: LoadingVideoProps) => {
+  const [peerModalOpen, setPeerModalOpen] = useState(false);
   const getDownloadProgress = (percentLoaded: number) => {
     const progress = percentLoaded;
     return Number.isNaN(progress) ? 0 : progress;
@@ -76,7 +82,7 @@ export const LoadingVideo = ({
     if (status === 'SEARCHING') {
       return '';
     }
-    if (status === 'DOWNLOADING') {
+    if (status === 'DOWNLOADING' || status === 'MISSING_DATA') {
       return 'Downloading from network';
     }
     return 'Loading...';
@@ -241,25 +247,47 @@ export const LoadingVideo = ({
                   </Box>
 
                   {/* Peer count chip */}
-                  {numberOfPeers !== undefined && numberOfPeers > 0 && (
-                    <Chip
-                      icon={
-                        <People sx={{ fontSize: 16, color: '#81c784 !important' }} />
-                      }
-                      label={`${numberOfPeers} peer${numberOfPeers !== 1 ? 's' : ''}`}
-                      size="small"
-                      sx={{
-                        height: 24,
-                        backgroundColor: alpha('#4caf50', 0.2),
-                        color: '#81c784',
-                        fontWeight: 600,
-                        fontSize: '12px',
-                        border: `1px solid ${alpha('#4caf50', 0.3)}`,
-                        '& .MuiChip-label': {
-                          padding: '0 8px',
-                        },
-                      }}
-                    />
+                  {numberOfPeers !== undefined && 
+                   status !== 'BUILDING' && (
+                    <Tooltip title="Click to view peer details" arrow>
+                      <Chip
+                        icon={
+                          <People sx={{ 
+                            fontSize: 16, 
+                            color: numberOfPeers === 0 ? '#ff9800 !important' : '#81c784 !important' 
+                          }} />
+                        }
+                        label={`${numberOfPeers} pending peer${numberOfPeers !== 1 ? 's' : ''}`}
+                        size="small"
+                        onClick={() => setPeerModalOpen(true)}
+                        sx={{
+                          height: 24,
+                          backgroundColor: numberOfPeers === 0 
+                            ? alpha('#ff9800', 0.2) 
+                            : alpha('#4caf50', 0.2),
+                          color: numberOfPeers === 0 ? '#ffb74d' : '#81c784',
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          border: numberOfPeers === 0
+                            ? `1px solid ${alpha('#ff9800', 0.3)}`
+                            : `1px solid ${alpha('#4caf50', 0.3)}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          '& .MuiChip-label': {
+                            padding: '0 8px',
+                          },
+                          '&:hover': {
+                            backgroundColor: numberOfPeers === 0
+                              ? alpha('#ff9800', 0.3)
+                              : alpha('#4caf50', 0.3),
+                            border: numberOfPeers === 0
+                              ? `1px solid ${alpha('#ff9800', 0.5)}`
+                              : `1px solid ${alpha('#4caf50', 0.5)}`,
+                            transform: 'scale(1.05)',
+                          },
+                        }}
+                      />
+                    </Tooltip>
                   )}
                 </Box>
               </Box>
@@ -268,22 +296,43 @@ export const LoadingVideo = ({
             {/* Peer count for non-downloading states */}
             {!showProgress &&
               numberOfPeers !== undefined &&
-              numberOfPeers > 0 &&
               status !== 'NOT_PUBLISHED' &&
-              status !== 'FAILED_TO_DOWNLOAD' && (
-                <Chip
-                  icon={
-                    <People sx={{ fontSize: 18, color: '#81c784 !important' }} />
-                  }
-                  label={`${numberOfPeers} peer${numberOfPeers !== 1 ? 's' : ''} available`}
-                  sx={{
-                    backgroundColor: alpha('#4caf50', 0.2),
-                    color: '#81c784',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    border: `1px solid ${alpha('#4caf50', 0.3)}`,
-                  }}
-                />
+              status !== 'FAILED_TO_DOWNLOAD' &&
+              status !== 'DOWNLOADED' && (
+                <Tooltip title="Click to view peer details" arrow>
+                  <Chip
+                    icon={
+                      <People sx={{ 
+                        fontSize: 18, 
+                        color: numberOfPeers === 0 ? '#ff9800 !important' : '#81c784 !important' 
+                      }} />
+                    }
+                    label={`${numberOfPeers} pending peer${numberOfPeers !== 1 ? 's' : ''}`}
+                    onClick={() => setPeerModalOpen(true)}
+                    sx={{
+                      backgroundColor: numberOfPeers === 0 
+                        ? alpha('#ff9800', 0.2) 
+                        : alpha('#4caf50', 0.2),
+                      color: numberOfPeers === 0 ? '#ffb74d' : '#81c784',
+                      fontWeight: 600,
+                      fontSize: '13px',
+                      border: numberOfPeers === 0
+                        ? `1px solid ${alpha('#ff9800', 0.3)}`
+                        : `1px solid ${alpha('#4caf50', 0.3)}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        backgroundColor: numberOfPeers === 0
+                          ? alpha('#ff9800', 0.3)
+                          : alpha('#4caf50', 0.3),
+                        border: numberOfPeers === 0
+                          ? `1px solid ${alpha('#ff9800', 0.5)}`
+                          : `1px solid ${alpha('#4caf50', 0.5)}`,
+                        transform: 'scale(1.05)',
+                      },
+                    }}
+                  />
+                </Tooltip>
               )}
 
             {/* Retry button */}
@@ -341,6 +390,14 @@ export const LoadingVideo = ({
           </IconButton>
         </>
       )}
+
+      {/* Peer Details Modal */}
+      <PeerDetailsModal
+        open={peerModalOpen}
+        onClose={() => setPeerModalOpen(false)}
+        peers={peers || []}
+        percentLoaded={percentLoaded}
+      />
     </>
   );
 };
