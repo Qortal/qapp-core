@@ -38,7 +38,7 @@ export const ChromecastControls: React.FC<ChromecastControlsProps> = ({
           name,
           identifier,
         });
-        
+
         if (result?.status) {
           setLocalStatus(result.status);
         }
@@ -51,34 +51,38 @@ export const ChromecastControls: React.FC<ChromecastControlsProps> = ({
   }, [service, name, identifier, qortalRequest]);
 
   const castMyVideo = async () => {
-    const result = await qortalRequest({
-      action: 'CHROMECAST_CAST',
-      url: url,
-      title: title,
-    });
+    try {
+      const result = await qortalRequest({
+        action: 'CHROMECAST_CAST',
+        url: url,
+        title: title,
+      });
 
-    if (result.result?.success) {
-      // ✅ Success!
-      console.log(`Now casting to ${result.result.deviceName}`);
-      // Mini-player appears automatically
-    } else if (result.error) {
-      // ❌ Failed
-      console.error('Cast failed:', result.error);
+      if (result.result?.success) {
+        //  Success!
+        console.log(`Now casting to ${result.result.deviceName}`);
+        // Mini-player appears automatically
+      } else if (result.error) {
+        //  Failed
+        console.error('Cast failed:', result.error);
 
-      // Handle specific errors:
-      if (result.error.includes('No device selected')) {
-        alert('Please select a Chromecast device');
-      } else if (result.error.includes('Failed to cast')) {
-        alert('Could not load video - check URL and format');
-      } else {
-        alert('Chromecast error: ' + result.error);
+        // Handle specific errors:
+        if (result.error.includes('No device selected')) {
+          alert('Please select a Chromecast device');
+        } else if (result.error.includes('Failed to cast')) {
+          alert('Could not load video - check URL and format');
+        } else {
+          alert('Chromecast error: ' + result.error);
+        }
       }
+    } catch (error) {
+      console.error('Failed to cast video:', error);
     }
   };
 
   // Show the cast button if either local status or parent status is READY
   const isReady = localStatus === 'READY' || status === 'READY';
-  
+
   if (!isReady) {
     return null;
   }

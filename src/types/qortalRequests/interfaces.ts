@@ -28,6 +28,11 @@ export interface GetCrosschainServerInfoQortalRequest extends BaseRequest {
   coin: ForeignCoin;
 }
 
+export interface StartCrosschainServerQortalRequest extends BaseRequest {
+  action: 'START_CROSSCHAIN_SERVER';
+  coin: ForeignCoin;
+}
+
 export interface GetTxActivitySummaryQortalRequest extends BaseRequest {
   action: 'GET_TX_ACTIVITY_SUMMARY';
   coin: ForeignBlockchain;
@@ -755,57 +760,11 @@ export interface sessionPermissionsQortalRequest extends BaseRequest {
 }
 
 // Chromecast Request Types
-export interface ChromecastInitializeQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_INITIALIZE';
-}
-
-export interface ChromecastIsAvailableQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_IS_AVAILABLE';
-}
-
-export interface ChromecastIsConnectedQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_IS_CONNECTED';
-}
-
-export interface ChromecastConnectQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_CONNECT';
-}
-
-export interface ChromecastDisconnectQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_DISCONNECT';
-}
-
-export interface ChromecastCastVideoQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_CAST_VIDEO';
+export interface ChromecastCastQortalRequest extends BaseRequest {
+  action: 'CHROMECAST_CAST';
   url: string;
   title?: string;
   subtitle?: string;
   imageUrl?: string;
   contentType?: string;
-}
-
-export interface ChromecastPlayQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_PLAY';
-}
-
-export interface ChromecastPauseQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_PAUSE';
-}
-
-export interface ChromecastStopQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_STOP';
-}
-
-export interface ChromecastSeekQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_SEEK';
-  position: number;
-}
-
-export interface ChromecastSetVolumeQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_SET_VOLUME';
-  volume: number;
-}
-
-export interface ChromecastGetPlaybackStateQortalRequest extends BaseRequest {
-  action: 'CHROMECAST_GET_PLAYBACK_STATE';
 }
