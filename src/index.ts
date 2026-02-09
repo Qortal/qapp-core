@@ -18,6 +18,8 @@ export { VideoPlayerParent as VideoPlayer } from './components/VideoPlayer/Video
 export { useListReturn } from './hooks/useListData';
 export { useAllResourceStatus } from './hooks/useAllResourceStatus';
 export { useQortBalance } from './hooks/useBalance';
+export { useCheckSubscriptionStatus } from './hooks/useSubscriptionCheck';
+export { checkGroupHasSubscription } from './utils/checkGroupHasSubscription';
 export { useAuth } from './hooks/useAuth';
 export { useBlockedNames } from './hooks/useBlockedNames';
 import './index.css';

@@ -32,6 +32,7 @@ import {
   GetAtQortalRequest,
   GetBalanceQortalRequest,
   GetCrosschainServerInfoQortalRequest,
+  StartCrosschainServerQortalRequest,
   GetDaySummaryQortalRequest,
   GetForeignFeeQortalRequest,
   GetHostedDataQortalRequest,
@@ -91,6 +92,7 @@ import {
   UpdateNameQortalRequest,
   VoteOnPollQortalRequest,
   whichUIQortalRequest,
+  ChromecastCastQortalRequest,
 } from './types/qortalRequests/interfaces';
 
 declare global {
@@ -128,6 +130,7 @@ declare global {
     | GetAtQortalRequest
     | GetBalanceQortalRequest
     | GetCrosschainServerInfoQortalRequest
+    | StartCrosschainServerQortalRequest
     | GetDaySummaryQortalRequest
     | GetForeignFeeQortalRequest
     | GetHostedDataQortalRequest
@@ -186,7 +189,8 @@ declare global {
     | unlockTabQortalRequest
     | lockTabQortalRequest
     | reencryptGroupKeysQortalRequest
-    | sessionPermissionsQortalRequest;
+    | sessionPermissionsQortalRequest
+    | ChromecastCastQortalRequest;
 
   function qortalRequest(options: QortalRequestOptions): Promise<any>;
 

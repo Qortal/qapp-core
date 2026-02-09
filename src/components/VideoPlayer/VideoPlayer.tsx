@@ -38,6 +38,8 @@ import { MobileControls } from './MobileControls';
 import { useLocation } from 'react-router-dom';
 // @ts-ignore - aes-js doesn't have type definitions
 import * as aesjs from 'aes-js';
+import { useChromecast } from '../../hooks/useChromecast';
+import { ChromecastControls } from './ChromecastControls';
 import {
   setEncryptionConfig,
   removeEncryptionConfig,
@@ -813,6 +815,9 @@ export const VideoPlayer = ({
   const [encryptedVideoId, setEncryptedVideoId] = useState<string | null>(null);
   const pendingPlayRef = useRef(false); // Track if user clicked play during setup
 
+  // Chromecast integration (only CHROMECAST_CAST is used, via ChromecastControls)
+  const chromecast = useChromecast();
+
   const [isOpenPlaybackMenu, setIsOpenPlaybackmenu] = useState(false);
   const isVideoPlayerSmall = width < 600 || isTouchDevice;
   const {
@@ -833,6 +838,9 @@ export const VideoPlayer = ({
     setProgressAbsolute,
     status,
     percentLoaded,
+    numberOfPeers,
+    peers,
+    estimatedTimeRemaining,
     showControlsFullScreen,
     onSelectPlaybackRate,
     seekTo,
@@ -1633,8 +1641,7 @@ export const VideoPlayer = ({
       player.off('ratechange', handleRateChange);
     };
   }, [isPlayerInitialized]);
-  const hideTimeoutRef = useRef<number | null>(null);
-
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resetHideTimeout = () => {
     setShowControlsMobile(true);
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
@@ -1674,11 +1681,26 @@ export const VideoPlayer = ({
         ref={containerRef}
         isVideoPlayerSmall={isVideoPlayerSmall}
       >
+        {/* Chromecast Controls - Only show on mobile Android when video is ready */}
+        {chromecast.isMobile && (
+          <ChromecastControls
+            url={`/arbitrary/${qortalVideoResource.service}/${qortalVideoResource.name}/${qortalVideoResource.identifier}`}
+            title={filename || qortalVideoResource.identifier || 'Video'}
+            qortalRequest={qortalRequest}
+            status={status}
+            service={qortalVideoResource.service}
+            name={qortalVideoResource.name}
+            identifier={qortalVideoResource.identifier}
+          />
+        )}
         <LoadingVideo
           togglePlay={togglePlay}
           isReady={isReady}
           status={status}
           percentLoaded={percentLoaded}
+          numberOfPeers={numberOfPeers}
+          peers={peers}
+          estimatedTimeRemaining={estimatedTimeRemaining}
           isLoading={isLoading}
           startPlay={startPlay}
           downloadResource={downloadResource}

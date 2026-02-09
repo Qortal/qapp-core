@@ -126,8 +126,13 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
           }
           res = await requestQueueProductPublishes.enqueue(
             (): Promise<string> => {
+              const baseUrl = `/arbitrary/${item?.service}/${encodeURIComponent(
+                item?.name
+              )}/${encodeURIComponent(item?.identifier)}`;
               return getArbitraryResource(
-                `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`,
+                returnType === 'BASE64'
+                  ? `${baseUrl}?encoding=base64`
+                  : baseUrl,
                 key
               );
             }
@@ -149,8 +154,13 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
             const fetchRetries = async () => {
               return await requestQueueProductPublishesBackup.enqueue(
                 (): Promise<string> => {
+                  const baseUrl = `/arbitrary/${item?.service}/${encodeURIComponent(
+                    item?.name
+                  )}/${encodeURIComponent(item?.identifier)}`;
                   return getArbitraryResource(
-                    `/arbitrary/${item?.service}/${encodeURIComponent(item?.name)}/${encodeURIComponent(item?.identifier)}?encoding=base64`,
+                    returnType === 'BASE64'
+                      ? `${baseUrl}?encoding=base64`
+                      : baseUrl,
                     key
                   );
                 }
@@ -177,8 +187,15 @@ export const useResources = (retryAttempts: number = 2, maxSize = 5242880) => {
             );
             return fullDataObject;
           }
-          const toUint = base64ToUint8Array(res);
-          const toObject = uint8ArrayToObject(toUint);
+          // Prefer JSON directly (when we fetch without ?encoding=base64).
+          // Fallback to legacy base64->Uint8Array->JSON parse if needed.
+          let toObject: any;
+          try {
+            toObject = JSON.parse(res);
+          } catch (e) {
+            const toUint = base64ToUint8Array(res);
+            toObject = uint8ArrayToObject(toUint);
+          }
           const fullDataObject = {
             data: { ...toObject },
             qortalMetadata: includeMetadata ? metadata : item,

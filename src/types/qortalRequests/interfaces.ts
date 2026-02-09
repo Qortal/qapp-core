@@ -28,6 +28,11 @@ export interface GetCrosschainServerInfoQortalRequest extends BaseRequest {
   coin: ForeignCoin;
 }
 
+export interface StartCrosschainServerQortalRequest extends BaseRequest {
+  action: 'START_CROSSCHAIN_SERVER';
+  coin: ForeignCoin;
+}
+
 export interface GetTxActivitySummaryQortalRequest extends BaseRequest {
   action: 'GET_TX_ACTIVITY_SUMMARY';
   coin: ForeignBlockchain;
@@ -752,4 +757,14 @@ export type SessionPermissions =
 export interface sessionPermissionsQortalRequest extends BaseRequest {
   action: 'SESSION_PERMISSIONS';
   permissions: SessionPermissions[];
+}
+
+// Chromecast Request Types
+export interface ChromecastCastQortalRequest extends BaseRequest {
+  action: 'CHROMECAST_CAST';
+  url: string;
+  title?: string;
+  subtitle?: string;
+  imageUrl?: string;
+  contentType?: string;
 }
