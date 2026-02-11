@@ -32,7 +32,7 @@ export const GlobalPipPlayer = () => {
   const context = useContext(GlobalContext);
   const navigate = useNavigate();
   const videoNode = useRef<HTMLVideoElement>(null);
-  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimeoutRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const { setProgress } = useProgressStore();
 
   const updateProgress = useCallback(() => {
@@ -221,7 +221,7 @@ export const GlobalPipPlayer = () => {
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     hideTimeoutRef.current = setTimeout(() => {
       setShowControls(false);
-    }, 3000) as unknown as number;
+    }, 3000);
   };
 
   useEffect(() => {

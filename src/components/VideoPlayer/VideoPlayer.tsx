@@ -1641,13 +1641,13 @@ export const VideoPlayer = ({
       player.off('ratechange', handleRateChange);
     };
   }, [isPlayerInitialized]);
-  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimeoutRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
   const resetHideTimeout = () => {
     setShowControlsMobile(true);
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     hideTimeoutRef.current = setTimeout(() => {
       setShowControlsMobile(false);
-    }, 3000) as unknown as number;
+    }, 3000);
   };
 
   useEffect(() => {
