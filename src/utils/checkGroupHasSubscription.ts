@@ -61,10 +61,10 @@ async function buildDetailsIdentifier(
   groupId: number,
   identifierOperations: any
 ): Promise<string> {
-  const subscriptionId = `test-subscription-${groupId.toString()}`;
+  const subscriptionId = `subscription-${groupId.toString()}`;
 
   const typeHash = await identifierOperations.hashString(
-    'test-subscription_details',
+    'subscription_details',
     EnumCollisionStrength.HIGH,
     subscriptionAppPublicSalt
   );
@@ -89,10 +89,10 @@ async function buildIndexIdentifierBase(
   groupId: number,
   identifierOperations: any
 ): Promise<string> {
-  const subscriptionId = `test-subscription-${groupId.toString()}`;
+  const subscriptionId = `subscription-${groupId.toString()}`;
 
   const typeHash = await identifierOperations.hashString(
-    'test-subscription_index',
+    'subscription_index',
     EnumCollisionStrength.HIGH,
     subscriptionAppPublicSalt
   );
