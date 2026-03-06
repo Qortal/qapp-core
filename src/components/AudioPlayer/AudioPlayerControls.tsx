@@ -335,8 +335,17 @@ const AudioPlayerComponent = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
 
     useEffect(() => {
       const audioElement = audioRef.current;
-      if (!audioElement || !isReady || !resourceUrl) return;
+      if (!audioElement || !isReady || !resourceUrl || !activeTrack) return;
 
+      const copiedActiveTrack = structuredClone(activeTrack);
+      if (copiedActiveTrack.name) {
+        copiedActiveTrack.name = encodeURIComponent(copiedActiveTrack.name);
+      }
+      if (copiedActiveTrack.identifier) {
+        copiedActiveTrack.identifier = encodeURIComponent(
+          copiedActiveTrack.identifier
+        );
+      }
       // Generate unique track identifier
       const trackId = `${activeTrack?.service}-${activeTrack?.name}-${activeTrack?.identifier}-${encryption?.key || 'none'}`;
 
@@ -371,7 +380,7 @@ const AudioPlayerComponent = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
             const qortalStreamUrl = await playEncryptedAudioWithQortalRequest({
               keyBytes,
               ivBytes,
-              qortalAudioResource: activeTrack,
+              qortalAudioResource: copiedActiveTrack,
             });
 
             if (abortController.signal.aborted) return;
