@@ -596,7 +596,7 @@ export async function checkSubscriptionStatus(
         const intervalDaysAtPayment = indexData?.intervalDays;
 
         const amountPaid = parseFloat(txData?.amount) ?? 0;
-        if (Math.abs(amountPaid - expectedPrice!) > 0.00001) {
+        if (amountPaid < (expectedPrice ?? 0) - 0.00001) {
           console.error(
             '[checkSubscriptionStatus] Payment amount does not match expected price:',
             amountPaid,
