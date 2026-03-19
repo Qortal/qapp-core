@@ -31,6 +31,7 @@ export interface PeerDetail {
   id: string;
   speed: 'HIGH' | 'LOW' | 'IDLE';
   isDirect: boolean;
+  chunksAvailable?: number;
 }
 
 export interface ResourceStatus {
