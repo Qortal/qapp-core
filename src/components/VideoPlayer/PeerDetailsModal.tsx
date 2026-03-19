@@ -19,6 +19,7 @@ import {
   Link as LinkIcon,
   CloudOff,
   Download,
+  Layers,
 } from '@mui/icons-material';
 import { PeerDetail } from '../../state/publishes';
 import { useMemo } from 'react';
@@ -321,6 +322,31 @@ export const PeerDetailsModal = ({
                             },
                           }}
                         />
+                        {peer.chunksAvailable !== undefined && (
+                          <Chip
+                            icon={
+                              <Layers
+                                sx={{
+                                  fontSize: 12,
+                                  color: '#ce93d8 !important',
+                                }}
+                              />
+                            }
+                            label={`${peer.chunksAvailable} chunk${peer.chunksAvailable !== 1 ? 's' : ''}`}
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              backgroundColor: alpha('#9c27b0', 0.15),
+                              color: '#ce93d8',
+                              border: `1px solid ${alpha('#9c27b0', 0.3)}`,
+                              '& .MuiChip-label': {
+                                padding: '0 6px',
+                              },
+                            }}
+                          />
+                        )}
                       </Box>
                     }
                   />
@@ -375,6 +401,12 @@ export const PeerDetailsModal = ({
                 download •{' '}
                 <strong style={{ color: '#bdbdbd' }}>Relayed:</strong> Download
                 via relay
+              </Typography>
+              <Typography
+                sx={{ color: alpha('#ffffff', 0.6), fontSize: '11px' }}
+              >
+                <strong style={{ color: '#ce93d8' }}>Chunks:</strong> Number of
+                available chunks held by this peer
               </Typography>
             </Box>
           </Box>
