@@ -94,6 +94,7 @@ import {
   whichUIQortalRequest,
   ChromecastCastQortalRequest,
   NotificationPermissionQortalRequest,
+  NotificationHasPermissionQortalRequest,
   NotificationAddQortalRequest,
   NotificationGetQortalRequest,
   NotificationMarkSeenQortalRequest,
@@ -197,6 +198,7 @@ declare global {
     | sessionPermissionsQortalRequest
     | ChromecastCastQortalRequest
     | NotificationPermissionQortalRequest
+    | NotificationHasPermissionQortalRequest
     | NotificationAddQortalRequest
     | NotificationGetQortalRequest
     | NotificationMarkSeenQortalRequest

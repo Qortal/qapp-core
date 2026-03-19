@@ -764,6 +764,11 @@ export interface NotificationPermissionQortalRequest extends BaseRequest {
   action: 'NOTIFICATION_PERMISSION';
 }
 
+/** Resolves to `true` or `false` depending on whether the app has notification permission. */
+export interface NotificationHasPermissionQortalRequest extends BaseRequest {
+  action: 'NOTIFICATION_HAS_PERMISSION';
+}
+
 export interface NotificationFilter {
   service?: string;
   query?: string;
