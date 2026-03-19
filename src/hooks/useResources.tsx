@@ -18,8 +18,8 @@ export const requestQueueProductPublishes = new RequestQueueWithPromise(12);
 export const requestQueueProductPublishesBackup = new RequestQueueWithPromise(
   6
 );
-export const requestQueueResourcesResultsOnly = new RequestQueueWithPromise(4);
-export const requestQueueSearchResources = new RequestQueueWithPromise(8);
+export const requestQueueResourcesResultsOnly = new RequestQueueWithPromise(6);
+export const requestQueueSearchResources = new RequestQueueWithPromise(12);
 
 export interface Resource {
   qortalMetadata: QortalMetadata;

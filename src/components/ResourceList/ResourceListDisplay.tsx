@@ -85,6 +85,7 @@ interface BaseProps {
   scrollerRef?: React.RefObject<HTMLElement | null> | null;
   filterDuplicateIdentifiers?: FilterDuplicateIdentifiersOptions;
   secondaryDataSources?: SecondaryDataSource[];
+  isLoading?: boolean;
 }
 
 const defaultStyles = {
@@ -104,7 +105,39 @@ interface NonVirtualizedProps extends BaseProps {
 
 type PropsResourceListDisplay = VirtualizedProps | NonVirtualizedProps;
 
-export const MemorizedComponent = ({
+/** When initialIsLoading is true, only this shell mounts — no hooks, effects, or list logic run. */
+export const MemorizedComponent = (props: PropsResourceListDisplay) => {
+  const { isLoading: initialIsLoading = false } = props;
+  if (initialIsLoading) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: props.disableVirtualization ? 'auto' : '100%',
+        }}
+      >
+        <ListLoader
+          isLoading={true}
+          resultsLength={0}
+          noResultsMessage={
+            props.defaultLoaderParams?.listNoResultsText || 'No results available'
+          }
+          loadingMessage={
+            props.defaultLoaderParams?.listLoadingText ||
+            'Retrieving list. Please wait.'
+          }
+          loaderList={props.loaderList}
+          loaderHeight={props.styles?.listLoadingHeight}
+        >
+          {null}
+        </ListLoader>
+      </div>
+    );
+  }
+  return <ResourceListDisplayContent {...props} />;
+};
+
+function ResourceListDisplayContent({
   search,
   listItem,
   styles = defaultStyles,
@@ -129,7 +162,7 @@ export const MemorizedComponent = ({
   scrollerRef,
   filterDuplicateIdentifiers,
   secondaryDataSources,
-}: PropsResourceListDisplay) => {
+}: PropsResourceListDisplay) {
   const { identifierOperations, lists } = useGlobal();
   const [generatedIdentifier, setGeneratedIdentifier] = useState('');
   const [memoizedParams, setMemorizedParams] = useState('');
@@ -303,7 +336,7 @@ export const MemorizedComponent = ({
   );
 
   const resetSearch = useCallback(async () => {
-    resetScroll()
+    resetScroll();
     lists.deleteList(listName);
     getResourceList();
   }, [listName, getResourceList, resetScroll]);
@@ -336,7 +369,6 @@ export const MemorizedComponent = ({
     getResourceList();
   }, [getResourceList, listName]); // Runs when dependencies change
 
-  
   useScrollTrackerRef(listName, list?.length > 0, scrollerRef);
   const setSearchCacheExpiryDuration = useCacheStore(
     (s) => s.setSearchCacheExpiryDuration
@@ -561,6 +593,7 @@ function arePropsEqual(
     prevProps.disableVirtualization === nextProps.disableVirtualization &&
     prevProps.direction === nextProps.direction &&
     prevProps.onSeenLastItem === nextProps.onSeenLastItem &&
+    prevProps.isLoading === nextProps.isLoading &&
     JSON.stringify(prevProps.filterDuplicateIdentifiers) ===
       JSON.stringify(nextProps.filterDuplicateIdentifiers) &&
     JSON.stringify(prevProps.search) === JSON.stringify(nextProps.search) &&

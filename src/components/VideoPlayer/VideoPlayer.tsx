@@ -1273,7 +1273,13 @@ export const VideoPlayer = ({
       return;
 
     const resource = JSON.parse(videoLocactionStringified);
-
+    const copiedResource = structuredClone(resource);
+    if (copiedResource.name) {
+      copiedResource.name = encodeURIComponent(copiedResource.name);
+    }
+    if (copiedResource.identifier) {
+      copiedResource.identifier = encodeURIComponent(copiedResource.identifier);
+    }
     try {
       const setupPlayer = async () => {
         const ref = videoRef as any;
@@ -1303,9 +1309,14 @@ export const VideoPlayer = ({
                   player: playerRef.current,
                   keyBytes: keyBytes,
                   ivBytes: ivBytes,
-                  qortalVideoResource: resource,
+                  qortalVideoResource: copiedResource,
                 }
               );
+              await new Promise((res) => {
+                setTimeout(() => {
+                  res(null);
+                }, 250);
+              });
 
               if (qortalStreamUrl) {
                 const options = {
@@ -1641,7 +1652,9 @@ export const VideoPlayer = ({
       player.off('ratechange', handleRateChange);
     };
   }, [isPlayerInitialized]);
-  const hideTimeoutRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
+  const hideTimeoutRef = useRef<number | ReturnType<typeof setTimeout> | null>(
+    null
+  );
   const resetHideTimeout = () => {
     setShowControlsMobile(true);
     if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);

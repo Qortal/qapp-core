@@ -93,6 +93,12 @@ import {
   VoteOnPollQortalRequest,
   whichUIQortalRequest,
   ChromecastCastQortalRequest,
+  NotificationPermissionQortalRequest,
+  NotificationHasPermissionQortalRequest,
+  NotificationAddQortalRequest,
+  NotificationGetQortalRequest,
+  NotificationMarkSeenQortalRequest,
+  NotificationRemoveQortalRequest,
 } from './types/qortalRequests/interfaces';
 
 declare global {
@@ -190,7 +196,13 @@ declare global {
     | lockTabQortalRequest
     | reencryptGroupKeysQortalRequest
     | sessionPermissionsQortalRequest
-    | ChromecastCastQortalRequest;
+    | ChromecastCastQortalRequest
+    | NotificationPermissionQortalRequest
+    | NotificationHasPermissionQortalRequest
+    | NotificationAddQortalRequest
+    | NotificationGetQortalRequest
+    | NotificationMarkSeenQortalRequest
+    | NotificationRemoveQortalRequest;
 
   function qortalRequest(options: QortalRequestOptions): Promise<any>;
 

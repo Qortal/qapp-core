@@ -74,3 +74,5 @@ export { ListItem } from './state/cache';
 export { SymmetricKeys } from './utils/encryption';
 export { LoaderListStatus } from './common/ListLoader';
 export { Coin } from './types/qortalRequests/types';
+export { useIdentifiers } from './hooks/useIdentifiers';
+export { useResources } from './hooks/useResources';

@@ -15,6 +15,9 @@ export type SubscriptionStatus =
   | 'owner'
   | 'no-subscription';
 
+export const subscriptionAppPublicSalt =
+  'gnRp+Pao85XZlExcqynLS0+GaKCL3ia9E1sEm9XPaOA=';
+
 export interface CheckSubscriptionStatusResult {
   /**
    * The subscription status
@@ -73,6 +76,7 @@ export interface CheckSubscriptionStatusResult {
 }
 
 export interface UseCheckSubscriptionStatusParams {
+  name: string | null;
   /**
    * The address to check subscription status for
    */
@@ -148,8 +152,8 @@ export interface UseCheckSubscriptionStatusReturn
 export function useCheckSubscriptionStatus(
   params: UseCheckSubscriptionStatusParams
 ): UseCheckSubscriptionStatusReturn {
-  const { address, groupId, enabled = true } = params;
-  const { identifierOperations } = useGlobal();
+  const { address, name, groupId, enabled = true } = params;
+  const { identifierOperations, lists } = useGlobal();
   const [result, setResult] = useState<CheckSubscriptionStatusResult>({
     status: 'no-subscription',
     isSubscribed: false,
@@ -172,7 +176,7 @@ export function useCheckSubscriptionStatus(
       return;
     }
 
-    if (!address || !groupId || !identifierOperations) {
+    if (!address || !groupId || !identifierOperations || !lists || !name) {
       console.log('[useCheckSubscriptionStatus] Missing required parameters');
       setLoading(false);
       return;
@@ -190,8 +194,10 @@ export function useCheckSubscriptionStatus(
       try {
         const statusResult = await checkSubscriptionStatus({
           address,
+          name: name!,
           groupId,
           identifierOperations,
+          lists,
         });
 
         if (!cancelled) {
@@ -219,7 +225,15 @@ export function useCheckSubscriptionStatus(
     return () => {
       cancelled = true;
     };
-  }, [address, groupId, identifierOperations, enabled, refreshKey]);
+  }, [
+    address,
+    name,
+    groupId,
+    identifierOperations,
+    enabled,
+    refreshKey,
+    lists,
+  ]);
 
   return {
     ...result,

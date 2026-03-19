@@ -278,8 +278,7 @@ export const usePublishStore = create<PublishState>((set, get) => ({
       if (chunkHistory.length > 6) {
         chunkHistory = chunkHistory.slice(-6);
       }
-      console.log('chunkHistory (after slice)', chunkHistory);
-      
+
       // Need at least 2 data points to calculate speed
       if (chunkHistory.length < 2) {
         return null;
@@ -289,9 +288,7 @@ export const usePublishStore = create<PublishState>((set, get) => ({
       const lastPoint = chunkHistory[chunkHistory.length - 1];
       const chunkDiff = lastPoint.chunks - firstPoint.chunks;
       const timeDiff = (lastPoint.timestamp - firstPoint.timestamp) / 1000; // in seconds
-      
-      console.log('Speed calc:', { chunkDiff, timeDiff, firstChunks: firstPoint.chunks, lastChunks: lastPoint.chunks });
-      
+
       if (timeDiff <= 0) {
         return null;
       }
@@ -301,7 +298,6 @@ export const usePublishStore = create<PublishState>((set, get) => ({
       if (chunkDiff <= 0) {
         // If we have enough history and no progress, it's stalled
         if (chunkHistory.length >= 4) {
-          console.log('STALLED DETECTED: chunkDiff <= 0 with enough history');
           return 0; // Return 0 to indicate stalled, not null
         }
         return null;
@@ -312,11 +308,9 @@ export const usePublishStore = create<PublishState>((set, get) => ({
       // Set baseline speed on first valid measurement (after we have enough data)
       if (baselineSpeed === null && chunkHistory.length >= 4) {
         baselineSpeed = speed;
-        console.log('Baseline speed set:', baselineSpeed);
         return speed;
       }
-      
-      console.log('Current speed:', speed, 'Baseline:', baselineSpeed);
+
       return speed;
     };
 
@@ -325,37 +319,30 @@ export const usePublishStore = create<PublishState>((set, get) => ({
       if (numberOfPeers > maxPeersSeen) {
         maxPeersSeen = numberOfPeers;
       }
-      console.log('checkForSlowdown:', { maxPeersSeen, hasDetectedSlowdown, currentChunks, totalChunks });
-      
+
       // Only check for slowdown if we had more than 1 peer at some point
       if (maxPeersSeen <= 1) {
-        console.log('Skipping: maxPeersSeen <= 1');
         return false;
       }
-      
+
       // Don't restart multiple times
       if (hasDetectedSlowdown) {
-        console.log('Skipping: already detected slowdown');
         return false;
       }
-      
+
       // Need at least some progress to detect slowdown
       if (currentChunks === 0 || totalChunks === 0) {
-        console.log('Skipping: no chunks or total');
         return false;
       }
-      
+
       const currentSpeed = calculateChunkSpeed(currentChunks, totalChunks);
-      console.log('currentSpeed:', currentSpeed, 'baselineSpeed:', baselineSpeed);
-      
+
       // Handle stalled downloads (speed === 0) - this is definitely a slowdown
       if (currentSpeed === 0 && baselineSpeed !== null && chunkHistory.length >= 4) {
-        console.log('Download stalled - no chunk progress detected');
         return true;
       }
-      
+
       if (currentSpeed === null || baselineSpeed === null) {
-        console.log('Skipping: currentSpeed or baselineSpeed is null');
         return false;
       }
       
@@ -363,9 +350,7 @@ export const usePublishStore = create<PublishState>((set, get) => ({
       // If we have many chunks, we expect slower absolute speed, so normalize
       const normalizedBaseline = baselineSpeed / totalChunks; // baseline speed as fraction of total per second
       const normalizedCurrent = currentSpeed / totalChunks; // current speed as fraction of total per second
-      
-      console.log('Normalized speeds:', { normalizedBaseline, normalizedCurrent });
-      
+
       // Detect slowdown: current speed is less than 50% of baseline
       // This means download has slowed down significantly
       const slowdownThreshold = 0.5;
@@ -375,9 +360,7 @@ export const usePublishStore = create<PublishState>((set, get) => ({
       // If we're downloading less than 0.1% of total chunks per second, consider it slow
       const absoluteSlowThreshold = 0.001; // 0.1% of total chunks per second
       const isVerySlow = normalizedCurrent < absoluteSlowThreshold;
-      
-      console.log('Slowdown checks:', { hasSlowdown, isVerySlow });
-      
+
       return hasSlowdown || isVerySlow;
     };
 
@@ -468,11 +451,9 @@ export const usePublishStore = create<PublishState>((set, get) => ({
                     currentStatus.totalChunkCount,
                     numberOfPeers
                   );
-                  console.log('shouldRequestAsync', shouldRequestAsync);
                   if (shouldRequestAsync) {
                     hasDetectedSlowdown = true;
-                    console.log(`Download slowdown detected. Requesting async fetch for ${resourceId}`);
-                    
+
                     // Call the async fetch request
                     const url = `/arbitrary/${service}/${name}/${identifier}?async=true`;
                     requestQueueBuildFile.enqueue(() =>

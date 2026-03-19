@@ -3,9 +3,8 @@
  * This is a standalone function that can be used in any app without React dependencies
  */
 
+import { subscriptionAppPublicSalt } from '../hooks/useSubscriptionCheck';
 import { EnumCollisionStrength } from './encryption';
-export const subscriptionAppPublicSalt =
-  'gnRp+Pao85XZlExcqynLS0+GaKCL3ia9E1sEm9XPaOA=';
 
 export type SubscriptionStatus =
   | 'not-subscribed'
@@ -21,6 +20,10 @@ export interface CheckSubscriptionStatusParams {
   address: string;
 
   /**
+   * The name to check subscription status for
+   */
+  name: string;
+  /**
    * The group ID to check membership in
    */
   groupId: number;
@@ -30,6 +33,16 @@ export interface CheckSubscriptionStatusParams {
    * Get this from useGlobal() hook: const { identifierOperations } = useGlobal();
    */
   identifierOperations: any;
+
+  lists: any;
+}
+
+/** Subscription pricing state (historical) */
+interface SubscriptionState {
+  version: number;
+  price: number;
+  interval: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
+  effectiveFrom: number;
 }
 
 /**
@@ -39,12 +52,10 @@ async function getPrimaryName(address: string): Promise<string | null> {
   try {
     const response = await fetch(`/names/primary/${address}`);
     if (!response.ok) {
-      console.log('[getPrimaryName] No primary name found for:', address);
       return null;
     }
     const nameData = await response.json();
     const name = nameData?.name || null;
-    console.log('[getPrimaryName] Found name:', name, 'for address:', address);
     return name;
   } catch (error) {
     console.error('[getPrimaryName] Failed to fetch primary name:', error);
@@ -60,16 +71,11 @@ async function buildDetailsIdentifier(
   groupId: number,
   identifierOperations: any
 ): Promise<string> {
-  const subscriptionId = `test-subscription-${groupId.toString()}`;
-
-  console.log(
-    '[buildDetailsIdentifier] Building identifier for subscriptionId:',
-    subscriptionId
-  );
+  const subscriptionId = `subscription-${groupId.toString()}`;
 
   // Hash the type and ID using identifierOperations (same as in subscriptionPublishing.ts)
   const typeHash = await identifierOperations.hashString(
-    'test-subscription_details',
+    'subscription_details',
     EnumCollisionStrength.HIGH,
     subscriptionAppPublicSalt
   );
@@ -79,15 +85,11 @@ async function buildDetailsIdentifier(
     subscriptionAppPublicSalt
   );
 
-  console.log('[buildDetailsIdentifier] typeHash:', typeHash);
-  console.log('[buildDetailsIdentifier] idHash:', idHash);
-
   if (!typeHash || !idHash) {
     throw new Error('Failed to create subscription identifier');
   }
 
   const identifier = typeHash + idHash;
-  console.log('[buildDetailsIdentifier] Final identifier:', identifier);
 
   return identifier;
 }
@@ -149,6 +151,37 @@ export interface CheckSubscriptionStatusResult {
   subscriptionDisabledReason?: string;
 }
 
+const AMOUNT_TOLERANCE = 0.00001;
+
+function amountMatches(a: number, b: number): boolean {
+  return Math.abs(a - b) <= AMOUNT_TOLERANCE;
+}
+
+export function getPaidIntervalsFromAmount(
+  paidAmount: number,
+  unitPrice: number
+): number {
+  if (
+    !Number.isFinite(paidAmount) ||
+    !Number.isFinite(unitPrice) ||
+    unitPrice <= 0
+  ) {
+    return 0;
+  }
+  const raw = paidAmount / unitPrice;
+  if (!Number.isFinite(raw) || raw <= 0) return 0;
+  return Math.floor(raw + AMOUNT_TOLERANCE);
+}
+
+export function isMultipleOfUnitPrice(
+  paidAmount: number,
+  unitPrice: number
+): boolean {
+  const intervals = getPaidIntervalsFromAmount(paidAmount, unitPrice);
+  if (intervals < 1) return false;
+  return amountMatches(paidAmount, unitPrice * intervals);
+}
+
 /**
  * Check an address's subscription status for a private group
  *
@@ -176,15 +209,14 @@ export interface CheckSubscriptionStatusResult {
  *   identifierOperations
  * });
  *
- * console.log(result.status); // 'subscribed-paid' | 'subscribed-unpaid' | 'not-subscribed' | 'owner'
- * console.log(result.isSubscribed); // true/false
- * console.log(result.needsPayment); // true/false
+ * // result.status: 'subscribed-paid' | 'subscribed-unpaid' | 'not-subscribed' | 'owner'
+ * // result.isSubscribed, result.needsPayment
  * ```
  */
 export async function checkSubscriptionStatus(
   params: CheckSubscriptionStatusParams
 ): Promise<CheckSubscriptionStatusResult> {
-  const { address, groupId, identifierOperations } = params;
+  const { address, name, groupId, identifierOperations, lists } = params;
 
   const defaultResult: CheckSubscriptionStatusResult = {
     status: 'no-subscription',
@@ -197,13 +229,10 @@ export async function checkSubscriptionStatus(
   };
 
   if (!address || !groupId || !identifierOperations) {
-    console.log('[checkSubscriptionStatus] Missing required parameters');
     return defaultResult;
   }
 
   try {
-    console.log('[checkSubscriptionStatus] Checking:', { address, groupId });
-
     // Step 1: Check if the address is the group owner
     const groupResponse = await fetch(`/groups/${groupId}`);
     if (!groupResponse.ok) {
@@ -217,11 +246,9 @@ export async function checkSubscriptionStatus(
     }
 
     const groupData = await groupResponse.json();
-    const groupOwner = groupData?.owner || groupData?.ownerAddress;
-    console.log('[checkSubscriptionStatus] Group owner:', groupOwner);
+    const groupOwner = groupData?.owner;
 
     if (groupOwner === address) {
-      console.log('[checkSubscriptionStatus] User is the group owner');
       return {
         status: 'owner',
         isSubscribed: false,
@@ -234,16 +261,9 @@ export async function checkSubscriptionStatus(
     }
 
     // Step 1.5: Check if the owner has enabled a subscription for this group
-    console.log(
-      '[checkSubscriptionStatus] Checking if subscription is enabled...'
-    );
-
     // Get the owner's primary name
-    const ownerName = await getPrimaryName(groupOwner);
+    const ownerName = groupData?.ownerPrimaryName;
     if (!ownerName) {
-      console.log(
-        '[checkSubscriptionStatus] Owner has no primary name - subscription likely not enabled'
-      );
       return {
         status: 'no-subscription',
         isSubscribed: false,
@@ -262,23 +282,12 @@ export async function checkSubscriptionStatus(
       identifierOperations
     );
 
-    console.log(
-      '[checkSubscriptionStatus] Checking for subscription details:',
-      {
-        ownerName,
-        subscriptionIdentifier,
-      }
-    );
-
     // Check if subscription details exist (DOCUMENT service)
     const subscriptionDetailsResponse = await fetch(
       `/arbitrary/DOCUMENT/${encodeURIComponent(ownerName)}/${encodeURIComponent(subscriptionIdentifier)}`
     );
 
     if (!subscriptionDetailsResponse.ok) {
-      console.log(
-        '[checkSubscriptionStatus] No subscription details found for this group'
-      );
       return {
         status: 'no-subscription',
         isSubscribed: false,
@@ -292,14 +301,9 @@ export async function checkSubscriptionStatus(
     }
 
     const subscriptionDetails = await subscriptionDetailsResponse.json();
-    console.log(
-      '[checkSubscriptionStatus] Subscription details:',
-      subscriptionDetails
-    );
 
     // Check if subscription is disabled
     if (subscriptionDetails?.status === 'disabled') {
-      console.log('[checkSubscriptionStatus] Subscription is disabled');
       return {
         status: 'no-subscription',
         isSubscribed: false,
@@ -313,8 +317,6 @@ export async function checkSubscriptionStatus(
       };
     }
 
-    console.log('[checkSubscriptionStatus] Subscription is enabled');
-
     // Step 2: Check if the address is a member of the group
     const memberResponse = await fetch(`/groups/member/${address}`);
     if (!memberResponse.ok) {
@@ -327,19 +329,12 @@ export async function checkSubscriptionStatus(
     }
 
     const groups = await memberResponse.json();
-    console.log('[checkSubscriptionStatus] User groups:', groups);
 
     const isMember =
       Array.isArray(groups) &&
       groups.some((group: any) => group.groupId === groupId);
 
-    console.log('[checkSubscriptionStatus] Is member:', isMember);
-
     if (!isMember) {
-      console.log(
-        '[checkSubscriptionStatus] User is not a member of group',
-        groupId
-      );
       return {
         ...defaultResult,
         status: 'not-subscribed',
@@ -348,12 +343,9 @@ export async function checkSubscriptionStatus(
     }
 
     // Step 3: Get the primary name for this address
-    const name = await getPrimaryName(address);
-    console.log('[checkSubscriptionStatus] Primary name:', name);
 
     if (!name) {
       // If no name is registered, can't check for payment records
-      console.log('[checkSubscriptionStatus] No name registered for address');
       return {
         status: 'subscribed-unpaid',
         isSubscribed: true,
@@ -366,11 +358,6 @@ export async function checkSubscriptionStatus(
     }
 
     // Step 4: Build the details identifier for this subscription (reuse from earlier)
-    console.log(
-      '[checkSubscriptionStatus] Details identifier:',
-      subscriptionIdentifier
-    );
-
     // Step 5: Check if there's a payment record for THIS specific subscription
     // Search for PRODUCT resource with the specific subscriptionIdentifier
     const searchUrl =
@@ -379,12 +366,9 @@ export async function checkSubscriptionStatus(
       `identifier=${encodeURIComponent(subscriptionIdentifier)}&` +
       `name=${encodeURIComponent(name)}&` +
       `exactmatchnames=true&` +
+      `reverse=true&` +
+      `prefix=true&` +
       `limit=1`;
-
-    console.log(
-      '[checkSubscriptionStatus] Searching for payment record:',
-      searchUrl
-    );
 
     const resourcesResponse = await fetch(searchUrl);
 
@@ -406,20 +390,10 @@ export async function checkSubscriptionStatus(
     }
 
     const resources = await resourcesResponse.json();
-    console.log(
-      '[checkSubscriptionStatus] Payment resources found:',
-      resources
-    );
 
     const hasPaymentRecord = Array.isArray(resources) && resources.length > 0;
 
-    console.log(
-      '[checkSubscriptionStatus] Has payment record:',
-      hasPaymentRecord
-    );
-
     if (!hasPaymentRecord) {
-      console.log('[checkSubscriptionStatus] No payment record found');
       return {
         status: 'subscribed-unpaid',
         isSubscribed: true,
@@ -433,8 +407,6 @@ export async function checkSubscriptionStatus(
     }
 
     // Step 6: Fetch and validate the payment transaction
-    console.log('[checkSubscriptionStatus] Fetching PRODUCT record data...');
-
     let recordData: any = null;
     try {
       const dataResponse = await fetch(
@@ -442,10 +414,6 @@ export async function checkSubscriptionStatus(
       );
       if (dataResponse.ok) {
         recordData = await dataResponse.json();
-        console.log(
-          '[checkSubscriptionStatus] PRODUCT record data:',
-          recordData
-        );
       } else {
         console.warn(
           '[checkSubscriptionStatus] Failed to fetch PRODUCT record data:',
@@ -465,9 +433,6 @@ export async function checkSubscriptionStatus(
         : undefined;
 
     if (!paymentTxSignature) {
-      console.log(
-        '[checkSubscriptionStatus] No tx signature in PRODUCT record'
-      );
       return {
         status: 'subscribed-unpaid',
         isSubscribed: true,
@@ -483,8 +448,6 @@ export async function checkSubscriptionStatus(
     }
 
     // Step 7: Validate the transaction on-chain
-    console.log('[checkSubscriptionStatus] Validating tx:', paymentTxSignature);
-
     try {
       const txResponse = await fetch(
         `/transactions/signature/${paymentTxSignature}`
@@ -508,7 +471,6 @@ export async function checkSubscriptionStatus(
       }
 
       const txData = await txResponse.json();
-      console.log('[checkSubscriptionStatus] Transaction data:', txData);
 
       // Validate it's a PAYMENT transaction
       const typeOk = txData?.type === 'PAYMENT' || txData?.type === 2;
@@ -553,8 +515,84 @@ export async function checkSubscriptionStatus(
         };
       }
 
+      // Validate amount matches the price that was active at payment time (historical pricing)
+      const paymentTimestamp = txData?.timestamp;
+      if (paymentTimestamp != null) {
+        const paymentRecord = resources[0];
+
+        let recordData: any = null;
+        try {
+          const dataResponse = await fetch(
+            `/arbitrary/PRODUCT/${paymentRecord.name}/${paymentRecord.identifier}`
+          );
+          if (dataResponse.ok) {
+            recordData = await dataResponse.json();
+          }
+        } catch (error) {
+          console.error(
+            `Failed to fetch subscription record for ${name}:`,
+            error
+          );
+        }
+
+        const indexData = await fetchSubscriptionIndexPrice(
+          ownerName!,
+          recordData.si
+        );
+        const expectedPrice = indexData?.priceQort;
+        const intervalDaysAtPayment = indexData?.intervalDays ?? 30;
+
+        const amountPaid = parseFloat(txData?.amount) ?? 0;
+        if (
+          expectedPrice == null ||
+          !isMultipleOfUnitPrice(amountPaid, expectedPrice)
+        ) {
+          console.error(
+            '[checkSubscriptionStatus] Payment amount does not match expected price:',
+            amountPaid,
+            'expected',
+            expectedPrice
+          );
+          return {
+            status: 'subscribed-unpaid',
+            isSubscribed: true,
+            needsPayment: true,
+            isOwner: false,
+            isMember: true,
+            hasPaymentRecord: true,
+            paymentTxSignature,
+            isPaymentTxValid: false,
+            hasSubscriptionEnabled: true,
+            paymentValidationError: `Payment amount ${amountPaid} doesn't match expected price ${expectedPrice} (price at time of payment)`,
+          };
+        }
+        const paidIntervals = getPaidIntervalsFromAmount(
+          amountPaid,
+          expectedPrice
+        );
+        const subscriptionEndsAt =
+          paymentTimestamp +
+          paidIntervals * intervalDaysAtPayment! * 24 * 60 * 60 * 1000;
+
+        const now = Date.now();
+        if (now < subscriptionEndsAt) {
+        } else {
+          return {
+            status: 'subscribed-unpaid',
+            isSubscribed: true,
+            needsPayment: true,
+            isOwner: false,
+            isMember: true,
+            hasPaymentRecord: true,
+            paymentTxSignature,
+            isPaymentTxValid: false,
+            hasSubscriptionEnabled: true,
+            paymentValidationError: `Subscription has expired`,
+          };
+        }
+      }
+
       // All validations passed!
-      console.log('[checkSubscriptionStatus] Payment validated successfully');
       return {
         status: 'subscribed-paid',
         isSubscribed: true,
@@ -601,7 +639,7 @@ export async function checkSubscriptionStatus(
  * @example
  * ```typescript
  * const isMember = await isGroupMember('QUserAddress123', 12345);
- * console.log(isMember); // true/false
+ * // isMember is true/false
  * ```
  */
 export async function isGroupMember(
@@ -635,7 +673,7 @@ export async function isGroupMember(
  * @example
  * ```typescript
  * const isOwner = await isGroupOwner('QOwnerAddress123', 12345);
- * console.log(isOwner); // true/false
+ * // isOwner is true/false
  * ```
  */
 export async function isGroupOwner(
@@ -655,4 +693,56 @@ export async function isGroupOwner(
     console.error('Failed to check group ownership:', error);
     return false;
   }
+}
+
+export function parseOnChainIndexData(
+  data: string
+): { priceQort: number; intervalDays: number } | null {
+  if (!data || typeof data !== 'string') return null;
+  const decoded =
+    data.length > 0 && !data.includes('|')
+      ? (() => {
+          try {
+            return atob(data);
+          } catch {
+            return data;
+          }
+        })()
+      : data;
+  const parts = decoded.trim().split('|');
+  if (parts.length < 5 || parts[0] !== 'qsub1') return null;
+  const amt = parseFloat(parts[2]);
+  let intervalDays = parseFloat(parts[3]);
+  if (Number.isNaN(amt) || Number.isNaN(intervalDays) || intervalDays < 0)
+    return null;
+  if (intervalDays === 0) intervalDays = 1 / 24; // 0 stored for hourly
+  return { priceQort: amt, intervalDays };
+}
+
+export async function fetchSubscriptionIndexPrice(
+  ownerName: string,
+  indexIdentifier: string
+): Promise<{ priceQort: number; intervalDays: number } | null> {
+  const res = await fetch(
+    `/arbitrary/DOCUMENT/${encodeURIComponent(ownerName)}/${encodeURIComponent(indexIdentifier)}`
+  );
+  if (!res.ok) return null;
+  let dataStr = await res.text();
+  try {
+    const parsed = JSON.parse(dataStr);
+    if (parsed && typeof parsed === 'object') {
+      const raw = parsed.resource?.data ?? parsed.data;
+      if (raw != null) dataStr = typeof raw === 'string' ? raw : String(raw);
+    }
+  } catch {
+    // not JSON
+  }
+  if (!dataStr.includes('|')) {
+    try {
+      dataStr = atob(dataStr);
+    } catch {
+      return null;
+    }
+  }
+  return parseOnChainIndexData(dataStr);
 }
