@@ -162,6 +162,37 @@ export interface CheckSubscriptionStatusResult {
   subscriptionDisabledReason?: string;
 }
 
+const AMOUNT_TOLERANCE = 0.00001;
+
+function amountMatches(a: number, b: number): boolean {
+  return Math.abs(a - b) <= AMOUNT_TOLERANCE;
+}
+
+export function getPaidIntervalsFromAmount(
+  paidAmount: number,
+  unitPrice: number
+): number {
+  if (
+    !Number.isFinite(paidAmount) ||
+    !Number.isFinite(unitPrice) ||
+    unitPrice <= 0
+  ) {
+    return 0;
+  }
+  const raw = paidAmount / unitPrice;
+  if (!Number.isFinite(raw) || raw <= 0) return 0;
+  return Math.floor(raw + AMOUNT_TOLERANCE);
+}
+
+export function isMultipleOfUnitPrice(
+  paidAmount: number,
+  unitPrice: number
+): boolean {
+  const intervals = getPaidIntervalsFromAmount(paidAmount, unitPrice);
+  if (intervals < 1) return false;
+  return amountMatches(paidAmount, unitPrice * intervals);
+}
+
 /**
  * Check an address's subscription status for a private group
  *
@@ -593,10 +624,13 @@ export async function checkSubscriptionStatus(
           recordData.si
         );
         const expectedPrice = indexData?.priceQort;
-        const intervalDaysAtPayment = indexData?.intervalDays;
+        const intervalDaysAtPayment = indexData?.intervalDays ?? 30;
 
         const amountPaid = parseFloat(txData?.amount) ?? 0;
-        if (amountPaid < (expectedPrice ?? 0) - 0.00001) {
+        if (
+          expectedPrice == null ||
+          !isMultipleOfUnitPrice(amountPaid, expectedPrice)
+        ) {
           console.error(
             '[checkSubscriptionStatus] Payment amount does not match expected price:',
             amountPaid,
@@ -616,9 +650,13 @@ export async function checkSubscriptionStatus(
             paymentValidationError: `Payment amount ${amountPaid} doesn't match expected price ${expectedPrice} (price at time of payment)`,
           };
         }
-
+        const paidIntervals = getPaidIntervalsFromAmount(
+          amountPaid,
+          expectedPrice
+        );
         const subscriptionEndsAt =
-          paymentTimestamp + intervalDaysAtPayment! * 24 * 60 * 60 * 1000;
+          paymentTimestamp +
+          paidIntervals * intervalDaysAtPayment! * 24 * 60 * 60 * 1000;
 
         const now = Date.now();
         if (now < subscriptionEndsAt) {

@@ -8,6 +8,38 @@ import {
 import Compressor from 'compressorjs';
 import { fileToBase64 } from '../utils/base64';
 
+async function isWebPAnimated(file: File): Promise<boolean> {
+  const buffer = await file.slice(0, 65536).arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+
+  if (
+    bytes.length < 12 ||
+    bytes[0] !== 0x52 ||
+    bytes[1] !== 0x49 ||
+    bytes[2] !== 0x46 ||
+    bytes[3] !== 0x46 ||
+    bytes[8] !== 0x57 ||
+    bytes[9] !== 0x45 ||
+    bytes[10] !== 0x42 ||
+    bytes[11] !== 0x50
+  ) {
+    return false;
+  }
+
+  for (let i = 12; i < bytes.length - 4; i++) {
+    if (
+      bytes[i] === 0x41 &&
+      bytes[i + 1] === 0x4e &&
+      bytes[i + 2] === 0x49 &&
+      bytes[i + 3] === 0x4d
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 type Mode = 'single' | 'multi';
 
 interface ImageResult {
@@ -59,6 +91,12 @@ export const ImagePicker: React.FC<ImageUploaderProps> = ({
               console.error('GIF file size exceeds 500KB limit.');
               continue;
             }
+            fileToConvert = image;
+          } else if (
+            image.type === 'image/webp' &&
+            image.size <= 150 * 1024 &&
+            (await isWebPAnimated(image))
+          ) {
             fileToConvert = image;
           } else {
             fileToConvert = await new Promise<Blob>((resolve, reject) => {

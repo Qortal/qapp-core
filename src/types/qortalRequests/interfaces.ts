@@ -759,6 +759,59 @@ export interface sessionPermissionsQortalRequest extends BaseRequest {
   permissions: SessionPermissions[];
 }
 
+// Notification Permission Request Types
+export interface NotificationPermissionQortalRequest extends BaseRequest {
+  action: 'NOTIFICATION_PERMISSION';
+}
+
+export interface NotificationFilter {
+  service?: string;
+  query?: string;
+  identifier?: string;
+  names?: string[];
+  title?: string;
+  description?: string;
+  keywords?: string[];
+  prefix?: boolean;
+  defaultResource?: boolean;
+  followedOnly?: boolean;
+  excludeBlocked?: boolean;
+  after?: number;
+  before?: number;
+  mode?: 'ALL' | 'ANY';
+}
+
+export interface NotificationItem {
+  notificationId: string;
+  link: string;
+  filters: NotificationFilter;
+  message: { en: string; [key: string]: string };
+  image?: string;
+}
+
+export interface NotificationAddQortalRequest extends BaseRequest {
+  action: 'NOTIFICATION_ADD';
+  notifications: NotificationItem[];
+}
+
+export interface NotificationGetQortalRequest extends BaseRequest {
+  action: 'NOTIFICATION_GET';
+}
+
+export type NotificationSeenItem =
+  | string
+  | { notificationId: string; identifier?: string };
+
+export interface NotificationMarkSeenQortalRequest extends BaseRequest {
+  action: 'NOTIFICATION_MARK_SEEN';
+  notificationIds: NotificationSeenItem[];
+}
+
+export interface NotificationRemoveQortalRequest extends BaseRequest {
+  action: 'NOTIFICATION_REMOVE';
+  notificationIds?: string[];
+}
+
 // Chromecast Request Types
 export interface ChromecastCastQortalRequest extends BaseRequest {
   action: 'CHROMECAST_CAST';
