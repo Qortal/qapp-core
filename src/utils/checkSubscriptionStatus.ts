@@ -52,12 +52,10 @@ async function getPrimaryName(address: string): Promise<string | null> {
   try {
     const response = await fetch(`/names/primary/${address}`);
     if (!response.ok) {
-      console.log('[getPrimaryName] No primary name found for:', address);
       return null;
     }
     const nameData = await response.json();
     const name = nameData?.name || null;
-    console.log('[getPrimaryName] Found name:', name, 'for address:', address);
     return name;
   } catch (error) {
     console.error('[getPrimaryName] Failed to fetch primary name:', error);
@@ -75,11 +73,6 @@ async function buildDetailsIdentifier(
 ): Promise<string> {
   const subscriptionId = `subscription-${groupId.toString()}`;
 
-  console.log(
-    '[buildDetailsIdentifier] Building identifier for subscriptionId:',
-    subscriptionId
-  );
-
   // Hash the type and ID using identifierOperations (same as in subscriptionPublishing.ts)
   const typeHash = await identifierOperations.hashString(
     'subscription_details',
@@ -92,15 +85,11 @@ async function buildDetailsIdentifier(
     subscriptionAppPublicSalt
   );
 
-  console.log('[buildDetailsIdentifier] typeHash:', typeHash);
-  console.log('[buildDetailsIdentifier] idHash:', idHash);
-
   if (!typeHash || !idHash) {
     throw new Error('Failed to create subscription identifier');
   }
 
   const identifier = typeHash + idHash;
-  console.log('[buildDetailsIdentifier] Final identifier:', identifier);
 
   return identifier;
 }
@@ -220,9 +209,8 @@ export function isMultipleOfUnitPrice(
  *   identifierOperations
  * });
  *
- * console.log(result.status); // 'subscribed-paid' | 'subscribed-unpaid' | 'not-subscribed' | 'owner'
- * console.log(result.isSubscribed); // true/false
- * console.log(result.needsPayment); // true/false
+ * // result.status: 'subscribed-paid' | 'subscribed-unpaid' | 'not-subscribed' | 'owner'
+ * // result.isSubscribed, result.needsPayment
  * ```
  */
 export async function checkSubscriptionStatus(
@@ -241,13 +229,10 @@ export async function checkSubscriptionStatus(
   };
 
   if (!address || !groupId || !identifierOperations) {
-    console.log('[checkSubscriptionStatus] Missing required parameters');
     return defaultResult;
   }
 
   try {
-    console.log('[checkSubscriptionStatus] Checking:', { address, groupId });
-
     // Step 1: Check if the address is the group owner
     const groupResponse = await fetch(`/groups/${groupId}`);
     if (!groupResponse.ok) {
@@ -262,10 +247,8 @@ export async function checkSubscriptionStatus(
 
     const groupData = await groupResponse.json();
     const groupOwner = groupData?.owner;
-    console.log('[checkSubscriptionStatus] Group owner:', groupOwner);
 
     if (groupOwner === address) {
-      console.log('[checkSubscriptionStatus] User is the group owner');
       return {
         status: 'owner',
         isSubscribed: false,
@@ -278,16 +261,9 @@ export async function checkSubscriptionStatus(
     }
 
     // Step 1.5: Check if the owner has enabled a subscription for this group
-    console.log(
-      '[checkSubscriptionStatus] Checking if subscription is enabled...'
-    );
-
     // Get the owner's primary name
     const ownerName = groupData?.ownerPrimaryName;
     if (!ownerName) {
-      console.log(
-        '[checkSubscriptionStatus] Owner has no primary name - subscription likely not enabled'
-      );
       return {
         status: 'no-subscription',
         isSubscribed: false,
@@ -306,23 +282,12 @@ export async function checkSubscriptionStatus(
       identifierOperations
     );
 
-    console.log(
-      '[checkSubscriptionStatus] Checking for subscription details:',
-      {
-        ownerName,
-        subscriptionIdentifier,
-      }
-    );
-
     // Check if subscription details exist (DOCUMENT service)
     const subscriptionDetailsResponse = await fetch(
       `/arbitrary/DOCUMENT/${encodeURIComponent(ownerName)}/${encodeURIComponent(subscriptionIdentifier)}`
     );
 
     if (!subscriptionDetailsResponse.ok) {
-      console.log(
-        '[checkSubscriptionStatus] No subscription details found for this group'
-      );
       return {
         status: 'no-subscription',
         isSubscribed: false,
@@ -336,14 +301,9 @@ export async function checkSubscriptionStatus(
     }
 
     const subscriptionDetails = await subscriptionDetailsResponse.json();
-    console.log(
-      '[checkSubscriptionStatus] Subscription details:',
-      subscriptionDetails
-    );
 
     // Check if subscription is disabled
     if (subscriptionDetails?.status === 'disabled') {
-      console.log('[checkSubscriptionStatus] Subscription is disabled');
       return {
         status: 'no-subscription',
         isSubscribed: false,
@@ -357,8 +317,6 @@ export async function checkSubscriptionStatus(
       };
     }
 
-    console.log('[checkSubscriptionStatus] Subscription is enabled');
-
     // Step 2: Check if the address is a member of the group
     const memberResponse = await fetch(`/groups/member/${address}`);
     if (!memberResponse.ok) {
@@ -371,19 +329,12 @@ export async function checkSubscriptionStatus(
     }
 
     const groups = await memberResponse.json();
-    console.log('[checkSubscriptionStatus] User groups:', groups);
 
     const isMember =
       Array.isArray(groups) &&
       groups.some((group: any) => group.groupId === groupId);
 
-    console.log('[checkSubscriptionStatus] Is member:', isMember);
-
     if (!isMember) {
-      console.log(
-        '[checkSubscriptionStatus] User is not a member of group',
-        groupId
-      );
       return {
         ...defaultResult,
         status: 'not-subscribed',
@@ -393,11 +344,8 @@ export async function checkSubscriptionStatus(
 
     // Step 3: Get the primary name for this address
 
-    console.log('[checkSubscriptionStatus] Primary name:', name);
-
     if (!name) {
       // If no name is registered, can't check for payment records
-      console.log('[checkSubscriptionStatus] No name registered for address');
       return {
         status: 'subscribed-unpaid',
         isSubscribed: true,
@@ -410,11 +358,6 @@ export async function checkSubscriptionStatus(
     }
 
     // Step 4: Build the details identifier for this subscription (reuse from earlier)
-    console.log(
-      '[checkSubscriptionStatus] Details identifier:',
-      subscriptionIdentifier
-    );
-
     // Step 5: Check if there's a payment record for THIS specific subscription
     // Search for PRODUCT resource with the specific subscriptionIdentifier
     const searchUrl =
@@ -426,11 +369,6 @@ export async function checkSubscriptionStatus(
       `reverse=true&` +
       `prefix=true&` +
       `limit=1`;
-
-    console.log(
-      '[checkSubscriptionStatus] Searching for payment record:',
-      searchUrl
-    );
 
     const resourcesResponse = await fetch(searchUrl);
 
@@ -452,20 +390,10 @@ export async function checkSubscriptionStatus(
     }
 
     const resources = await resourcesResponse.json();
-    console.log(
-      '[checkSubscriptionStatus] Payment resources found:',
-      resources
-    );
 
     const hasPaymentRecord = Array.isArray(resources) && resources.length > 0;
 
-    console.log(
-      '[checkSubscriptionStatus] Has payment record:',
-      hasPaymentRecord
-    );
-
     if (!hasPaymentRecord) {
-      console.log('[checkSubscriptionStatus] No payment record found');
       return {
         status: 'subscribed-unpaid',
         isSubscribed: true,
@@ -479,8 +407,6 @@ export async function checkSubscriptionStatus(
     }
 
     // Step 6: Fetch and validate the payment transaction
-    console.log('[checkSubscriptionStatus] Fetching PRODUCT record data...');
-
     let recordData: any = null;
     try {
       const dataResponse = await fetch(
@@ -488,10 +414,6 @@ export async function checkSubscriptionStatus(
       );
       if (dataResponse.ok) {
         recordData = await dataResponse.json();
-        console.log(
-          '[checkSubscriptionStatus] PRODUCT record data:',
-          recordData
-        );
       } else {
         console.warn(
           '[checkSubscriptionStatus] Failed to fetch PRODUCT record data:',
@@ -511,9 +433,6 @@ export async function checkSubscriptionStatus(
         : undefined;
 
     if (!paymentTxSignature) {
-      console.log(
-        '[checkSubscriptionStatus] No tx signature in PRODUCT record'
-      );
       return {
         status: 'subscribed-unpaid',
         isSubscribed: true,
@@ -529,8 +448,6 @@ export async function checkSubscriptionStatus(
     }
 
     // Step 7: Validate the transaction on-chain
-    console.log('[checkSubscriptionStatus] Validating tx:', paymentTxSignature);
-
     try {
       const txResponse = await fetch(
         `/transactions/signature/${paymentTxSignature}`
@@ -554,7 +471,6 @@ export async function checkSubscriptionStatus(
       }
 
       const txData = await txResponse.json();
-      console.log('[checkSubscriptionStatus] Transaction data:', txData);
 
       // Validate it's a PAYMENT transaction
       const typeOk = txData?.type === 'PAYMENT' || txData?.type === 2;
@@ -677,7 +593,6 @@ export async function checkSubscriptionStatus(
       }
 
       // All validations passed!
-      console.log('[checkSubscriptionStatus] Payment validated successfully');
       return {
         status: 'subscribed-paid',
         isSubscribed: true,
@@ -724,7 +639,7 @@ export async function checkSubscriptionStatus(
  * @example
  * ```typescript
  * const isMember = await isGroupMember('QUserAddress123', 12345);
- * console.log(isMember); // true/false
+ * // isMember is true/false
  * ```
  */
 export async function isGroupMember(
@@ -758,7 +673,7 @@ export async function isGroupMember(
  * @example
  * ```typescript
  * const isOwner = await isGroupOwner('QOwnerAddress123', 12345);
- * console.log(isOwner); // true/false
+ * // isOwner is true/false
  * ```
  */
 export async function isGroupOwner(

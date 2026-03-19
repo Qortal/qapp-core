@@ -24,9 +24,9 @@
  * const result = await checkGroupHasSubscription(12345, identifierOperations);
  *
  * if (result.exists) {
- *   console.log(`Group ${result.groupId}: ${result.title}`);
+ *   // use result.groupId, result.title
  * } else {
- *   console.log('No subscription found');
+ *   // no subscription for this group
  * }
  * ```
  */
