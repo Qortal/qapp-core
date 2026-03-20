@@ -41,7 +41,7 @@ export interface CheckSubscriptionStatusParams {
 interface SubscriptionState {
   version: number;
   price: number;
-  interval: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
+  interval: 'MONTH';
   effectiveFrom: number;
 }
 
@@ -540,7 +540,7 @@ export async function checkSubscriptionStatus(
           recordData.si
         );
         const expectedPrice = indexData?.priceQort;
-        const intervalDaysAtPayment = indexData?.intervalDays ?? 30;
+        const intervalDaysAtPayment = 30;
 
         const amountPaid = parseFloat(txData?.amount) ?? 0;
         if (
@@ -712,11 +712,8 @@ export function parseOnChainIndexData(
   const parts = decoded.trim().split('|');
   if (parts.length < 5 || parts[0] !== 'qsub1') return null;
   const amt = parseFloat(parts[2]);
-  let intervalDays = parseFloat(parts[3]);
-  if (Number.isNaN(amt) || Number.isNaN(intervalDays) || intervalDays < 0)
-    return null;
-  if (intervalDays === 0) intervalDays = 1 / 24; // 0 stored for hourly
-  return { priceQort: amt, intervalDays };
+  if (Number.isNaN(amt)) return null;
+  return { priceQort: amt, intervalDays: 30 };
 }
 
 export async function fetchSubscriptionIndexPrice(
