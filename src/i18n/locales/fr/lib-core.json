@@ -29,6 +29,7 @@
   "video": {
     "playback_speed": "Vitesse de lecture",
     "toggle_fullscreen": "Plein écran (F)",
+    "toggle_object_fit": "Basculer le mode théâtre (T)",
     "video_speed": "Vitesse de la vidéo. Augmenter (+ ou >), Diminuer (- ou <)",
     "toggle_mute": "Activer/désactiver le son (M), Monter (HAUT), Baisser (BAS)",
     "seek_video": "Avancer dans la vidéo par incréments de 10 % (0–9)",

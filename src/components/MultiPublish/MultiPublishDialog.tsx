@@ -213,8 +213,7 @@ export const MultiPublishDialogComponent = () => {
         {publishError && (
           <Stack spacing={3}>
             <Box
-              mt={2}
-              sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}
+              sx={{ mt: 2, display: 'flex', gap: '5px', alignItems: 'center' }}
             >
               <ErrorIcon color="error" />
               <Typography variant="body2">{publishError}</Typography>
@@ -364,12 +363,12 @@ const IndividualResourceComponent = ({
   ]);
 
   return (
-    <Box p={1} border={1} borderColor="divider" borderRadius={2}>
-      <Typography variant="subtitle1" fontWeight="bold">
+    <Box sx={{ p: 1, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
         {publish?.filename || publishStatus?.filename || publishKey}
       </Typography>
 
-      <Box mt={2}>
+      <Box sx={{ mt: 2 }}>
         <Typography variant="body2" gutterBottom>
           {t('multi_publish.file_chunk')} {publishStatus?.chunks || 0}/
           {publishStatus?.totalChunks || 0} ({chunkPercent.toFixed(0)}%)
@@ -377,7 +376,7 @@ const IndividualResourceComponent = ({
         <LinearProgress variant="determinate" value={chunkPercent} />
       </Box>
 
-      <Box mt={2}>
+      <Box sx={{ mt: 2 }}>
         <Typography variant="body2" gutterBottom>
           {t('multi_publish.file_processing')} (
           {publishStatus?.processed
@@ -394,7 +393,7 @@ const IndividualResourceComponent = ({
       </Box>
 
       {publishStatus?.processed && (
-        <Box mt={2} display="flex" gap={1} alignItems="center">
+        <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
           <CheckCircleIcon color="success" />
           <Typography variant="body2">{t('multi_publish.success')}</Typography>
         </Box>
@@ -403,7 +402,7 @@ const IndividualResourceComponent = ({
       {publishStatus?.retry &&
         !publishStatus?.error &&
         !publishStatus?.processed && (
-          <Box mt={2} display="flex" gap={1} alignItems="center">
+          <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
             <ErrorIcon color="error" />
             <Typography variant="body2">
               {t('multi_publish.attempt_retry')}
@@ -412,7 +411,7 @@ const IndividualResourceComponent = ({
         )}
 
       {publishStatus?.error && !publishStatus?.processed && (
-        <Box mt={2} display="flex" gap={1} alignItems="center">
+        <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
           <ErrorIcon color="error" />
           <Typography variant="body2">
             {t('multi_publish.publish_failed')} -{' '}

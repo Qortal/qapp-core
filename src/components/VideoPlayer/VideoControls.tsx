@@ -23,6 +23,7 @@ import { formatTime } from '../../utils/time.js';
 import { CustomFontTooltip } from './CustomFontTooltip.js';
 import { useEffect, useRef, useState } from 'react';
 import SlowMotionVideoIcon from '@mui/icons-material/SlowMotionVideo';
+import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 const buttonPaddingBig = '6px';
 const buttonPaddingSmall = '4px';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -180,8 +181,8 @@ export const ProgressSlider = ({
 
   return (
     <Box
-      position="relative"
       sx={{
+        position: 'relative',
         width: '100%',
         padding: isVideoPlayerSmall ? '0px' : '0px 10px',
       }}
@@ -367,7 +368,7 @@ export const VolumeControl = ({
   );
 };
 
-const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3];
+const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4];
 
 export const PlaybackRate = ({
   playbackRate,
@@ -405,6 +406,31 @@ export const PlaybackRate = ({
         </IconButton>
       </CustomFontTooltip>
     </>
+  );
+};
+
+export const ObjectFitButton = ({
+  toggleTheaterMode,
+  isScreenSmall,
+}: any) => {
+  const { t } = useLibTranslation();
+
+  return (
+    <CustomFontTooltip
+      title={t('video.toggle_object_fit')}
+      placement="bottom"
+      arrow
+    >
+      <IconButton
+        sx={{
+          color: 'white',
+          padding: isScreenSmall ? buttonPaddingSmall : buttonPaddingBig,
+        }}
+        onClick={() => toggleTheaterMode()}
+      >
+        <AspectRatioIcon />
+      </IconButton>
+    </CustomFontTooltip>
   );
 };
 
@@ -475,7 +501,6 @@ export const PlayBackMenu = ({
         ref={ref}
         tabIndex={-1}
         onBlur={handleBlur}
-        bgcolor={alpha('#181818', 0.98)}
         sx={{
           position: isFromDrawer ? 'relative' : 'absolute',
           bottom: isFromDrawer ? 'relative' : 60,
@@ -486,11 +511,12 @@ export const PlayBackMenu = ({
           boxShadow: isFromDrawer ? 'relative' : 5,
           p: 1,
           minWidth: 225,
-          height: 300,
+          height: 400,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 10,
+          bgcolor: alpha('#181818', 0.98),
         }}
       >
         <Box
@@ -526,6 +552,7 @@ export const PlayBackMenu = ({
             flexDirection: 'column',
             flexGrow: 1,
             overflow: 'auto',
+            overscrollBehavior: 'contain',
             '::-webkit-scrollbar-track': {
               backgroundColor: 'transparent',
             },

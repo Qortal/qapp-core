@@ -29,6 +29,7 @@
   "video": {
     "playback_speed": "Wiedergabegeschwindigkeit",
     "toggle_fullscreen": "Vollbild umschalten (F)",
+    "toggle_object_fit": "Theatermodus umschalten (T)",
     "video_speed": "Video-Geschwindigkeit. Erhöhen (+ oder >), Verringern (- oder <)",
     "toggle_mute": "Stummschalten umschalten (M), Lauter (OBEN), Leiser (UNTEN)",
     "seek_video": "Video in 10%-Schritten vorspulen (0–9)",

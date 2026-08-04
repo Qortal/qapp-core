@@ -29,6 +29,7 @@
   "video": {
     "playback_speed": "Taasesituse kiirus",
     "toggle_fullscreen": "Lülita täisekraan (F)",
+    "toggle_object_fit": "Lülita teatrirežiim (T)",
     "video_speed": "Video kiirus. Suurenda (+ või >), Vähenda (- või <)",
     "toggle_mute": "Lülita heli välja (M), Suurenda (ÜLES), Vähenda (ALLA)",
     "seek_video": "Keri videot 10% kaupa (0-9)",

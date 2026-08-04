@@ -685,8 +685,6 @@ async function playEncryptedVideoWithServiceWorker({
   return videoId; // Return videoId for cleanup later
 }
 
-type StretchVideoType = 'contain' | 'fill' | 'cover' | 'none' | 'scale-down';
-
 export type TimelineAction =
   | {
       type: 'SEEK';
@@ -778,7 +776,6 @@ export const VideoPlayer = ({
   styling,
 }: VideoPlayerProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [videoObjectFit] = useState<StretchVideoType>('contain');
   const { isPlaying, setIsPlaying } = useIsPlaying();
   const isOnTimeline = useRef(false);
   const [width, setWidth] = useState(0);
@@ -828,7 +825,8 @@ export const VideoPlayer = ({
     decreaseSpeed,
     toggleMute,
     isFullscreen,
-    toggleObjectFit,
+    toggleTheaterMode,
+    videoObjectFit,
     controlsHeight,
     setProgressRelative,
     changeVolume,
@@ -939,7 +937,7 @@ export const VideoPlayer = ({
       reloadVideo,
       togglePlay,
       setProgressRelative,
-      toggleObjectFit,
+      toggleTheaterMode,
       increaseSpeed,
       decreaseSpeed,
       changeVolume,
@@ -951,7 +949,7 @@ export const VideoPlayer = ({
       reloadVideo,
       togglePlay,
       setProgressRelative,
-      toggleObjectFit,
+      toggleTheaterMode,
       increaseSpeed,
       decreaseSpeed,
       changeVolume,
@@ -983,7 +981,7 @@ export const VideoPlayer = ({
   useVideoPlayerHotKeys(hotkeyHandlers);
 
   const updateProgress = useCallback(() => {
-    if (!isPlaying || !isPlayerInitialized) return;
+    if (!isPlayerInitialized) return;
     const player = playerRef?.current;
     if (!player || typeof player?.currentTime !== 'function') return;
 
@@ -992,7 +990,7 @@ export const VideoPlayer = ({
       setProgress(videoLocation, currentTime);
       setLocalProgress(currentTime);
     }
-  }, [videoLocation, isPlaying, isPlayerInitialized]);
+  }, [videoLocation, isPlayerInitialized]);
 
   useEffect(() => {
     if (videoLocation) {
@@ -1040,13 +1038,13 @@ export const VideoPlayer = ({
   const videoStylesVideo = useMemo(() => {
     return {
       ...videoStyles?.video,
-      objectFit: videoObjectFit,
+      objectFit: startPlay ? videoObjectFit : 'contain',
       backgroundColor: '#000000',
-      height: isFullscreen ? 'calc(100vh - 40px)' : '100%',
+      height: isFullscreen ? '100dvh' : '100%',
       width: '100%',
       cursor: showControls ? 'default' : 'none',
     };
-  }, [videoObjectFit, isFullscreen, showControls]);
+  }, [videoObjectFit, isFullscreen, showControls, startPlay]);
 
   const handleEnded = useCallback(
     (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
@@ -1093,7 +1091,7 @@ export const VideoPlayer = ({
     hideTimeout.current = setTimeout(() => {
       if (isOnTimeline?.current) return;
       setShowControls(false);
-    }, 2500); // 3s of inactivity
+    }, 5000); // 5s of inactivity
   };
 
   const handleMouseMove = () => {
@@ -1774,6 +1772,7 @@ export const VideoPlayer = ({
             toggleMute={toggleMute}
             openPlaybackMenu={openPlaybackMenu}
             togglePictureInPicture={togglePictureInPicture}
+            toggleTheaterMode={toggleTheaterMode}
             setLocalProgress={setLocalProgress}
             isOnTimeline={isOnTimeline}
             styling={styling}
@@ -1793,6 +1792,8 @@ export const VideoPlayer = ({
             setLocalProgress={setLocalProgress}
             setProgressRelative={setProgressRelative}
             toggleFullscreen={toggleFullscreen}
+            toggleTheaterMode={toggleTheaterMode}
+            playbackRate={playbackRate}
             openPlaybackMenu={openPlaybackMenu}
             openSubtitleManager={openSubtitleManager}
             togglePlay={togglePlay}

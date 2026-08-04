@@ -29,6 +29,7 @@
   "video": {
     "playback_speed": "Velocidad de reproducción",
     "toggle_fullscreen": "Alternar pantalla completa (F)",
+    "toggle_object_fit": "Alternar modo teatro (T)",
     "video_speed": "Velocidad del video. Aumentar (+ o >), Disminuir (- o <)",
     "toggle_mute": "Alternar silencio (M), Subir volumen (ARRIBA), Bajar volumen (ABAJO)",
     "seek_video": "Buscar en el video en incrementos del 10% (0-9)",

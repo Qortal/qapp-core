@@ -29,6 +29,7 @@
   "video": {
     "playback_speed": "再生速度",
     "toggle_fullscreen": "フルスクリーン切替 (F)",
+    "toggle_object_fit": "シアターモード切替 (T)",
     "video_speed": "動画速度：速くする（+ または >）、遅くする（- または <）",
     "toggle_mute": "ミュート切替 (M)、音量を上げる（↑）、下げる（↓）",
     "seek_video": "動画を10%ずつシーク（0〜9）",

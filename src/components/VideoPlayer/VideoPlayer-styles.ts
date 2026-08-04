@@ -16,6 +16,23 @@ export const VideoContainer = styled(Box, {
   borderRadius: isVideoPlayerSmall ? '0px' : '12px',
   overflow: 'hidden',
   '&:focus': { outline: 'none' },
+  // Fullscreen container styles for mobile WebView support
+  '&:-webkit-full-screen': {
+    width: '100% !important',
+    height: '100dvh !important',
+    display: 'flex !important',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000',
+  },
+  '&:fullscreen': {
+    width: '100% !important',
+    height: '100dvh !important',
+    display: 'flex !important',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000',
+  },
 }));
 
 export const VideoElement = styled('video')(({ theme }) => ({
@@ -31,6 +48,17 @@ export const VideoElement = styled('video')(({ theme }) => ({
   },
   '&::-webkit-media-controls': {
     display: 'none !important',
+  },
+  // Fullscreen video styles for mobile WebView support
+  '&:-webkit-full-screen': {
+    width: '100% !important',
+    height: '100dvh !important',
+    objectFit: 'cover',
+  },
+  '&:fullscreen': {
+    width: '100% !important',
+    height: '100dvh !important',
+    objectFit: 'cover',
   },
 }));
 

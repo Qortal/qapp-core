@@ -29,6 +29,7 @@
   "video": {
     "playback_speed": "Velocità di riproduzione",
     "toggle_fullscreen": "Attiva/disattiva schermo intero (F)",
+    "toggle_object_fit": "Attiva/disattiva modalità teatro (T)",
     "video_speed": "Velocità video. Aumenta (+ o >), Diminuisci (- o <)",
     "toggle_mute": "Attiva/disattiva audio (M), Alza volume (SU), Abbassa volume (GIÙ)",
     "seek_video": "Vai avanti nel video a intervalli del 10% (0–9)",

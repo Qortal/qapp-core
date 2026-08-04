@@ -1,10 +1,10 @@
-import { createInstance } from 'i18next';
+import { createInstance, i18n } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import compiled from './compiled-i18n.json';
 
 export const supportedLanguages = compiled.supportedLanguages;
 
-const libI18n = createInstance(); // ✅ this avoids conflict with consumer app
+const libI18n: i18n = createInstance(); // ✅ this avoids conflict with consumer app
 
 libI18n.use(initReactI18next).init({
   resources: compiled.resources,
