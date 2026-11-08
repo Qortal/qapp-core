@@ -29,6 +29,7 @@
   "video": {
     "playback_speed": "播放速度",
     "toggle_fullscreen": "切换全屏 (F)",
+    "toggle_object_fit": "切换剧场模式 (T)",
     "video_speed": "视频速度。加快 (+ 或 >)，减慢 (- 或 <)",
     "toggle_mute": "切换静音 (M)，音量加 (↑)，音量减 (↓)",
     "seek_video": "按 10% 增量跳转视频 (0–9)",

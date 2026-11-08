@@ -142,7 +142,7 @@ export interface GetAccountNamesQortalRequest extends BaseRequest {
 }
 export interface GetPrimaryNameQortalRequest extends BaseRequest {
   action: 'GET_PRIMARY_NAME';
-  address: string;
+  address?: string;
 }
 
 export interface SearchNamesQortalRequest extends BaseRequest {
@@ -227,6 +227,14 @@ export interface DeleteListItemQortalRequest extends BaseRequest {
 export interface DecryptDataQortalRequest extends BaseRequest {
   action: 'DECRYPT_DATA';
   encryptedData: string;
+  publicKey?: string;
+}
+
+export interface DecryptAesgcmQortalRequest extends BaseRequest {
+  action: 'DECRYPT_AESGCM';
+  encryptedData: string;
+  iv: string;
+  senderPublicKey: string;
 }
 
 export type PublishMultipleQdnResourcesQortalRequest =
@@ -295,6 +303,25 @@ export interface DecryptQortalGroupDataQortalRequest extends BaseRequest {
   base64: string;
   groupId: number;
   isAdmins?: boolean;
+}
+
+export interface GetArrrSyncStatusQortalRequest extends BaseRequest {
+  action: 'GET_ARRR_SYNC_STATUS';
+}
+
+export interface GetNodeInfoQortalRequest extends BaseRequest {
+  action: 'GET_NODE_INFO';
+}
+
+export interface GetNodeStatusQortalRequest extends BaseRequest {
+  action: 'GET_NODE_STATUS';
+}
+
+export interface GetUserWalletTransactionsQortalRequest extends BaseRequest {
+  action: 'GET_USER_WALLET_TRANSACTIONS';
+  coin: CoinType;
+  limit?: number;
+  offset?: number;
 }
 
 export type EncryptQortalGroupDataQortalRequest =
@@ -687,22 +714,6 @@ export interface MultiAssetPaymentWithPrivateData extends BaseRequest {
   assetId: number;
 }
 
-export type SaveFileQortalRequest =
-  | ({
-      action: 'SAVE_FILE';
-      blob: Blob | File;
-      location?: never;
-    } & BaseRequest & { filename: string })
-  | ({
-      action: 'SAVE_FILE';
-      location: {
-        identifier?: string;
-        service: Service;
-        name: string;
-      };
-      blob?: never;
-    } & BaseRequest & { filename: string });
-
 export interface PlayEncryptedMediaQortalRequest extends BaseRequest {
   action: 'PLAY_ENCRYPTED_MEDIA';
   mediaId: string;
@@ -728,9 +739,31 @@ export interface lockTabQortalRequest extends BaseRequest {
   lockMessage: string;
 }
 
+export interface MultiAssetPaymentWithPrivateDataQortalRequest extends BaseRequest {
+  action: 'MULTI_ASSET_PAYMENT_WITH_PRIVATE_DATA';
+  payments: Array<{
+    recipient: string;
+    amount: number;
+    assetId: number;
+  }>;
+  assetId: number;
+  privateData?: string;
+}
+
 export interface reencryptGroupKeysQortalRequest extends BaseRequest {
   action: 'REENCRYPT_GROUP_KEYS';
   groupId: number;
+}
+
+export interface OpenUserLookupQortalRequest extends BaseRequest {
+  action: 'OPEN_USER_LOOKUP';
+  user: string;
+}
+
+export interface SaveFileQortalRequest extends BaseRequest {
+  action: 'SAVE_FILE';
+  data: string;
+  filename: string;
 }
 
 export type SessionPermissions =
@@ -820,6 +853,29 @@ export interface NotificationMarkSeenQortalRequest extends BaseRequest {
 export interface NotificationRemoveQortalRequest extends BaseRequest {
   action: 'NOTIFICATION_REMOVE';
   notificationIds?: string[];
+}
+
+export interface SignForeignFeesQortalRequest extends BaseRequest {
+  action: 'SIGN_FOREIGN_FEES';
+  coin: ForeignCoin;
+  feeType: FeeType;
+  fee: number;
+}
+
+export interface StartCrosschainServerQortalRequest extends BaseRequest {
+  action: 'START_CROSSCHAIN_SERVER';
+  coin: ForeignCoin;
+}
+
+export interface TransferAssetQortalRequest extends BaseRequest {
+  action: 'TRANSFER_ASSET';
+  amount: number;
+  assetId: number;
+  recipient: string;
+}
+
+export interface UpdateSubscriptionsQortalRequest extends BaseRequest {
+  action: 'UPDATE_SUBSCRIPTIONS';
 }
 
 // Chromecast Request Types

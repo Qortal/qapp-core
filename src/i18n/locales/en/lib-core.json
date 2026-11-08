@@ -29,6 +29,7 @@
   "video": {
     "playback_speed": "Playback speed",
     "toggle_fullscreen": "Toggle Fullscreen (F)",
+    "toggle_object_fit": "Toggle Theater Mode (T)",
     "video_speed": "Video Speed. Increase (+ or >), Decrease (- or <)",
     "toggle_mute": "Toggle Mute (M), Raise (UP), Lower (DOWN)",
     "seek_video": "Seek video in 10% increments (0-9)",

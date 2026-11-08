@@ -14,6 +14,7 @@ import {
   CreatePollQortalRequest,
   CreateTradeBuyOrderQortalRequest,
   CreateTradeSellOrderQortalRequest,
+  DecryptAesgcmQortalRequest,
   DecryptDataQortalRequest,
   DecryptDataWithSharingKeyQortalRequest,
   DecryptQortalGroupDataQortalRequest,
@@ -28,6 +29,7 @@ import {
   FetchQdnResourceQortalRequest,
   GetAccountDataQortalRequest,
   GetAccountNamesQortalRequest,
+  GetArrrSyncStatusQortalRequest,
   GetAtDataQortalRequest,
   GetAtQortalRequest,
   GetBalanceQortalRequest,
@@ -51,6 +53,7 @@ import {
   GetUserAccountQortalRequest,
   GetUserWalletInfoQortalRequest,
   GetUserWalletQortalRequest,
+  GetUserWalletTransactionsQortalRequest,
   GetWalletBalanceQortalRequest,
   InviteToGroupQortalRequest,
   IsUsingPublicNodeQortalRequest,
@@ -62,7 +65,7 @@ import {
   ListGroupsQortalRequest,
   ListQdnResourcesQortalRequest,
   lockTabQortalRequest,
-  MultiAssetPaymentWithPrivateData,
+  MultiAssetPaymentWithPrivateDataQortalRequest,
   OpenNewTabQortalRequest,
   OpenUserLookupQortalRequest,
   PlayEncryptedMediaQortalRequest,
@@ -85,12 +88,14 @@ import {
   SetCurrentForeignServerQortalRequest,
   ShowActionsQortalRequest,
   ShowPdfReaderQortalRequest,
+  SignForeignFeesQortalRequest,
   SignTransactionQortalRequest,
   TransferAssetQortalRequest,
   unlockTabQortalRequest,
   UpdateForeignFeeQortalRequest,
   UpdateGroupQortalRequest,
   UpdateNameQortalRequest,
+  UpdateSubscriptionsQortalRequest,
   VoteOnPollQortalRequest,
   whichUIQortalRequest,
   ChromecastCastQortalRequest,
@@ -119,6 +124,7 @@ declare global {
     | CreatePollQortalRequest
     | CreateTradeBuyOrderQortalRequest
     | CreateTradeSellOrderQortalRequest
+    | DecryptAesgcmQortalRequest
     | DecryptDataQortalRequest
     | DecryptDataWithSharingKeyQortalRequest
     | DecryptQortalGroupDataQortalRequest
@@ -133,6 +139,7 @@ declare global {
     | FetchQdnResourceQortalRequest
     | GetAccountDataQortalRequest
     | GetAccountNamesQortalRequest
+    | GetArrrSyncStatusQortalRequest
     | GetAtDataQortalRequest
     | GetAtQortalRequest
     | GetBalanceQortalRequest
@@ -156,6 +163,7 @@ declare global {
     | GetUserAccountQortalRequest
     | GetUserWalletInfoQortalRequest
     | GetUserWalletQortalRequest
+    | GetUserWalletTransactionsQortalRequest
     | GetWalletBalanceQortalRequest
     | InviteToGroupQortalRequest
     | IsUsingPublicNodeQortalRequest
@@ -167,7 +175,7 @@ declare global {
     | ListAtsQortalRequest
     | ListGroupsQortalRequest
     | ListQdnResourcesQortalRequest
-    | MultiAssetPaymentWithPrivateData
+    | MultiAssetPaymentWithPrivateDataQortalRequest
     | OpenNewTabQortalRequest
     | OpenUserLookupQortalRequest
     | PlayEncryptedMediaQortalRequest
@@ -188,11 +196,13 @@ declare global {
     | SetCurrentForeignServerQortalRequest
     | ShowActionsQortalRequest
     | ShowPdfReaderQortalRequest
+    | SignForeignFeesQortalRequest
     | SignTransactionQortalRequest
     | TransferAssetQortalRequest
     | UpdateForeignFeeQortalRequest
     | UpdateGroupQortalRequest
     | UpdateNameQortalRequest
+    | UpdateSubscriptionsQortalRequest
     | VoteOnPollQortalRequest
     | unlockTabQortalRequest
     | lockTabQortalRequest

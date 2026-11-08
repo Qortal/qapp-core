@@ -276,7 +276,6 @@ const SubtitleManagerComponent = ({
         ref={ref}
         tabIndex={-1}
         onBlur={handleBlur}
-        bgcolor={alpha('#181818', 0.98)}
         sx={{
           position: isFromDrawer ? 'relative' : 'absolute',
           bottom: isFromDrawer ? 'unset' : 60,
@@ -292,6 +291,7 @@ const SubtitleManagerComponent = ({
           display: 'flex',
           flexDirection: 'column',
           zIndex: 10,
+          bgcolor: alpha('#181818', 0.98),
         }}
       >
         <Box

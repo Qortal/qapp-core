@@ -1,7 +1,8 @@
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { ControlsContainer } from './VideoPlayer-styles';
 import {
   FullscreenButton,
+  ObjectFitButton,
   PlaybackRate,
   PlayButton,
   ProgressSlider,
@@ -40,6 +41,7 @@ interface VideoControlsBarProps {
   toggleMute: () => void;
   openPlaybackMenu: () => void;
   togglePictureInPicture: () => void;
+  toggleTheaterMode: () => void;
   isVideoPlayerSmall: boolean;
   setLocalProgress: (val: number) => void;
   isOnTimeline: RefObject<boolean>;
@@ -79,6 +81,7 @@ export const VideoControlsBar = ({
   toggleMute,
   openPlaybackMenu,
   togglePictureInPicture,
+  toggleTheaterMode,
   isVideoPlayerSmall,
   isOnTimeline,
   styling,
@@ -153,6 +156,16 @@ export const VideoControlsBar = ({
               </Box>
 
               <Box sx={{ ...controlGroupSX, marginLeft: 'auto' }}>
+                  <Typography
+                    sx={{
+                      color: 'white',
+                      fontSize: '100%',
+                      whiteSpace: 'nowrap',
+                      fontFamily: 'sans-serif',
+                    }}
+                  >
+                    {playbackRate}x
+                  </Typography>
                 <PlaybackRate
                   openPlaybackMenu={openPlaybackMenu}
                   onSelect={onSelectPlaybackRate}
@@ -160,6 +173,7 @@ export const VideoControlsBar = ({
                   increaseSpeed={increaseSpeed}
                   decreaseSpeed={decreaseSpeed}
                 />
+                <ObjectFitButton toggleTheaterMode={toggleTheaterMode} />
                 <CustomFontTooltip
                   title={t('subtitle.subtitles')}
                   placement="bottom"

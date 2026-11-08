@@ -4,7 +4,7 @@ interface UseVideoControls {
   reloadVideo: () => void;
   togglePlay: () => void;
   setProgressRelative: (seconds: number) => void;
-  toggleObjectFit: () => void;
+  toggleTheaterMode: () => void;
   increaseSpeed: (wrapOverflow?: boolean) => void;
   decreaseSpeed: () => void;
   changeVolume: (delta: number) => void;
@@ -18,7 +18,7 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
     reloadVideo,
     togglePlay,
     setProgressRelative,
-    toggleObjectFit,
+    toggleTheaterMode,
     increaseSpeed,
     decreaseSpeed,
     changeVolume,
@@ -50,8 +50,8 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
       const mod = (s: number) => setProgressRelative(s);
 
       switch (key) {
-        case 'o':
-          toggleObjectFit();
+        case 't':
+          toggleTheaterMode();
           break;
         case 'f':
           toggleFullscreen();
@@ -128,7 +128,7 @@ export const useVideoPlayerHotKeys = (props: UseVideoControls) => {
       reloadVideo,
       togglePlay,
       setProgressRelative,
-      toggleObjectFit,
+      toggleTheaterMode,
 
       increaseSpeed,
       decreaseSpeed,

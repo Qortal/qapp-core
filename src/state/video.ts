@@ -7,8 +7,8 @@ import {
   keys as idbKeys,
 } from 'idb-keyval';
 
-const EXPIRY_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
-const PROGRESS_UPDATE_INTERVAL = 5 * 1000;
+const EXPIRY_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
+const PROGRESS_UPDATE_INTERVAL = 2 * 1000; // 2 seconds
 const lastSavedTimestamps: Record<string, number> = {};
 
 const indexedDBWithExpiry = {
@@ -37,15 +37,19 @@ const indexedDBWithExpiry = {
   },
 };
 
+type ObjectFit = 'contain' | 'fill';
+
 type PlaybackSettings = {
   playbackRate: number;
   volume: number;
+  objectFit: ObjectFit;
 };
 
 type PlaybackStore = {
   playbackSettings: PlaybackSettings;
   setPlaybackRate: (rate: number) => void;
   setVolume: (volume: number) => void;
+  setObjectFit: (objectFit: ObjectFit) => void;
   getPersistedPlaybackRate: () => number;
   getPersistedVolume: () => number;
 };
@@ -56,6 +60,7 @@ export const useVideoStore = create<PlaybackStore>()(
       playbackSettings: {
         playbackRate: 1.0,
         volume: 1.0,
+        objectFit: 'contain',
       },
       setPlaybackRate: (rate) =>
         set((state) => ({
@@ -65,12 +70,27 @@ export const useVideoStore = create<PlaybackStore>()(
         set((state) => ({
           playbackSettings: { ...state.playbackSettings, volume },
         })),
+      setObjectFit: (objectFit) =>
+        set((state) => ({
+          playbackSettings: { ...state.playbackSettings, objectFit },
+        })),
       getPersistedPlaybackRate: () => get().playbackSettings.playbackRate,
       getPersistedVolume: () => get().playbackSettings.volume,
     }),
     {
       name: 'video-playback-settings',
       partialize: (state) => ({ playbackSettings: state.playbackSettings }),
+      merge: (persisted, current) => {
+        const p = (persisted as Partial<PlaybackStore>) ?? {};
+        return {
+          ...current,
+          ...p,
+          playbackSettings: {
+            ...current.playbackSettings,
+            ...(p.playbackSettings ?? {}),
+          },
+        };
+      },
     }
   )
 );

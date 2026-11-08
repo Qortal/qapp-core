@@ -1,4 +1,4 @@
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { CSSProperties } from 'react';
 import { ProgressSlider, VideoTime } from './VideoControls';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -8,6 +8,7 @@ import SlowMotionVideoIcon from '@mui/icons-material/SlowMotionVideo';
 import Fullscreen from '@mui/icons-material/Fullscreen';
 import Forward10Icon from '@mui/icons-material/Forward10';
 import Replay10Icon from '@mui/icons-material/Replay10';
+import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 
 interface MobileControlsProps {
   showControlsMobile: boolean;
@@ -20,6 +21,8 @@ interface MobileControlsProps {
   openSubtitleManager: () => void;
   openPlaybackMenu: () => void;
   toggleFullscreen: () => void;
+  toggleTheaterMode: () => void;
+  playbackRate: number;
   setProgressRelative: (val: number) => void;
   setLocalProgress: (val: number) => void;
   resetHideTimeout: () => void;
@@ -42,6 +45,8 @@ export const MobileControls = ({
   openSubtitleManager,
   openPlaybackMenu,
   toggleFullscreen,
+  toggleTheaterMode,
+  playbackRate,
   setProgressRelative,
   setLocalProgress,
   resetHideTimeout,
@@ -72,24 +77,16 @@ export const MobileControls = ({
           alignItems: 'center',
         }}
       >
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            openSubtitleManager();
-          }}
+        <Typography
           sx={{
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: '50%',
-            padding: '7px',
+            color: 'white',
+            fontSize: '14px',
+            whiteSpace: 'nowrap',
+            fontFamily: 'sans-serif',
           }}
         >
-          <SubtitlesIcon
-            sx={{
-              fontSize: '24px',
-              color: 'white',
-            }}
-          />
-        </IconButton>
+          {playbackRate}x
+        </Typography>
         <IconButton
           sx={{
             background: 'rgba(0,0,0,0.3)',
@@ -102,6 +99,42 @@ export const MobileControls = ({
           }}
         >
           <SlowMotionVideoIcon
+            sx={{
+              fontSize: '24px',
+              color: 'white',
+            }}
+          />
+        </IconButton>
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleTheaterMode();
+          }}
+          sx={{
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '7px',
+          }}
+        >
+          <AspectRatioIcon
+            sx={{
+              fontSize: '24px',
+              color: 'white',
+            }}
+          />
+        </IconButton>
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            openSubtitleManager();
+          }}
+          sx={{
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '50%',
+            padding: '7px',
+          }}
+        >
+          <SubtitlesIcon
             sx={{
               fontSize: '24px',
               color: 'white',

@@ -65,12 +65,14 @@ export const PeerDetailsModal = ({
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        sx: {
-          backgroundColor: alpha('#181818', 0.98),
-          backgroundImage: 'none',
-          borderRadius: 2,
-          border: `1px solid ${alpha('#ffffff', 0.1)}`,
+      slotProps={{
+        paper: {
+          sx: {
+            backgroundColor: alpha('#181818', 0.98),
+            backgroundImage: 'none',
+            borderRadius: 2,
+            border: `1px solid ${alpha('#ffffff', 0.1)}`,
+          },
         },
       }}
     >

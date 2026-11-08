@@ -35,13 +35,10 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControlsFullScreen, setShowControlsFullScreen] = useState(false);
-  const [videoObjectFit, setVideoObjectFit] = useState<'contain' | 'fill'>(
-    'contain'
-  );
   const [startPlay, setStartPlay] = useState(false);
   const [startedFetch, setStartedFetch] = useState(false);
   const startedFetchRef = useRef(false);
-  const { playbackSettings, setPlaybackRate } = useVideoStore();
+  const { playbackSettings, setPlaybackRate, setObjectFit } = useVideoStore();
 
   const {
     isReady,
@@ -210,9 +207,11 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     }
   }, []);
 
-  const toggleObjectFit = useCallback(() => {
-    setVideoObjectFit(videoObjectFit === 'contain' ? 'fill' : 'contain');
-  }, [setVideoObjectFit]);
+  const toggleTheaterMode = useCallback(() => {
+    setObjectFit(
+      playbackSettings.objectFit === 'fill' ? 'contain' : 'fill'
+    );
+  }, [playbackSettings.objectFit, setObjectFit]);
 
   const togglePlay = useCallback(async () => {
     try {
@@ -319,7 +318,8 @@ export const useVideoPlayerController = (props: UseVideoControls) => {
     decreaseSpeed,
     toggleMute,
     isFullscreen,
-    toggleObjectFit,
+    toggleTheaterMode,
+    videoObjectFit: playbackSettings.objectFit,
     controlsHeight,
     setProgressRelative,
     changeVolume,

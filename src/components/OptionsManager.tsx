@@ -56,7 +56,7 @@ export function OptionsManager({
 
   return (
     <Box>
-      <Stack direction="row" spacing={2} alignItems="center">
+      <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
         <TextField
           size="small"
           label={editIndex !== null ? `Edit ${label}` : `Add ${label}`}
@@ -77,7 +77,7 @@ export function OptionsManager({
         </Button>
       </Stack>
 
-      <Box mt={2} sx={{ maxWidth: '400px', flexWrap: 'wrap', display: 'flex' }}>
+      <Box sx={{ mt: 2, maxWidth: '400px', flexWrap: 'wrap', display: 'flex' }}>
         {items.map((item, index) => (
           <Chip
             key={index}
